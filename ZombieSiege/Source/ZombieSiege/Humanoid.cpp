@@ -20,30 +20,35 @@ void AHumanoid::BeginPlay()
 
 EFaceDirection AHumanoid::GetDirectionFromVelocity(const FVector& velocity)
 {
+	if (velocity.IsNearlyZero())
+	{
+		return EFaceDirection::NONE;
+	}
+
 	EFaceDirection directionFlags = EFaceDirection::NONE;
 
-	if (velocity.X > 0)
+	if (FMath::Abs(velocity.X) > FMath::Abs(velocity.Y))
 	{
-		directionFlags |= EFaceDirection::Right;
+		if (velocity.X > 0)
+		{
+			directionFlags = EFaceDirection::Right;
+		}
+		else
+		{
+			directionFlags = EFaceDirection::Left;
+		}
 	}
-	else if (velocity.X < 0)
+	else
 	{
-		directionFlags |= EFaceDirection::Left;
-	}
-
-	if (velocity.Y > 0)
-	{
-		directionFlags |= EFaceDirection::Down;
-	}
-	else if (velocity.Y < 0)
-	{
-		directionFlags |= EFaceDirection::Up;
-	}
-
-	if (velocity.IsNearlyZero())
-	{		
-		directionFlags = EFaceDirection::NONE;
-	}
+		if (velocity.Y > 0)
+		{
+			directionFlags = EFaceDirection::Down;
+		}
+		else
+		{
+			directionFlags = EFaceDirection::Up;
+		}
+	}	
 
 	return directionFlags;
 }
@@ -61,6 +66,12 @@ void AHumanoid::Tick(float DeltaTime)
 		// We change current direction only if the velocity is not Zero
 		// This way the Humanoid will remains their last direction after they stop moving
 		facingDirection = directionFlags;
+
+		currentAnimation = EAnimationState::Moving;
+	}
+	else
+	{
+		currentAnimation = EAnimationState::None;
 	}
 }
 
