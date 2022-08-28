@@ -37,8 +37,10 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	ETreeSize treeSize;	
 
+	UFUNCTION(BlueprintCallable)
 	UPaperSprite* GetCorrectTreeSprite();
 
+	UFUNCTION(BlueprintCallable)
 	void UpdateTreeSprite();
 
 protected:
@@ -67,11 +69,15 @@ public:
 	}
 
 	UFUNCTION(BlueprintCallable)
-	void SetTreeTypeAndSize(ETreeType inType, ETreeSize inSize)
+	void SetTreeTypeAndSize(ETreeType inType, ETreeSize inSize, bool bUpdateSprite)
 	{
 		treeType = inType;
 		treeSize = inSize;
-		UpdateTreeSprite();
+
+		if (bUpdateSprite)
+		{
+			UpdateTreeSprite();
+		}
 	}
 
 	UFUNCTION(BlueprintCallable)

@@ -7,6 +7,7 @@
 
 ATree* ATree::BeginSpawnTree(UWorld* world, TSubclassOf<ATree> treeClass, const FVector& location)
 {
+
 	FTransform transform(location);
 	ESpawnActorCollisionHandlingMethod collisionHandling = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	AActor* treeActor = UGameplayStatics::BeginDeferredActorSpawnFromClass(world, treeClass, transform, collisionHandling);
@@ -27,6 +28,9 @@ ATree* ATree::BeginSpawnTree(UWorld* world, TSubclassOf<ATree> treeClass, const 
 		return nullptr;
 	}
 
+	//tree->RootComponent->SetMobility(MOBILITY);
+	//tree->treeSpriteComponent->SetMobility(MOBILITY);
+
 	return tree;
 }
 
@@ -43,7 +47,7 @@ void ATree::GetRandomSizeAndType(ETreeType& outType, ETreeSize& outSize)
 
 ATree::ATree()
 {
-	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"), false);
+	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"), false);	
 
 	RootComponent->SetMobility(EComponentMobility::Static);
 
@@ -57,9 +61,6 @@ ATree::ATree()
 		UE_LOG(LogTemp, Error, TEXT("Failed to attach TreeSpriteComponent to the RootComponent!"));
 	}
 
-	// TODO Consider making trees static. SPRITES OF STATIC OBJECTS CANNOT BE CHANGED AT RUNTIME!
-	// 
-	treeSpriteComponent->SetMobility(EComponentMobility::Static);
 	treeSpriteComponent->SetWorldRotation(FRotator(-90, 0, 0));
 }
 
