@@ -45,7 +45,7 @@ private:
 
 protected:
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Transient)
 	UPaperSpriteComponent* treeSpriteComponent;
 
 public:
