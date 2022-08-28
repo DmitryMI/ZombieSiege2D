@@ -5,6 +5,36 @@
 #include "PaperSprite.h"
 #include "Kismet/GameplayStatics.h"
 
+ATree* ATree::BeginSpawnTree(UWorld* world, TSubclassOf<ATree> treeClass, const FVector& location)
+{
+	FTransform transform(location);
+	ESpawnActorCollisionHandlingMethod collisionHandling = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	AActor* treeActor = UGameplayStatics::BeginDeferredActorSpawnFromClass(world, treeClass, transform, collisionHandling);
+
+	if (treeActor == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to deferred-spawn a tree!"));
+		return nullptr;
+	}
+
+	treeActor->SetFolderPath("Trees");
+
+	ATree* tree = Cast<ATree>(treeActor);
+
+	if (tree == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to cast deferred-spawned actor to ATree!"));
+		return nullptr;
+	}
+
+	return tree;
+}
+
+void ATree::FinishSpawnTree(ATree* tree)
+{
+	UGameplayStatics::FinishSpawningActor(tree, tree->GetTransform());
+}
+
 void ATree::GetRandomSizeAndType(ETreeType& outType, ETreeSize& outSize)
 {
 	outType = static_cast<ETreeType>(FMath::RandRange(0, static_cast<uint8>(ETreeType::ETREETYPE_MAX) - 1));
@@ -14,6 +44,8 @@ void ATree::GetRandomSizeAndType(ETreeType& outType, ETreeSize& outSize)
 ATree::ATree()
 {
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"), false);
+
+	RootComponent->SetMobility(EComponentMobility::Static);
 
 	treeSpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("TreeSpriteComponent"), false);	
 
@@ -27,9 +59,8 @@ ATree::ATree()
 
 	// TODO Consider making trees static. SPRITES OF STATIC OBJECTS CANNOT BE CHANGED AT RUNTIME!
 	// 
-	//treeSpriteComponent->SetMobility(EComponentMobility::Static);
+	treeSpriteComponent->SetMobility(EComponentMobility::Static);
 	treeSpriteComponent->SetWorldRotation(FRotator(-90, 0, 0));
-
 }
 
 
@@ -74,17 +105,14 @@ UPaperSprite* ATree::GetCorrectTreeSprite()
 
 void ATree::UpdateTreeSprite()
 {
-	UPaperSprite* sprite = GetCorrectTreeSprite();
-
-	FString name = sprite->GetName();	
+	UPaperSprite* sprite = GetCorrectTreeSprite();	
 
 	if (sprite != nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Setting sprite to %s"), *name);
 		bool spriteSet = treeSpriteComponent->SetSprite(sprite);
 		if (!spriteSet)
 		{
-			UE_LOG(LogTemp, Error, TEXT("Failed to set sprite!"));
+			UE_LOG(LogTemp, Error, TEXT("Failed to set sprite! Do not update sprites of Static actors!"));
 		}
 	}
 	else

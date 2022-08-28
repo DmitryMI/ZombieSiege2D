@@ -49,6 +49,12 @@ protected:
 public:
 
 	UFUNCTION(BlueprintCallable)
+	static ATree* BeginSpawnTree(UWorld* world, TSubclassOf<ATree> treeClass, const FVector& location);
+
+	UFUNCTION(BlueprintCallable)
+	static void FinishSpawnTree(ATree* tree);
+
+	UFUNCTION(BlueprintCallable)
 	static void GetRandomSizeAndType(ETreeType& outType, ETreeSize& outSize);
 
 	ATree();
