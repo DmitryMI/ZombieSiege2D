@@ -15,10 +15,10 @@ class ZOMBIESIEGE_API AHumanoid : public APawn
 	GENERATED_BODY()
 
 private:
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	EFaceDirection facingDirection = EFaceDirection::Down;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	EAnimationState currentAnimation = EAnimationState::None;
 
 public:

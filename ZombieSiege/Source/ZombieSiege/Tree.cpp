@@ -62,6 +62,7 @@ ATree::ATree()
 	}
 
 	treeSpriteComponent->SetWorldRotation(FRotator(-90, 0, 0));
+
 }
 
 

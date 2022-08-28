@@ -8,19 +8,19 @@
 
 int UHumanoidGraphicsComponent::GetDirectionSpriteIndex(EFaceDirection faceDirectionEnum)
 {
-	if (static_cast<uint8>(faceDirectionEnum) | static_cast<uint8>(EFaceDirection::Up))
+	if (static_cast<uint8>(faceDirectionEnum) & static_cast<uint8>(EFaceDirection::Up))
 	{
 		return 0;
 	}
-	else if (static_cast<uint8>(faceDirectionEnum) | static_cast<uint8>(EFaceDirection::Down))
+	else if (static_cast<uint8>(faceDirectionEnum) & static_cast<uint8>(EFaceDirection::Down))
 	{
 		return 1;
 	}
-	else if (static_cast<uint8>(faceDirectionEnum) | static_cast<uint8>(EFaceDirection::Right))
+	else if (static_cast<uint8>(faceDirectionEnum) & static_cast<uint8>(EFaceDirection::Right))
 	{
 		return 2;
 	}
-	else if (static_cast<uint8>(faceDirectionEnum) | static_cast<uint8>(EFaceDirection::Left))
+	else if (static_cast<uint8>(faceDirectionEnum) & static_cast<uint8>(EFaceDirection::Left))
 	{
 		return 3;
 	}
@@ -63,7 +63,8 @@ void UHumanoidGraphicsComponent::TickComponent(float DeltaTime, ELevelTick TickT
 	AHumanoid* humanoid = Cast<AHumanoid>(owner);
 	check(humanoid);
 
-	int directionIndex = static_cast<int>(humanoid->GetFacingDirection());
+	EFaceDirection direction = humanoid->GetFacingDirection();
+	int directionIndex = GetDirectionSpriteIndex(direction);
 
 	TArray<UPaperFlipbook*>* animationSet = nullptr;
 
