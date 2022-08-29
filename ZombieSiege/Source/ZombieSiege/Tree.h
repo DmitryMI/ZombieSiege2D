@@ -45,11 +45,8 @@ public:
 
 
 	UFUNCTION(BlueprintCallable)
-	void GetTreeTypeAndSize(ETreeType& outType, ETreeSize& outSize)
-	{
-		outType = treeType;
-		outSize = treeSize;
-	}
+	void GetTreeTypeAndSize(ETreeType& outType, ETreeSize& outSize);
+	
 
 	UFUNCTION(BlueprintCallable)
 	void SetTreeTypeAndSize(ETreeType inType, ETreeSize inSize);

@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "FaceDirection.h"
-#include "AnimationState.h"
+#include "HumanoidState.h"
 #include "HumanoidGraphicsComponent.h"
 #include "Humanoid.generated.h"
 
@@ -19,7 +19,7 @@ private:
 	EFaceDirection facingDirection = EFaceDirection::Down;
 
 	UPROPERTY(VisibleAnywhere)
-	EAnimationState currentAnimation = EAnimationState::None;
+	EHumanoidState currentState = EHumanoidState::None;
 
 public:
 	AHumanoid();
@@ -32,12 +32,14 @@ protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION(BlueprintCallable)
-	void SetAnimationState(EAnimationState animation)
+	void SetHumanoidState(EHumanoidState humanoidState)
 	{
-		currentAnimation = animation;
+		currentState = humanoidState;
 	}
 
 public:	
+
+	UFUNCTION(BlueprintCallable)
 	static EFaceDirection GetDirectionFromVelocity(const FVector& velocity);
 
 	virtual void Tick(float DeltaTime) override;
@@ -55,8 +57,8 @@ public:
 	}
 
 	UFUNCTION(BlueprintCallable)
-	EAnimationState GetAnimationState()
+	EHumanoidState GetHumanoidState()
 	{
-		return currentAnimation;
+		return currentState;
 	}
 };

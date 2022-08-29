@@ -66,11 +66,11 @@ void AHumanoid::Tick(float DeltaTime)
 		// This way the Humanoid will remains their last direction after they stop moving
 		facingDirection = directionFlags;
 
-		currentAnimation = EAnimationState::Moving;
+		currentState = EHumanoidState::Moving;
 	}
 	else
 	{
-		currentAnimation = EAnimationState::None;
+		currentState = EHumanoidState::None;
 	}
 }
 

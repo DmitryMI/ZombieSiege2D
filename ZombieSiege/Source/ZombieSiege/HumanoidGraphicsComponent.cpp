@@ -4,7 +4,7 @@
 #include "HumanoidGraphicsComponent.h"
 #include "Humanoid.h"
 #include "FaceDirection.h"
-#include "AnimationState.h"
+#include "HumanoidState.h"
 
 int UHumanoidGraphicsComponent::GetDirectionSpriteIndex(EFaceDirection faceDirectionEnum)
 {
@@ -68,18 +68,18 @@ void UHumanoidGraphicsComponent::TickComponent(float DeltaTime, ELevelTick TickT
 
 	TArray<UPaperFlipbook*>* animationSet = nullptr;
 
-	switch (humanoid->GetAnimationState())
+	switch (humanoid->GetHumanoidState())
 	{
-	case EAnimationState::None:
+	case EHumanoidState::None:
 		animationSet = &standFlipbooks;
 		break;
-	case EAnimationState::Moving:
+	case EHumanoidState::Moving:
 		animationSet = &movingFlipbooks;
 		break;
-	case EAnimationState::Attacking:
+	case EHumanoidState::Attacking:
 		animationSet = &attackingFlipbooks;
 		break;
-	case EAnimationState::Dying:
+	case EHumanoidState::Dying:
 		animationSet = &dyingFlipbooks;
 		break;
 	}

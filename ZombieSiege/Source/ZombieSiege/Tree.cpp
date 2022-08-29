@@ -11,6 +11,12 @@ void ATree::GetRandomSizeAndType(ETreeType& outType, ETreeSize& outSize)
 	outSize = static_cast<ETreeSize>(FMath::RandRange(0, static_cast<uint8>(ETreeSize::ETREESIZE_MAX) - 1));
 }
 
+void ATree::GetTreeTypeAndSize(ETreeType& outType, ETreeSize& outSize)
+{
+	outType = treeType;
+	outSize = treeSize;
+}
+
 void ATree::SetTreeTypeAndSize(ETreeType inType, ETreeSize inSize)
 {
 	ETreeType oldType = treeType;
