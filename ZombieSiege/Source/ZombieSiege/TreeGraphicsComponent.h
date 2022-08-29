@@ -42,7 +42,6 @@ protected:
 	UPaperSpriteComponent* treeSpriteComponent;
 
 public:	
-	// Sets default values for this component's properties
 	UTreeGraphicsComponent();
 
 protected:
@@ -60,4 +59,7 @@ public:
 		spriteHeight = z;
 		UpdateTreeSprite();
 	}
+
+	UFUNCTION(BlueprintCallable)
+	void SetIsTransparent(bool bIsTransparent);
 };
