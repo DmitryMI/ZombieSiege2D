@@ -26,7 +26,7 @@ public:
 
 protected:
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(Transient)
 	UHumanoidGraphicsComponent* graphicsComponent;
 	
 	virtual void BeginPlay() override;

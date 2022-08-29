@@ -7,15 +7,14 @@
 AHumanoid::AHumanoid()
 {
 	PrimaryActorTick.bCanEverTick = true;
-
-	graphicsComponent = CreateDefaultSubobject<UHumanoidGraphicsComponent>(TEXT("GraphicsComponent"), false);
-	RootComponent = graphicsComponent;
 }
 
 void AHumanoid::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	graphicsComponent = Cast<UHumanoidGraphicsComponent>(GetComponentByClass(UHumanoidGraphicsComponent::StaticClass()));
+	check(graphicsComponent);
 }
 
 EFaceDirection AHumanoid::GetDirectionFromVelocity(const FVector& velocity)

@@ -40,8 +40,6 @@ void AZombieSiegePlayerController::OnCameraZoom(float value)
 		return;
 	}
 
-	UE_LOG(LogTemp, Display, TEXT("Zooming: %3.2f"), value);
-
 	TArray<AActor*> cameraActors;
 	UGameplayStatics::GetAllActorsWithTag(GetWorld(), "StrategicCamera", cameraActors);
 

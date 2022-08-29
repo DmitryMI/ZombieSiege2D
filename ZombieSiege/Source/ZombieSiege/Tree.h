@@ -7,6 +7,7 @@
 #include "TreeType.h"
 #include "TreeSize.h"
 #include "PaperSpriteComponent.h"
+#include "TreeGraphicsComponent.h"
 #include "Tree.generated.h"
 
 /**
@@ -17,49 +18,31 @@ class ZOMBIESIEGE_API ATree : public ADoodad
 {
 	GENERATED_BODY()
 
-private:
-
-	UPROPERTY(EditDefaultsOnly, Category = "Sprites|Tree")
-	TArray<UPaperSprite*> TreeBushVariants;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Sprites|Tree")
-	TArray<UPaperSprite*> TreeSmallVariants;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Sprites|Tree")
-	TArray<UPaperSprite*> TreeMediumVariants;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Sprites|Tree")
-	TArray<UPaperSprite*> TreeLargeVariants;
+private:	
 
 	UPROPERTY(VisibleAnywhere)
 	ETreeType treeType;
 
 	UPROPERTY(VisibleAnywhere)
-	ETreeSize treeSize;	
-
-	UFUNCTION(BlueprintCallable)
-	UPaperSprite* GetCorrectTreeSprite();
-
-	UFUNCTION(BlueprintCallable)
-	void UpdateTreeSprite();
+	ETreeSize treeSize;		
 
 protected:
+	UPROPERTY(Transient)
+	UTreeGraphicsComponent* graphicsComponent;
 
-	UPROPERTY(VisibleAnywhere, Transient)
-	UPaperSpriteComponent* treeSpriteComponent;
+	virtual void BeginPlay() override;
 
 public:
 
-	UFUNCTION(BlueprintCallable)
-	static ATree* BeginSpawnTree(UWorld* world, TSubclassOf<ATree> treeClass, const FVector& location);
+	ATree();
 
-	UFUNCTION(BlueprintCallable)
-	static void FinishSpawnTree(ATree* tree);
+	// Statics
 
 	UFUNCTION(BlueprintCallable)
 	static void GetRandomSizeAndType(ETreeType& outType, ETreeSize& outSize);
 
-	ATree();
+	// End of Statics
+
 
 	UFUNCTION(BlueprintCallable)
 	void GetTreeTypeAndSize(ETreeType& outType, ETreeSize& outSize)
@@ -69,41 +52,12 @@ public:
 	}
 
 	UFUNCTION(BlueprintCallable)
-	void SetTreeTypeAndSize(ETreeType inType, ETreeSize inSize, bool bUpdateSprite)
-	{
-		treeType = inType;
-		treeSize = inSize;
+	void SetTreeTypeAndSize(ETreeType inType, ETreeSize inSize);
 
-		if (bUpdateSprite)
-		{
-			UpdateTreeSprite();
-		}
-	}
+	DECLARE_MULTICAST_DELEGATE(FTreeTypeAndSizeChangedEvent);
+	FTreeTypeAndSizeChangedEvent& OnTreeTypeAndSizeChangedEvent() { return treeTypeAndSizeChangedEvent; }	
 
-	UFUNCTION(BlueprintCallable)
-	ETreeType GetTreeType()
-	{
-		return treeType;
-	}
+private:
+	FTreeTypeAndSizeChangedEvent treeTypeAndSizeChangedEvent;
 
-	UFUNCTION(BlueprintCallable)
-	virtual void SetTreeType(ETreeType treeTypeArg)
-	{		
-		this->treeType = treeTypeArg;
-		UpdateTreeSprite();
-	}
-
-	UFUNCTION(BlueprintCallable)
-	ETreeSize GetTreeSize()
-	{
-		return treeSize;
-	}
-
-	UFUNCTION(BlueprintCallable)
-	virtual void SetTreeSize(ETreeSize treeSizeArg)
-	{
-		this->treeSize = treeSizeArg;
-		
-		UpdateTreeSprite();
-	}
 };
