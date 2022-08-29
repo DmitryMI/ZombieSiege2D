@@ -7,21 +7,7 @@
 // Sets default values for this component's properties
 UTreeGraphicsComponent::UTreeGraphicsComponent()
 {
-	PrimaryComponentTick.bCanEverTick = false;
-
-	treeSpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("TreeSpriteComponent"), true);
-
-	FAttachmentTransformRules attachmentRules(EAttachmentRule::KeepRelative, false);
-
-	bool bSpriteAttached = treeSpriteComponent->AttachToComponent(this, attachmentRules);
-	if (!bSpriteAttached)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to attach TreeSpriteComponent to the RootComponent!"));
-	}
-
-	treeSpriteComponent->SetMobility(EComponentMobility::Movable);
-	treeSpriteComponent->SetWorldRotation(FRotator(0, 0, -90));
-	treeSpriteComponent->SetRelativeLocation(FVector::UpVector * spriteHeight);
+	PrimaryComponentTick.bCanEverTick = false;	
 }
 
 UPaperSprite* UTreeGraphicsComponent::GetCorrectTreeSprite()
@@ -96,6 +82,21 @@ void UTreeGraphicsComponent::UpdateTreeSprite()
 void UTreeGraphicsComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	TArray<USceneComponent*> children;
+	GetChildrenComponents(true, children);
+	for (USceneComponent* child : children)
+	{
+		UPaperSpriteComponent* spriteComponent = Cast<UPaperSpriteComponent>(child);
+		if (spriteComponent != nullptr)
+		{
+			treeSpriteComponent = spriteComponent;
+		}
+	}
+
+	check(treeSpriteComponent);
+	treeSpriteComponent->SetWorldRotation(FRotator(0, 0, -90));
+	treeSpriteComponent->SetRelativeLocation(FVector::UpVector * spriteHeight);
 
 	AActor* owner = GetOwner();
 	check(owner);

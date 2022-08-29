@@ -34,19 +34,27 @@ UHumanoidGraphicsComponent::UHumanoidGraphicsComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
-	humanoidFlipbookRenderer = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("SpriteRenderer"), false);
-	ensure(humanoidFlipbookRenderer);
-
-	bool attached = humanoidFlipbookRenderer->AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
-	ensure(attached);
-
-	humanoidFlipbookRenderer->SetWorldRotation(FRotator(0, 0, -90));
+	
 }
 
 
 void UHumanoidGraphicsComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	TArray<USceneComponent*> children;
+	GetChildrenComponents(true, children);
+	for (USceneComponent* child : children)
+	{
+		UPaperFlipbookComponent* flipbookComponent = Cast<UPaperFlipbookComponent>(child);
+		if (flipbookComponent != nullptr)
+		{
+			humanoidFlipbookRenderer = flipbookComponent;
+		}
+	}
+	check(humanoidFlipbookRenderer);
+
+	humanoidFlipbookRenderer->SetWorldRotation(FRotator(0, 0, -90));
 }
 
 

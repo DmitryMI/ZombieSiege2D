@@ -16,19 +16,19 @@ class ZOMBIESIEGE_API UTreeGraphicsComponent : public USceneComponent
 	GENERATED_BODY()
 
 private:
-	UPROPERTY(VisibleAnywhere, Category = "Sprites|Tree")
-	float spriteHeight;
+	UPROPERTY(VisibleAnywhere)
+	float spriteHeight = 10.0f;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Sprites|Tree")
+	UPROPERTY(EditDefaultsOnly)
 	TArray<UPaperSprite*> TreeBushVariants;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Sprites|Tree")
+	UPROPERTY(EditDefaultsOnly)
 	TArray<UPaperSprite*> TreeSmallVariants;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Sprites|Tree")
+	UPROPERTY(EditDefaultsOnly)
 	TArray<UPaperSprite*> TreeMediumVariants;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Sprites|Tree")
+	UPROPERTY(EditDefaultsOnly)
 	TArray<UPaperSprite*> TreeLargeVariants;	
 
 protected:
@@ -38,7 +38,7 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void UpdateTreeSprite();
 
-	UPROPERTY()
+	UPROPERTY(Transient)
 	UPaperSpriteComponent* treeSpriteComponent;
 
 public:	

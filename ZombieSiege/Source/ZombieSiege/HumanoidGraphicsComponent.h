@@ -27,7 +27,7 @@ private:
 	
 protected:
 
-	UPROPERTY(VisibleAnywhere, Transient)
+	UPROPERTY(Transient)
 	UPaperFlipbookComponent* humanoidFlipbookRenderer;
 
 	virtual void BeginPlay() override;
