@@ -10,6 +10,22 @@ UTreeGraphicsComponent::UTreeGraphicsComponent()
 	PrimaryComponentTick.bCanEverTick = false;	
 }
 
+void UTreeGraphicsComponent::FindComponents()
+{
+	TArray<USceneComponent*> children;
+	GetChildrenComponents(true, children);
+	for (USceneComponent* child : children)
+	{
+		UPaperSpriteComponent* spriteComponent = Cast<UPaperSpriteComponent>(child);
+		if (spriteComponent != nullptr)
+		{
+			treeSpriteComponent = spriteComponent;
+		}
+	}
+
+	check(treeSpriteComponent);
+}
+
 UPaperSprite* UTreeGraphicsComponent::GetCorrectTreeSprite()
 {
 	AActor* owner = GetOwner();
@@ -60,19 +76,22 @@ UPaperSprite* UTreeGraphicsComponent::GetCorrectTreeSprite()
 
 void UTreeGraphicsComponent::UpdateTreeSprite()
 {
+	if (treeSpriteComponent == nullptr)
+	{
+		FindComponents();
+	}
+
 	UPaperSprite* sprite = GetCorrectTreeSprite();
 
-	if (sprite != nullptr)
+	check(sprite);
+
+	if (treeSpriteComponent->GetSprite() != sprite)
 	{
 		bool spriteSet = treeSpriteComponent->SetSprite(sprite);
 		if (!spriteSet)
 		{
 			UE_LOG(LogTemp, Error, TEXT("Failed to set sprite! Do not update sprites of Static actors!"));
 		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("Setting sprite to NULLPTR"));
 	}
 
 	treeSpriteComponent->SetRelativeLocation(FVector::UpVector * spriteHeight);
@@ -83,18 +102,8 @@ void UTreeGraphicsComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	TArray<USceneComponent*> children;
-	GetChildrenComponents(true, children);
-	for (USceneComponent* child : children)
-	{
-		UPaperSpriteComponent* spriteComponent = Cast<UPaperSpriteComponent>(child);
-		if (spriteComponent != nullptr)
-		{
-			treeSpriteComponent = spriteComponent;
-		}
-	}
+	FindComponents();
 
-	check(treeSpriteComponent);
 	treeSpriteComponent->SetWorldRotation(FRotator(0, 0, -90));
 	treeSpriteComponent->SetRelativeLocation(FVector::UpVector * spriteHeight);
 

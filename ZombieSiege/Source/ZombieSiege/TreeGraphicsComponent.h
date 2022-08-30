@@ -31,6 +31,8 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TArray<UPaperSprite*> TreeLargeVariants;	
 
+	void FindComponents();
+
 protected:
 	UFUNCTION(BlueprintCallable)
 	UPaperSprite* GetCorrectTreeSprite();
