@@ -51,7 +51,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetTreeTypeAndSize(ETreeType inType, ETreeSize inSize);
 
-	DECLARE_MULTICAST_DELEGATE(FTreeTypeAndSizeChangedEvent);
+	DECLARE_EVENT(ATree, FTreeTypeAndSizeChangedEvent);
 	FTreeTypeAndSizeChangedEvent& OnTreeTypeAndSizeChangedEvent() { return treeTypeAndSizeChangedEvent; }	
 
 private:

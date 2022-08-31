@@ -4,7 +4,6 @@
 #include "TreeGraphicsComponent.h"
 #include "Tree.h"
 
-// Sets default values for this component's properties
 UTreeGraphicsComponent::UTreeGraphicsComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;	

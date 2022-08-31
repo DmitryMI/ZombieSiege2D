@@ -15,6 +15,12 @@ void AHumanoid::BeginPlay()
 	
 	graphicsComponent = Cast<UHumanoidGraphicsComponent>(GetComponentByClass(UHumanoidGraphicsComponent::StaticClass()));
 	check(graphicsComponent);
+
+	weaponManager = AWeaponManager::GetInstance(GetWorld());
+	check(weaponManager);
+
+	weaponInfo = weaponManager->GetWeaponInstancesMap()["SurvivorFists"];
+	check(weaponInfo);
 }
 
 EFaceDirection AHumanoid::GetDirectionFromVelocity(const FVector& velocity)

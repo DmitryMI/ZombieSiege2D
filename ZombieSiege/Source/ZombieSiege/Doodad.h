@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "UnitBase.h"
 #include "Doodad.generated.h"
 
 UCLASS()
-class ZOMBIESIEGE_API ADoodad : public AActor
+class ZOMBIESIEGE_API ADoodad : public AUnitBase
 {
 	GENERATED_BODY()
 	

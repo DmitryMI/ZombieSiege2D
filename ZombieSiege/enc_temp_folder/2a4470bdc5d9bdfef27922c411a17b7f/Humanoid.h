@@ -34,7 +34,7 @@ protected:
 	UPROPERTY(Transient)
 	UHumanoidGraphicsComponent* graphicsComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly)
 	UWeaponInfoBase* weaponInfo;
 	
 	virtual void BeginPlay() override;
