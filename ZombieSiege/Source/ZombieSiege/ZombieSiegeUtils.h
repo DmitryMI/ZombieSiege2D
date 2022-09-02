@@ -34,4 +34,7 @@ public:
 		ECollisionChannel collisionChannel,
 		TSubclassOf<AUnitBase> unitClass,
 		const TArray<AActor*>& ignoredActors);
+
+	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
+	static float GetDistance2DBetweenSimpleCollisions(AActor* actor1, AActor* actor2);
 };
