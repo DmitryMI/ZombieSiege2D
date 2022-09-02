@@ -43,11 +43,11 @@ public:
 
 	// End of Statics
 
+	virtual void ReceiveDamage(const FDamageInstance& damage) override;
 
 	UFUNCTION(BlueprintCallable)
 	void GetTreeTypeAndSize(ETreeType& outType, ETreeSize& outSize);
 	
-
 	UFUNCTION(BlueprintCallable)
 	void SetTreeTypeAndSize(ETreeType inType, ETreeSize inSize);
 

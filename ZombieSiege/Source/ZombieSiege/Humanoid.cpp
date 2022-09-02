@@ -40,6 +40,11 @@ EHumanoidState AHumanoid::GetHumanoidState()
 	return currentState;
 }
 
+bool AHumanoid::IsOnCooldown()
+{
+	return bIsOnCooldown;
+}
+
 EFaceDirection AHumanoid::GetDirectionFromVector(const FVector& vec)
 {
 	if (vec.IsNearlyZero())

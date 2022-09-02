@@ -3,12 +3,33 @@
 
 #include "Tree.h"
 #include "PaperSprite.h"
+#include "ZombieSiegePlayerState.h"
 #include "Kismet/GameplayStatics.h"
 
 void ATree::GetRandomSizeAndType(ETreeType& outType, ETreeSize& outSize)
 {
 	outType = static_cast<ETreeType>(FMath::RandRange(0, static_cast<uint8>(ETreeType::ETREETYPE_MAX) - 1));
 	outSize = static_cast<ETreeSize>(FMath::RandRange(0, static_cast<uint8>(ETreeSize::ETREESIZE_MAX) - 1));
+}
+
+void ATree::ReceiveDamage(const FDamageInstance& damage)
+{
+	if (damage.source != nullptr)
+	{
+		// Add lumber to the attacker's storage
+		AZombieSiegePlayerState* attackerPlayerState = damage.source->GetOwningPlayerState();
+
+		if (attackerPlayerState)
+		{
+			// Flooring the damage
+			int lumberAmount = static_cast<int>(damage.amount);
+
+			attackerPlayerState->AddResourceToStorage(EResourceType::Lumber, lumberAmount);
+		}
+	}
+
+	// UnitBase's implementation decreases health and initiates dying sequence
+	Super::ReceiveDamage(damage);
 }
 
 void ATree::GetTreeTypeAndSize(ETreeType& outType, ETreeSize& outSize)

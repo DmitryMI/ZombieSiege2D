@@ -8,6 +8,8 @@
 #include "DamageReceivedEventArgs.h"
 #include "UnitIsDyingEventArgs.h"
 #include "UnitDiedEventArgs.h"
+#include "ZombieSiegePlayerState.h"
+#include "ZombieSiegePlayerController.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "UnitBase.generated.h"
 
@@ -41,6 +43,12 @@ private:
 	/// </summary>
 	bool bIsDying = false;
 
+	UPROPERTY(EditDefaultsOnly)
+	bool assignToLocalPlayerOnSpawn;
+
+	UPROPERTY(VisibleAnywhere)
+	AZombieSiegePlayerController* owningPlayerController;
+
 protected:
 
 	UPROPERTY(Transient)
@@ -69,6 +77,20 @@ public:
 	AUnitBase();
 
 	virtual void GetSimpleCollisionCylinder(float& CollisionRadius,	float& CollisionHalfHeight) const override;
+
+	/// <summary>
+	/// Gets controlling player state of this unit. Can be nullptr if unit is uncontrolled.
+	/// </summary>
+	/// <returns>PlayerState of a player, responsible for this unit</returns>
+	AZombieSiegePlayerState* GetOwningPlayerState();
+
+	/// <summary>
+	/// Gets controlling player of this Unit. Can be nullptr if unit is uncontrolled.
+	/// </summary>
+	/// <returns>PlayerController responsible for this unit</returns>
+	AZombieSiegePlayerController* GetOwningPlayerController();
+
+	void SetOwningPlayer(AZombieSiegePlayerController* controller);
 
 	UFUNCTION(BlueprintCallable)
 	virtual void SetMaxSpeed(float speedArg);

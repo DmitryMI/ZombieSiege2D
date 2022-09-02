@@ -80,6 +80,9 @@ public:
 	EHumanoidState GetHumanoidState();
 
 	UFUNCTION(BlueprintCallable)
+	bool IsOnCooldown();
+
+	UFUNCTION(BlueprintCallable)
 	UWeaponInfo* GetWeaponInfo() 
 	{ 
 		return weaponInfo;

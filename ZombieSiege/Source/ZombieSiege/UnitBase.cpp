@@ -14,6 +14,47 @@ void AUnitBase::GetSimpleCollisionCylinder(float& CollisionRadius, float& Collis
 	CollisionHalfHeight = collisionHeight / 2.0f;
 }
 
+AZombieSiegePlayerState* AUnitBase::GetOwningPlayerState()
+{
+	AZombieSiegePlayerController* zombieSiegeController = GetOwningPlayerController();
+	if (zombieSiegeController)
+	{
+		APlayerState* playerState = zombieSiegeController->GetPlayerState<APlayerState>();
+		check(playerState);
+
+		AZombieSiegePlayerState* zombieSiegePlayerState = Cast<AZombieSiegePlayerState>(playerState);
+		check(zombieSiegePlayerState);
+
+		return zombieSiegePlayerState;
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+AZombieSiegePlayerController* AUnitBase::GetOwningPlayerController()
+{
+	if (owningPlayerController)
+	{
+		return owningPlayerController;
+	}
+	else
+	{
+		FString name;
+		GetName(name);
+
+		UE_LOG(LogTemp, Warning, TEXT("GetOwningPlayerController(): Unit %s is not controlled by a player, returning nullptr"), *name);
+
+		return nullptr;
+	}
+}
+
+void AUnitBase::SetOwningPlayer(AZombieSiegePlayerController* controller)
+{
+	owningPlayerController = controller;
+}
+
 void AUnitBase::SetMaxSpeed(float speedArg)
 {
 	speed = speedArg;
@@ -179,6 +220,15 @@ bool AUnitBase::AttackTarget(AUnitBase* target)
 void AUnitBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (assignToLocalPlayerOnSpawn && owningPlayerController == nullptr)
+	{
+		APlayerController* playerController = GetWorld()->GetFirstPlayerController();
+		check(playerController);
+
+		owningPlayerController = Cast<AZombieSiegePlayerController>(playerController);
+		check(owningPlayerController);
+	}
 
 	movementComponent = Cast<UFloatingPawnMovement>(GetComponentByClass(UFloatingPawnMovement::StaticClass()));
 
