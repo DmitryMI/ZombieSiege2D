@@ -25,13 +25,47 @@ void AWeaponManager::BeginPlay()
 	for (auto weaponClassPair : weaponClasses)
 	{
 		FName name = weaponClassPair.Key;		
-		UWeaponInfoBase* weaponInstance = UWeaponInfoBase::CreateWeapon(this, name, weaponClassPair.Value);
+		UWeaponInfo* weaponInstance = UWeaponInfo::CreateWeapon(this, name, weaponClassPair.Value);
 		weaponInstances.Add(name, weaponInstance);
 	}
 }
 
-TMap<FName, UWeaponInfoBase*>& AWeaponManager::GetWeaponInstancesMap()
+TMap<FName, UWeaponInfo*>& AWeaponManager::GetWeaponInstancesMapMutable()
 {
 	return weaponInstances;
 }
 
+const TMap<FName, UWeaponInfo*>& AWeaponManager::GetWeaponInstancesMap() const
+{
+	return weaponInstances;
+}
+
+UWeaponInfo* AWeaponManager::GetWeaponInfo(const FName& name) const
+{
+	if (!HasWeaponInfo(name))
+	{
+		FString nameStr = name.ToString();
+		UE_LOG(LogTemp, Error, TEXT("Weapon with name %s does not exist!"), *nameStr);
+		return nullptr;
+	}
+
+	return weaponInstances[name];
+}
+
+bool AWeaponManager::AddWeaponInfo(const FName& name, UWeaponInfo* weapon)
+{
+	if (HasWeaponInfo(name))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Attempting to add an existing weapon (%s)!"), *name.ToString());
+		return false;
+	}
+
+	check(weapon);
+	weaponInstances.Add(name, weapon);
+	return true;
+}
+
+bool AWeaponManager::HasWeaponInfo(const FName& name) const
+{
+	return weaponInstances.Contains(name);
+}

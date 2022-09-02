@@ -20,10 +20,10 @@ class ZOMBIESIEGE_API ATree : public ADoodad
 
 private:	
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	ETreeType treeType;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	ETreeSize treeSize;		
 
 protected:

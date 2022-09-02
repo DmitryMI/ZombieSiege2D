@@ -7,8 +7,9 @@
 #include "FaceDirection.h"
 #include "HumanoidState.h"
 #include "HumanoidGraphicsComponent.h"
-#include "WeaponInfoBase.h"
+#include "WeaponInfo.h"
 #include "WeaponManager.h"
+#include "GameFramework/FloatingPawnMovement.h"
 #include "Humanoid.generated.h"
 
 UCLASS()
@@ -23,44 +24,75 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	EHumanoidState currentState = EHumanoidState::None;
 
-	UPROPERTY(VisibleAnywhere, Transient)
+	UPROPERTY(VisibleAnywhere)
 	AWeaponManager* weaponManager;
+
+	UPROPERTY(VisibleAnywhere)
+	bool bIsOnCooldown;
+
+	FTimerHandle attackBackswingTimerHandle;
+	FTimerDelegate attackBackswingTimerDelegate;	
+
+	FTimerHandle attackRelaxationTimerHandle;
+	FTimerDelegate attackRelaxationTimerDelegate;
+
+	FTimerHandle attackCooldownTimerHandle;
+	FTimerDelegate attackCooldownTimerDelegate;
+	
+
+	UFUNCTION()
+	void OnBackswingTimerElapsed(AUnitBase* target);
+
+	UFUNCTION()
+	void OnRelaxationTimerElapsed();
+
+	UFUNCTION()
+	void OnCooldownTimerElapsed();
 
 public:
 	AHumanoid();
 
+	DECLARE_EVENT_TwoParams(AHumanoid, FOnHumanoidStateChangedEvent, EHumanoidState stateOld, EHumanoidState stateNew);
+	FOnHumanoidStateChangedEvent& OnHumanoidStateChanged() { return onHumanoidStateChangedEvent; }
+private:
+	FOnHumanoidStateChangedEvent onHumanoidStateChangedEvent;
+
 protected:
 
 	UPROPERTY(Transient)
-	UHumanoidGraphicsComponent* graphicsComponent;
+	UHumanoidGraphicsComponent* graphicsComponent;	
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	UWeaponInfoBase* weaponInfo;
+	UWeaponInfo* weaponInfo;
 	
 	virtual void BeginPlay() override;
 
+	virtual void SetupDefaultWeapon();
+
+	virtual bool CanCommitAttackTarget(AUnitBase* target);
+
 	UFUNCTION(BlueprintCallable)
-	void SetHumanoidState(EHumanoidState humanoidState)
-	{
-		currentState = humanoidState;
-	}
+	void SetHumanoidState(EHumanoidState nextState);	
 
 public:	
 
 	UFUNCTION(BlueprintCallable)
-	UWeaponInfoBase* GetWeaponInfo() 
+	EHumanoidState GetHumanoidState();
+
+	UFUNCTION(BlueprintCallable)
+	UWeaponInfo* GetWeaponInfo() 
 	{ 
 		return weaponInfo;
 	}
 
 	UFUNCTION(BlueprintCallable)
-	void SetWeaponInfo(UWeaponInfoBase* weapon)
+	void SetWeaponInfo(UWeaponInfo* weapon)
 	{ 
 		weaponInfo = weapon;
 	}
 
 	UFUNCTION(BlueprintCallable)
-	static EFaceDirection GetDirectionFromVelocity(const FVector& velocity);
+	static EFaceDirection GetDirectionFromVector(const FVector& vec);
 
 	virtual void Tick(float DeltaTime) override;
 
@@ -76,9 +108,11 @@ public:
 		return facingDirection;
 	}
 
-	UFUNCTION(BlueprintCallable)
-	EHumanoidState GetHumanoidState()
-	{
-		return currentState;
-	}	
+	virtual bool CanMove() override;
+
+	virtual bool CanAttackTarget(AUnitBase* target);
+
+	virtual bool AttackTarget(AUnitBase* target);
+
+	
 };

@@ -24,6 +24,12 @@ private:
 	TArray<UPaperFlipbook*> attackingFlipbooks;
 	UPROPERTY(EditDefaultsOnly)
 	TArray<UPaperFlipbook*> dyingFlipbooks;
+
+	UFUNCTION()
+	void OnHumanoidStateChangedHandler(EHumanoidState stateOld, EHumanoidState stateNew);
+
+	UFUNCTION()
+	void UpdateFlipbook(EHumanoidState state, EFaceDirection direction);
 	
 protected:
 
@@ -31,6 +37,8 @@ protected:
 	UPaperFlipbookComponent* humanoidFlipbookRenderer;
 
 	virtual void BeginPlay() override;
+
+	
 
 public:	
 

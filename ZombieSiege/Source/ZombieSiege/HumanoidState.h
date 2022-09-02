@@ -9,6 +9,8 @@ enum class EHumanoidState : uint8
 {
 	None,
 	Moving,
-	Attacking,
+	AttackingBackswing,
+	AttackingRelaxation,
 	Dying,
+	Dead
 };

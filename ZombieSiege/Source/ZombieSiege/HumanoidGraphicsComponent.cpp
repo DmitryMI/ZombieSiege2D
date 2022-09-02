@@ -55,28 +55,28 @@ void UHumanoidGraphicsComponent::BeginPlay()
 	check(humanoidFlipbookRenderer);
 
 	humanoidFlipbookRenderer->SetWorldRotation(FRotator(0, 0, -90));
-}
-
-
-void UHumanoidGraphicsComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	AActor* owner = GetOwner();
-	if (owner == nullptr)
-	{
-		return;
-	}
+	check(owner);
 
 	AHumanoid* humanoid = Cast<AHumanoid>(owner);
 	check(humanoid);
 
-	EFaceDirection direction = humanoid->GetFacingDirection();
+	humanoid->OnHumanoidStateChanged().AddUObject(this, &UHumanoidGraphicsComponent::OnHumanoidStateChangedHandler);
+}
+
+void UHumanoidGraphicsComponent::OnHumanoidStateChangedHandler(EHumanoidState stateOld, EHumanoidState stateNew)
+{
+
+}
+
+void UHumanoidGraphicsComponent::UpdateFlipbook(EHumanoidState state, EFaceDirection direction)
+{
 	int directionIndex = GetDirectionSpriteIndex(direction);
 
 	TArray<UPaperFlipbook*>* animationSet = nullptr;
 
-	switch (humanoid->GetHumanoidState())
+	switch (state)
 	{
 	case EHumanoidState::None:
 		animationSet = &standFlipbooks;
@@ -84,7 +84,8 @@ void UHumanoidGraphicsComponent::TickComponent(float DeltaTime, ELevelTick TickT
 	case EHumanoidState::Moving:
 		animationSet = &movingFlipbooks;
 		break;
-	case EHumanoidState::Attacking:
+	case EHumanoidState::AttackingBackswing:
+	case EHumanoidState::AttackingRelaxation:
 		animationSet = &attackingFlipbooks;
 		break;
 	case EHumanoidState::Dying:
@@ -100,5 +101,19 @@ void UHumanoidGraphicsComponent::TickComponent(float DeltaTime, ELevelTick TickT
 
 	check(humanoidFlipbookRenderer);
 	humanoidFlipbookRenderer->SetFlipbook(flipbook);
+}
+
+
+void UHumanoidGraphicsComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	AActor* owner = GetOwner();
+	check(owner);
+
+	AHumanoid* humanoid = Cast<AHumanoid>(owner);
+	check(humanoid);
+
+	UpdateFlipbook(humanoid->GetHumanoidState(), humanoid->GetFacingDirection());
 }
 

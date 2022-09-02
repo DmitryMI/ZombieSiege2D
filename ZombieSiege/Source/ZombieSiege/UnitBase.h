@@ -8,6 +8,7 @@
 #include "DamageReceivedEventArgs.h"
 #include "UnitIsDyingEventArgs.h"
 #include "UnitDiedEventArgs.h"
+#include "GameFramework/FloatingPawnMovement.h"
 #include "UnitBase.generated.h"
 
 UCLASS()
@@ -17,10 +18,19 @@ class ZOMBIESIEGE_API AUnitBase : public APawn
 
 private:
 	UPROPERTY(EditDefaultsOnly)
-	float maxHealth = 100.0f;
+	float collisionRadius = 50.0f;
 
 	UPROPERTY(EditDefaultsOnly)
+	float collisionHeight = 400.0f;
+
+	UPROPERTY(EditAnywhere)
+	float maxHealth = 100.0f;
+
+	UPROPERTY(EditAnywhere)
 	float health = 100.0f;	
+
+	UPROPERTY(EditAnywhere)
+	float speed = 0.0f;
 
 	UPROPERTY(VisibleAnywhere)
 	bool bIsAlive = true;
@@ -32,6 +42,11 @@ private:
 	bool bIsDying = false;
 
 protected:
+
+	UPROPERTY(Transient)
+	UFloatingPawnMovement* movementComponent;
+
+	virtual void BeginPlay() override;
 
 	UFUNCTION(BlueprintCallable)
 	/// <summary>
@@ -47,8 +62,26 @@ protected:
 	/// <param name="killingDamageInstance">DamageInstance that made health zero</param>
 	virtual void FinishDyingInternal(const FDamageInstance& killingDamageInstance);
 
+	UFUNCTION(BlueprintCallable)
+	void SetMovementComponentSpeedCap(float speedCap);
+
 public:
 	AUnitBase();
+
+	virtual void GetSimpleCollisionCylinder(float& CollisionRadius,	float& CollisionHalfHeight) const override;
+
+	UFUNCTION(BlueprintCallable)
+	virtual void SetMaxSpeed(float speedArg);
+
+	UFUNCTION(BlueprintCallable)
+	virtual float GetMaxSpeed();
+
+	UFUNCTION(BlueprintCallable)
+	/// <summary>
+	/// Determines if a Unit can move now. Can be used by the AI
+	/// </summary>
+	/// <returns>True if unit can move</returns>
+	virtual bool CanMove();
 
 	UFUNCTION(BlueprintCallable)
 	/// <summary>
@@ -118,6 +151,9 @@ public:
 	/// </summary>
 	/// <returns>Unit's max health</returns>
 	float GetMaxHealth();
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool CanAttackTarget(AUnitBase* target);
 	
 	UFUNCTION(BlueprintCallable)
 	/// <summary>
@@ -125,7 +161,7 @@ public:
 	/// </summary>
 	/// <param name="target">Target to be damaged by this Unit</param>
 	/// <returns>True if attack was successful (regardless of actual damage amount)</returns>
-	virtual bool Attack(AUnitBase* target);
+	virtual bool AttackTarget(AUnitBase* target);
 
 	UFUNCTION(BlueprintCallable)
 	/// <summary>

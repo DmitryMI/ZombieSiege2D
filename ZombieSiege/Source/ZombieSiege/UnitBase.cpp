@@ -8,6 +8,28 @@ AUnitBase::AUnitBase()
 
 }
 
+void AUnitBase::GetSimpleCollisionCylinder(float& CollisionRadius, float& CollisionHalfHeight) const
+{
+	CollisionRadius = collisionRadius;
+	CollisionHalfHeight = collisionHeight / 2.0f;
+}
+
+void AUnitBase::SetMaxSpeed(float speedArg)
+{
+	speed = speedArg;
+	SetMovementComponentSpeedCap(speed);
+}
+
+float AUnitBase::GetMaxSpeed()
+{
+	return speed;
+}
+
+bool AUnitBase::CanMove()
+{
+	return false;
+}
+
 void AUnitBase::KillUnit(bool bForceDeath)
 {
 	health = 0;
@@ -125,6 +147,11 @@ float AUnitBase::GetMaxHealth()
 	return maxHealth;
 }
 
+bool AUnitBase::CanAttackTarget(AUnitBase* target)
+{
+	return false;
+}
+
 void AUnitBase::FinishDyingInternal(const FDamageInstance& killingDamageInstance)
 {
 	// Should be overwritten by child classes (e.g. to start death animation).
@@ -132,13 +159,30 @@ void AUnitBase::FinishDyingInternal(const FDamageInstance& killingDamageInstance
 	Destroy();
 }
 
+void AUnitBase::SetMovementComponentSpeedCap(float speedCap)
+{
+	if (movementComponent)
+	{
+		movementComponent->MaxSpeed = speedCap;
+	}
+}
 
-bool AUnitBase::Attack(AUnitBase* target)
+
+bool AUnitBase::AttackTarget(AUnitBase* target)
 {
 	// Should always be overriden in child classes
 	checkNoEntry();
 
 	return false;
+}
+
+void AUnitBase::BeginPlay()
+{
+	Super::BeginPlay();
+
+	movementComponent = Cast<UFloatingPawnMovement>(GetComponentByClass(UFloatingPawnMovement::StaticClass()));
+
+	SetMovementComponentSpeedCap(GetMaxSpeed());
 }
 
 void AUnitBase::BeginDyingInternal(const FDamageInstance& killingDamageInstance)

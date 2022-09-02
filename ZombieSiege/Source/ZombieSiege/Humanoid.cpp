@@ -17,24 +17,41 @@ void AHumanoid::BeginPlay()
 	check(graphicsComponent);
 
 	weaponManager = AWeaponManager::GetInstance(GetWorld());
-	check(weaponManager);
+	check(weaponManager);	
 
-	weaponInfo = weaponManager->GetWeaponInstancesMap()["SurvivorFists"];
+	SetupDefaultWeapon();
+}
+
+void AHumanoid::SetupDefaultWeapon()
+{
+	weaponInfo = weaponManager->GetWeaponInfo("SurvivorFists");
 	check(weaponInfo);
 }
 
-EFaceDirection AHumanoid::GetDirectionFromVelocity(const FVector& velocity)
+void AHumanoid::SetHumanoidState(EHumanoidState nextState)
 {
-	if (velocity.IsNearlyZero())
+	EHumanoidState oldState = currentState;
+	currentState = nextState;
+	onHumanoidStateChangedEvent.Broadcast(oldState, nextState);
+}
+
+EHumanoidState AHumanoid::GetHumanoidState()
+{
+	return currentState;
+}
+
+EFaceDirection AHumanoid::GetDirectionFromVector(const FVector& vec)
+{
+	if (vec.IsNearlyZero())
 	{
 		return EFaceDirection::NONE;
 	}
 
 	EFaceDirection directionFlags = EFaceDirection::NONE;
 
-	if (FMath::Abs(velocity.X) > FMath::Abs(velocity.Y))
+	if (FMath::Abs(vec.X) > FMath::Abs(vec.Y))
 	{
-		if (velocity.X > 0)
+		if (vec.X > 0)
 		{
 			directionFlags = EFaceDirection::Right;
 		}
@@ -45,7 +62,7 @@ EFaceDirection AHumanoid::GetDirectionFromVelocity(const FVector& velocity)
 	}
 	else
 	{
-		if (velocity.Y > 0)
+		if (vec.Y > 0)
 		{
 			directionFlags = EFaceDirection::Down;
 		}
@@ -62,22 +79,157 @@ void AHumanoid::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FVector velocity = GetVelocity();
+	FVector movementVector = GetVelocity();
 
-	EFaceDirection directionFlags = GetDirectionFromVelocity(velocity);
-	
-	if (!velocity.IsNearlyZero())
+	EFaceDirection directionFlags = GetDirectionFromVector(movementVector);
+
+	if (CanMove())
 	{
-		// We change current direction only if the velocity is not Zero
-		// This way the Humanoid will remains their last direction after they stop moving
-		facingDirection = directionFlags;
-
-		currentState = EHumanoidState::Moving;
+		SetMovementComponentSpeedCap(GetMaxSpeed());
 	}
 	else
 	{
-		currentState = EHumanoidState::None;
+		SetMovementComponentSpeedCap(0);
+	}
+	
+	if (!movementVector.IsNearlyZero())
+	{
+		if (CanMove())
+		{
+			facingDirection = directionFlags;			
+			SetHumanoidState(EHumanoidState::Moving);
+		}
+	}
+	else
+	{
+		if (GetHumanoidState() == EHumanoidState::Moving)
+		{
+			SetHumanoidState(EHumanoidState::None);
+		}
 	}
 }
+
+bool AHumanoid::CanMove()
+{
+	return
+		currentState == EHumanoidState::Moving ||
+		currentState == EHumanoidState::None;
+}
+
+bool AHumanoid::CanAttackTarget(AUnitBase* target)
+{
+	if (bIsOnCooldown)
+	{
+		return false;
+	}
+
+	if (currentState != EHumanoidState::None)
+	{
+		return false;
+	}
+
+	if (!CanCommitAttackTarget(target))
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool AHumanoid::CanCommitAttackTarget(AUnitBase* target)
+{
+	if (!weaponInfo)
+	{
+		return false;
+	}
+
+	if (!weaponInfo->CanThisWeaponEverAttackTarget())
+	{
+		return false;
+	}
+
+	if (!weaponInfo->CanAttackTarget(this, target))
+	{
+		return false;
+	}
+
+	return true;
+}
+
+void AHumanoid::OnBackswingTimerElapsed(AUnitBase* target)
+{
+	attackBackswingTimerDelegate.Unbind();
+
+	if (CanCommitAttackTarget(target))
+	{
+		//Commit the attack
+		weaponInfo->AttackTarget(this, target);
+	}
+
+	SetHumanoidState(EHumanoidState::AttackingRelaxation);
+
+	check(weaponInfo);
+
+	FTimerManager& timerManager = GetWorld()->GetTimerManager();
+
+	float relaxationDuration = weaponInfo->GetRelaxationDuration();
+	attackRelaxationTimerDelegate.BindUObject(this, &AHumanoid::OnRelaxationTimerElapsed);
+	timerManager.SetTimer(attackRelaxationTimerHandle, attackRelaxationTimerDelegate, relaxationDuration, false, relaxationDuration);
+}
+
+void AHumanoid::OnRelaxationTimerElapsed()
+{
+	attackRelaxationTimerDelegate.Unbind();
+
+	SetHumanoidState(EHumanoidState::None);
+
+	if (weaponInfo == nullptr)
+	{
+		// If weaponInfo is suddenly nullptr, we don't have any option than to reset cooldown right away
+		OnCooldownTimerElapsed();
+		return;
+	}
+
+	float cooldownDuration = weaponInfo->GetCooldownDuration();
+
+	FTimerManager& timerManager = GetWorld()->GetTimerManager();
+
+	attackCooldownTimerDelegate.BindUObject(this, &AHumanoid::OnCooldownTimerElapsed);
+
+	timerManager.SetTimer(
+		attackCooldownTimerHandle,
+		attackCooldownTimerDelegate,
+		cooldownDuration,
+		false,
+		cooldownDuration);
+}
+
+void AHumanoid::OnCooldownTimerElapsed()
+{
+	bIsOnCooldown = false;
+}
+
+bool AHumanoid::AttackTarget(AUnitBase* target)
+{
+	if (!CanAttackTarget(target))
+	{
+		return false;
+	}
+
+	check(weaponInfo);
+
+	SetHumanoidState(EHumanoidState::AttackingBackswing);
+
+	bIsOnCooldown = true;
+
+	FTimerManager& timerManager = GetWorld()->GetTimerManager();
+	
+	float backswingDuration = weaponInfo->GetBackswingDuration();
+	attackBackswingTimerDelegate.BindUObject(this, &AHumanoid::OnBackswingTimerElapsed, target);
+	timerManager.SetTimer(attackBackswingTimerHandle, attackBackswingTimerDelegate, backswingDuration, false, backswingDuration);
+
+	return true;
+}
+
 
 
