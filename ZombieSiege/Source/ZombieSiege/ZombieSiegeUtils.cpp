@@ -175,6 +175,22 @@ bool UZombieSiegeUtils::IsUnitOnNavMeshWorld(UWorld* world, AUnitBase* unit)
 	return hasData;
 }
 
+bool UZombieSiegeUtils::GetFirstPointCloseToGoal(FVector goalLocation, float reachabilityRadius, UNavigationPath* navPath, FVector& result)
+{
+	for (const FVector& location : navPath->PathPoints)
+	{
+		FVector deltaVec = goalLocation - location;
+		bool isCloseEnough = deltaVec.SizeSquared2D() <= FMath::Square(reachabilityRadius);
+		if (isCloseEnough)
+		{
+			result = location;
+			return true;
+		}
+	}
+	result = navPath->PathPoints.Last();
+	return false;
+}
+
 bool UZombieSiegeUtils::GetBestLocationNearUnitToArrive(
 	const UObject* WorldContextObject,
 	AUnitBase* movingAgent,
@@ -226,23 +242,32 @@ bool UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(
 			return false;
 		}
 
-		OutLocation = randomPoint.Location;
-		return true;
+		navPath = FindPathBetweenLocationsWorld(world, movingActorLocation, randomPoint.Location, movingAgent);
+
+		if (navPath == nullptr || !navPath->IsValid())
+		{
+			return false;
+		}
+
+		if (navPath->IsPartial())
+		{
+			return false;
+		}
+
+		bool hasPoint = GetFirstPointCloseToGoal(targetActorLocation, useReachabilityRadius, navPath, OutLocation);
+
+		return hasPoint;
 	}
 	else
 	{
-		FVector lastPoint = navPath->PathPoints.Last();
-		OutLocation = lastPoint;
-
 		if (!navPath->IsPartial())
 		{
 			return true;
 		}
 
-		FVector deltaVec = targetActorLocation - lastPoint;
-		bool isCloseEnough = deltaVec.SizeSquared2D() <= FMath::Square(useReachabilityRadius);
+		bool hasPoint = GetFirstPointCloseToGoal(targetActorLocation, useReachabilityRadius, navPath, OutLocation);
 
-		return isCloseEnough;
+		return hasPoint;
 	}
 
 }

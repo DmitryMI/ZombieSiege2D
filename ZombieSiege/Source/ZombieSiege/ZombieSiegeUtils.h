@@ -51,6 +51,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
 	static bool IsUnitOnNavMeshWorld(UWorld* world, AUnitBase* unit);
 
+	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
+	static bool GetFirstPointCloseToGoal(FVector goalLocation, float reachabilityRadius, UNavigationPath* navPath, FVector& result);
+
 	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils", meta = (WorldContext = "WorldContextObject"))
 	static bool GetBestLocationNearUnitToArrive(
 		const UObject* WorldContextObject,
