@@ -79,11 +79,11 @@ void AUnitBase::KillUnit(bool bForceDeath)
 
 	if (!bForceDeath)
 	{
-		BeginDyingInternal(emptyDamage);
+		BeginDying(emptyDamage);
 	}
 	else
 	{
-		FinishDyingInternal(emptyDamage);
+		FinishDying(emptyDamage);
 	}
 }
 
@@ -155,7 +155,7 @@ void AUnitBase::SetHealth(float healthValue)
 	if (FMath::IsNearlyZero(health))
 	{
 		FDamageInstance emptyDamage;
-		BeginDyingInternal(emptyDamage);
+		BeginDying(emptyDamage);
 	}
 }
 
@@ -179,7 +179,7 @@ void AUnitBase::SetMaxHealth(float maxHealthValue)
 	if (FMath::IsNearlyZero(health))
 	{
 		FDamageInstance emptyDamage;
-		BeginDyingInternal(emptyDamage);
+		BeginDying(emptyDamage);
 	}
 }
 
@@ -193,7 +193,7 @@ bool AUnitBase::CanAttackTarget(AUnitBase* target)
 	return false;
 }
 
-void AUnitBase::FinishDyingInternal(const FDamageInstance& killingDamageInstance)
+void AUnitBase::FinishDying(const FDamageInstance& killingDamageInstance)
 {
 	// Should be overwritten by child classes (e.g. to start death animation).
 	bIsAlive = false;
@@ -235,7 +235,7 @@ void AUnitBase::BeginPlay()
 	SetMovementComponentSpeedCap(GetMaxSpeed());
 }
 
-void AUnitBase::BeginDyingInternal(const FDamageInstance& killingDamageInstance)
+void AUnitBase::BeginDying(const FDamageInstance& killingDamageInstance)
 {
 	bIsDying = true;
 
@@ -246,7 +246,7 @@ void AUnitBase::BeginDyingInternal(const FDamageInstance& killingDamageInstance)
 	// Check if unit is still dying (no one has prevented that)
 	if (bIsDying)
 	{
-		FinishDyingInternal(killingDamageInstance);
+		FinishDying(killingDamageInstance);
 	}
 	else
 	{
@@ -281,7 +281,7 @@ void AUnitBase::ReceiveDamage(const FDamageInstance& damage)
 
 	if (FMath::IsNearlyZero(health))
 	{
-		BeginDyingInternal(damage);
+		BeginDying(damage);
 	}
 }
 

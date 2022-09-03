@@ -61,14 +61,14 @@ protected:
 	/// Used internally to start dying process for this Unit after it received damage.
 	/// </summary>
 	/// <param name="killingDamageInstance">DamageInstance that made health zero</param>
-	virtual void BeginDyingInternal(const FDamageInstance& killingDamageInstance);
+	virtual void BeginDying(const FDamageInstance& killingDamageInstance);
 
 	UFUNCTION(BlueprintCallable)
 	/// <summary>
 	/// Used internally to kill this Unit after it received damage and nothing has prevented it's death. Must set bIsAlive to False.
 	/// </summary>
 	/// <param name="killingDamageInstance">DamageInstance that made health zero</param>
-	virtual void FinishDyingInternal(const FDamageInstance& killingDamageInstance);
+	virtual void FinishDying(const FDamageInstance& killingDamageInstance);
 
 	UFUNCTION(BlueprintCallable)
 	void SetMovementComponentSpeedCap(float speedCap);

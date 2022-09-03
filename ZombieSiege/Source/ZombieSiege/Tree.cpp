@@ -14,20 +14,6 @@ void ATree::GetRandomSizeAndType(ETreeType& outType, ETreeSize& outSize)
 
 void ATree::ReceiveDamage(const FDamageInstance& damage)
 {
-	if (damage.source != nullptr)
-	{
-		// Add lumber to the attacker's storage
-		AZombieSiegePlayerState* attackerPlayerState = damage.source->GetOwningPlayerState();
-
-		if (attackerPlayerState)
-		{
-			// Flooring the damage
-			int lumberAmount = static_cast<int>(damage.amount);
-
-			attackerPlayerState->AddResourceToStorage(EResourceType::Lumber, lumberAmount);
-		}
-	}
-
 	// UnitBase's implementation decreases health and initiates dying sequence
 	Super::ReceiveDamage(damage);
 }
