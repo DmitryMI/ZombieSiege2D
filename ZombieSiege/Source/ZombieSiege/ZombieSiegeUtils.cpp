@@ -2,6 +2,8 @@
 
 
 #include "ZombieSiegeUtils.h"
+#include "NavigationPath.h"
+#include "NavigationSystem.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 
@@ -99,4 +101,150 @@ float UZombieSiegeUtils::GetDistance2DBetweenSimpleCollisions(AActor* actor1, AA
 	float distance =  distanceBetweenCenters - actorRadius1 - actorRadius2;
 
 	return distance;
+}
+
+bool UZombieSiegeUtils::IsLocationReachable(const UObject* WorldContextObject, AUnitBase* unit, FVector Position, float tolerance)
+{
+	UWorld* world = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+	return IsLocationReachableWorld(world, unit, Position, tolerance);
+}
+
+bool UZombieSiegeUtils::IsLocationReachableWorld(UWorld* world, AUnitBase* unit, FVector position, float tolerance)
+{
+	check(unit);
+	check(world);
+
+	FVector pathStart = unit->GetActorLocation();
+	UNavigationPath* navPath = FindPathBetweenLocationsWorld(world, pathStart, position, unit);
+	if (!navPath)
+	{
+		return false;
+	}
+
+	if (!navPath->IsPartial())
+	{
+		return true;
+	}
+
+	if (navPath->PathPoints.Num() == 0)
+	{
+		return false;
+	}
+
+	FVector deltaVec = position - navPath->PathPoints.Last();
+	if (deltaVec.SizeSquared2D() > FMath::Square(tolerance))
+	{
+		return false;
+	}
+
+	return true;
+}
+
+UNavigationPath* UZombieSiegeUtils::FindPathBetweenLocations(const UObject* WorldContextObject, FVector from, FVector to, AActor* pathFindingContext)
+{
+	UWorld* world = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+
+	return FindPathBetweenLocationsWorld(world, from, to, pathFindingContext);
+}
+
+UNavigationPath* UZombieSiegeUtils::FindPathBetweenLocationsWorld(UWorld* world, FVector from, FVector to, AActor* pathFindingContext)
+{
+	UNavigationPath* navPath = UNavigationSystemV1::FindPathToLocationSynchronously(world, from, to, pathFindingContext);
+	return navPath;
+}
+
+bool UZombieSiegeUtils::IsUnitOnNavMeshWorld(UWorld* world, AUnitBase* unit)
+{
+	UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(world);
+
+	float unitRadius;
+	float unitHalfHeight;
+	unit->GetSimpleCollisionCylinder(unitRadius, unitHalfHeight);
+
+	FVector boxCenter = unit->GetActorLocation();
+
+	boxCenter.Z = 0;
+
+	FVector boxMin = FVector(boxCenter.X - unitRadius, boxCenter.Y - unitRadius, 0);
+	FVector boxMax = FVector(boxCenter.X + unitRadius, boxCenter.Y + unitRadius, 0);
+	
+	FBox box(boxMin, boxMax);
+
+	bool hasData = NavSys->ContainsNavData(box);
+
+	return hasData;
+}
+
+bool UZombieSiegeUtils::GetBestLocationNearUnitToArrive(
+	const UObject* WorldContextObject,
+	AUnitBase* movingAgent,
+	AUnitBase* targetAgent,
+	float tolerance,
+	FVector& OutLocation)
+{
+	UWorld* world = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+
+	return GetBestLocationNearUnitToArriveWorld(world, movingAgent, targetAgent, tolerance, OutLocation);
+}
+
+bool UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(
+	UWorld* world,
+	AUnitBase* movingAgent,
+	AUnitBase* goalAgent,
+	float tolerance,
+	FVector& OutLocation)
+{
+	check(world);
+	check(goalAgent);
+	check(movingAgent);
+
+	float movingAgentRadius;
+	float movingAgentHalfHeight;
+	float goalAgentRadius;
+	float goalAgentHalfHeight;
+
+	movingAgent->GetSimpleCollisionCylinder(movingAgentRadius, movingAgentHalfHeight);
+	goalAgent->GetSimpleCollisionCylinder(goalAgentRadius, goalAgentHalfHeight);
+
+	float useReachabilityRadius = tolerance + movingAgentRadius + goalAgentRadius;
+
+	FVector movingActorLocation = movingAgent->GetActorLocation();
+	FVector targetActorLocation = goalAgent->GetActorLocation();
+
+	if (IsUnitOnNavMeshWorld(world, goalAgent))
+	{
+		UNavigationPath* navPath = FindPathBetweenLocationsWorld(world, movingActorLocation, targetActorLocation, movingAgent);
+		if (navPath == nullptr || !navPath->IsValid())
+		{
+			return false;
+		}
+
+		FVector lastPoint = navPath->PathPoints.Last();
+		OutLocation = lastPoint;
+
+		if (!navPath->IsPartial())
+		{
+			return true;
+		}
+		
+		FVector deltaVec = targetActorLocation - lastPoint;
+		bool isCloseEnough = deltaVec.SizeSquared2D() > FMath::Square(useReachabilityRadius);
+
+		return isCloseEnough;
+	}
+	else
+	{
+		UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(world);
+
+		FNavLocation randomPoint;
+		bool foundPoint = NavSys->GetRandomPointInNavigableRadius(targetActorLocation, useReachabilityRadius, randomPoint);
+
+		if (!foundPoint)
+		{
+			return false;
+		}
+
+		OutLocation = randomPoint.Location;
+		return true;
+	}
 }

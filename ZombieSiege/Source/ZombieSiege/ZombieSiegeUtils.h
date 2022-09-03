@@ -37,4 +37,33 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
 	static float GetDistance2DBetweenSimpleCollisions(AActor* actor1, AActor* actor2);
+
+	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils", meta = (WorldContext = "WorldContextObject"))
+	static bool IsLocationReachable(const UObject* WorldContextObject, AUnitBase* unit, FVector Position, float tolerance);
+	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
+	static bool IsLocationReachableWorld(UWorld* world, AUnitBase* unit, FVector Position, float tolerance);
+
+	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils", meta = (WorldContext = "WorldContextObject"))
+	static UNavigationPath* FindPathBetweenLocations(const UObject* WorldContextObject, FVector from, FVector to, AActor* pathFindingContext = nullptr);
+	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
+	static UNavigationPath* FindPathBetweenLocationsWorld(UWorld* world, FVector from, FVector to, AActor* pathFindingContext = nullptr);
+
+	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
+	static bool IsUnitOnNavMeshWorld(UWorld* world, AUnitBase* unit);
+
+	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils", meta = (WorldContext = "WorldContextObject"))
+	static bool GetBestLocationNearUnitToArrive(
+		const UObject* WorldContextObject,
+		AUnitBase* movingAgent,
+		AUnitBase* targetAgent,
+		float tolerance,
+		FVector& OutLocation);
+
+	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
+	static bool GetBestLocationNearUnitToArriveWorld(
+		UWorld* world,
+		AUnitBase* movingAgent,
+		AUnitBase* goalAgent,
+		float tolerance,
+		FVector& OutLocation);
 };
