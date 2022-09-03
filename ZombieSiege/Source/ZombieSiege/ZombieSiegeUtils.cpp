@@ -165,8 +165,8 @@ bool UZombieSiegeUtils::IsUnitOnNavMeshWorld(UWorld* world, AUnitBase* unit)
 
 	boxCenter.Z = 0;
 
-	FVector boxMin = FVector(boxCenter.X - unitRadius, boxCenter.Y - unitRadius, 0);
-	FVector boxMax = FVector(boxCenter.X + unitRadius, boxCenter.Y + unitRadius, 0);
+	FVector boxMin = FVector(boxCenter.X - unitRadius, boxCenter.Y - unitRadius, -200);
+	FVector boxMax = FVector(boxCenter.X + unitRadius, boxCenter.Y + unitRadius, 200);
 	
 	FBox box(boxMin, boxMax);
 
@@ -211,29 +211,11 @@ bool UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(
 	FVector movingActorLocation = movingAgent->GetActorLocation();
 	FVector targetActorLocation = goalAgent->GetActorLocation();
 
-	if (IsUnitOnNavMeshWorld(world, goalAgent))
+	UNavigationPath* navPath = FindPathBetweenLocationsWorld(world, movingActorLocation, targetActorLocation, movingAgent);
+	if (navPath == nullptr || !navPath->IsValid())
 	{
-		UNavigationPath* navPath = FindPathBetweenLocationsWorld(world, movingActorLocation, targetActorLocation, movingAgent);
-		if (navPath == nullptr || !navPath->IsValid())
-		{
-			return false;
-		}
+		// Try to find path to a random point near the target instead
 
-		FVector lastPoint = navPath->PathPoints.Last();
-		OutLocation = lastPoint;
-
-		if (!navPath->IsPartial())
-		{
-			return true;
-		}
-		
-		FVector deltaVec = targetActorLocation - lastPoint;
-		bool isCloseEnough = deltaVec.SizeSquared2D() > FMath::Square(useReachabilityRadius);
-
-		return isCloseEnough;
-	}
-	else
-	{
 		UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(world);
 
 		FNavLocation randomPoint;
@@ -247,4 +229,20 @@ bool UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(
 		OutLocation = randomPoint.Location;
 		return true;
 	}
+	else
+	{
+		FVector lastPoint = navPath->PathPoints.Last();
+		OutLocation = lastPoint;
+
+		if (!navPath->IsPartial())
+		{
+			return true;
+		}
+
+		FVector deltaVec = targetActorLocation - lastPoint;
+		bool isCloseEnough = deltaVec.SizeSquared2D() <= FMath::Square(useReachabilityRadius);
+
+		return isCloseEnough;
+	}
+
 }

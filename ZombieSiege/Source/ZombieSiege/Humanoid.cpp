@@ -197,16 +197,24 @@ void AHumanoid::OnRelaxationTimerElapsed()
 
 	float cooldownDuration = weaponInfo->GetCooldownDuration();
 
-	FTimerManager& timerManager = GetWorld()->GetTimerManager();
+	if (!FMath::IsNearlyZero(cooldownDuration))
+	{
 
-	attackCooldownTimerDelegate.BindUObject(this, &AHumanoid::OnCooldownTimerElapsed);
+		FTimerManager& timerManager = GetWorld()->GetTimerManager();
 
-	timerManager.SetTimer(
-		attackCooldownTimerHandle,
-		attackCooldownTimerDelegate,
-		cooldownDuration,
-		false,
-		cooldownDuration);
+		attackCooldownTimerDelegate.BindUObject(this, &AHumanoid::OnCooldownTimerElapsed);
+
+		timerManager.SetTimer(
+			attackCooldownTimerHandle,
+			attackCooldownTimerDelegate,
+			cooldownDuration,
+			false,
+			cooldownDuration);
+	}
+	else
+	{
+		OnCooldownTimerElapsed();
+	}
 }
 
 void AHumanoid::OnCooldownTimerElapsed()
