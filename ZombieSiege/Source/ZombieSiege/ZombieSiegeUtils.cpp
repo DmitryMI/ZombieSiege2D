@@ -86,6 +86,9 @@ TArray<AUnitBase*> UZombieSiegeUtils::FindAliveUnitsInRadius(
 
 float UZombieSiegeUtils::GetDistance2DBetweenSimpleCollisions(AActor* actor1, AActor* actor2)
 {
+	check(actor1);
+	check(actor2);
+
 	FVector actor1Center = actor1->GetActorLocation();
 	FVector actor2Center = actor2->GetActorLocation();
 	float distanceBetweenCenters = (actor2Center - actor1Center).Size2D();
