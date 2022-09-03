@@ -46,6 +46,26 @@ void ATree::BeginPlay()
 	check(graphicsComponent);
 }
 
+void ATree::FinishDying(const FDamageInstance& killingDamageInstance)
+{
+	if (killingDamageInstance.source != nullptr)
+	{
+		// Add lumber to the attacker's storage
+		AZombieSiegePlayerState* attackerPlayerState = killingDamageInstance.source->GetOwningPlayerState();
+
+		if (attackerPlayerState)
+		{
+			// Flooring the Max Health
+			int lumberAmount = static_cast<int>(GetMaxHealth());
+
+			attackerPlayerState->AddResourceToStorage(EResourceType::Lumber, lumberAmount);
+		}
+	}
+
+	// TODO Replace with Tree-specific code
+	Super::FinishDying(killingDamageInstance);
+}
+
 ATree::ATree()
 {
 }

@@ -32,6 +32,8 @@ protected:
 
 	virtual void BeginPlay() override;
 
+	virtual void FinishDying(const FDamageInstance& killingDamageInstance) override;
+
 public:
 
 	ATree();
