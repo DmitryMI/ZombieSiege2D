@@ -73,3 +73,22 @@ void AZombieSiegePlayerController::SetupInputComponent()
 	this->InputComponent->BindAxis("CameraHorizontal", this, &AZombieSiegePlayerController::OnCameraHorizontal);
 	this->InputComponent->BindAxis("CameraZoom", this, &AZombieSiegePlayerController::OnCameraZoom);
 }
+
+void AZombieSiegePlayerController::AddToControlledUnits(AUnitBase* unit)
+{
+	check(unit);
+
+	controlledUnits.Add(unit);
+}
+
+void AZombieSiegePlayerController::RemoveFromControlledUnits(AUnitBase* unit)
+{
+	check(unit);
+
+	controlledUnits.Remove(unit);
+}
+
+const TArray<AUnitBase*>& AZombieSiegePlayerController::GetControlledUnits()
+{
+	return controlledUnits;
+}

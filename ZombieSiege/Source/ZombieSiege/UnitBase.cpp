@@ -52,7 +52,22 @@ AZombieSiegePlayerController* AUnitBase::GetOwningPlayerController()
 
 void AUnitBase::SetOwningPlayer(AZombieSiegePlayerController* controller)
 {
+	if (controller == owningPlayerController)
+	{
+		return;
+	}
+
+	if (owningPlayerController != nullptr)
+	{
+		owningPlayerController->RemoveFromControlledUnits(this);
+	}
+
 	owningPlayerController = controller;
+
+	if (owningPlayerController != nullptr)
+	{
+		owningPlayerController->AddToControlledUnits(this);
+	}
 }
 
 void AUnitBase::SetMaxSpeed(float speedArg)

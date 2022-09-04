@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "UnitBase.h"
 #include "ZombieSiegePlayerController.generated.h"
 
 /**
@@ -30,9 +31,16 @@ private:
 	void OnCameraVertical(float value);
 	void OnCameraHorizontal(float value);
 	void OnCameraZoom(float value);
+
+	UPROPERTY(VisibleAnywhere)
+	TArray<AUnitBase*> controlledUnits;
 	
 protected:
 	virtual void SetupInputComponent() override;
 
-	
+public:
+	void AddToControlledUnits(AUnitBase* unit);
+	void RemoveFromControlledUnits(AUnitBase* unit);
+
+	const TArray<AUnitBase*>& GetControlledUnits();
 };
