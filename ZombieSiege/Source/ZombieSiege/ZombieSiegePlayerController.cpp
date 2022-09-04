@@ -65,6 +65,18 @@ void AZombieSiegePlayerController::OnCameraZoom(float value)
 	cameraComponent->SetOrthoWidth(currentSize);
 }
 
+void AZombieSiegePlayerController::OnSelectActionPressed()
+{
+}
+
+void AZombieSiegePlayerController::OnSelectActionReleased()
+{
+}
+
+void AZombieSiegePlayerController::OnCommandActionReleased()
+{
+}
+
 void AZombieSiegePlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
@@ -72,11 +84,17 @@ void AZombieSiegePlayerController::SetupInputComponent()
 	this->InputComponent->BindAxis("CameraVertical", this, &AZombieSiegePlayerController::OnCameraVertical);
 	this->InputComponent->BindAxis("CameraHorizontal", this, &AZombieSiegePlayerController::OnCameraHorizontal);
 	this->InputComponent->BindAxis("CameraZoom", this, &AZombieSiegePlayerController::OnCameraZoom);
+
+	this->InputComponent->BindAction("Select", EInputEvent::IE_Pressed, this, &AZombieSiegePlayerController::OnSelectActionPressed);
+	this->InputComponent->BindAction("Select", EInputEvent::IE_Released, this, &AZombieSiegePlayerController::OnSelectActionReleased);
+	this->InputComponent->BindAction("Command", EInputEvent::IE_Released, this, &AZombieSiegePlayerController::OnSelectActionReleased);
 }
 
 void AZombieSiegePlayerController::AddToControlledUnits(AUnitBase* unit)
 {
 	check(unit);
+
+	check(!controlledUnits.Contains(unit));
 
 	controlledUnits.Add(unit);
 }

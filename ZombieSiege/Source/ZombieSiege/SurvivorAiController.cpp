@@ -3,3 +3,12 @@
 
 #include "SurvivorAiController.h"
 
+AJobBase* ASurvivorAiController::GetAssignedToJob()
+{
+    return assignedToJob;
+}
+
+void ASurvivorAiController::SetAssignedToJob(AJobBase* job)
+{
+    assignedToJob = job;
+}

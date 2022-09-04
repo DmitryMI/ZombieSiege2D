@@ -4,8 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
-#include "UnitBase.h"
 #include "ZombieSiegePlayerController.generated.h"
+
+class AUnitBase;
+class AJobBase;
 
 /**
  * 
@@ -27,14 +29,21 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "DefaultPreferences|Camera")
 	float cameraDefaultZoomSpeed = 15000.0f;
+	
+	UPROPERTY(VisibleAnywhere)
+	TArray<AUnitBase*> controlledUnits;
+
+	UPROPERTY(VisibleAnywhere)
+	TArray<AJobBase*> jobs;
 
 	void OnCameraVertical(float value);
 	void OnCameraHorizontal(float value);
 	void OnCameraZoom(float value);
 
-	UPROPERTY(VisibleAnywhere)
-	TArray<AUnitBase*> controlledUnits;
-	
+	void OnSelectActionPressed();
+	void OnSelectActionReleased();
+	void OnCommandActionReleased();
+
 protected:
 	virtual void SetupInputComponent() override;
 
