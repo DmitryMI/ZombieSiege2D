@@ -40,17 +40,17 @@ void AJobBase::OnStateChanged(EJobState stateOld, EJobState stateNew)
 		break;
 
 	case EJobState::Created:
-		UE_LOG(LogSurvivorJobs, Log, TEXT("Job %s created."), *name);
+		UE_LOG(LogSurvivorJobs, Log, TEXT("Job %s: Created."), *name);
 		break;
 
 	case EJobState::WaitingForExecutors:
 		if (stateOld == EJobState::Created)
 		{
-			UE_LOG(LogSurvivorJobs, Log, TEXT("Job %s is initialized and waiting for executors."), *name);
+			UE_LOG(LogSurvivorJobs, Log, TEXT("Job %s: Created -> Waiting"), *name);
 		}
 		else if (stateOld == EJobState::Executing)
 		{
-			UE_LOG(LogSurvivorJobs, Log, TEXT("Job %s lost some executors. Waiting for new ones."), *name);
+			UE_LOG(LogSurvivorJobs, Warning, TEXT("Job %s: Executing -> Waiting"), *name);
 		}
 		else
 		{
@@ -59,16 +59,16 @@ void AJobBase::OnStateChanged(EJobState stateOld, EJobState stateNew)
 		break;
 
 	case EJobState::Executing:
-		UE_LOG(LogSurvivorJobs, Log, TEXT("Job %s found valid executors and is executing now."), *name);
+		UE_LOG(LogSurvivorJobs, Log, TEXT("Job %s: Waiting -> Executing"), *name);
 		break;
 
 	case EJobState::Finished:
-		UE_LOG(LogSurvivorJobs, Log, TEXT("Job %s finished successfully"), *name);
+		UE_LOG(LogSurvivorJobs, Log, TEXT("Job %s: Executing -> Finished"), *name);
 		FinalizeJob();
 		break;
 
 	case EJobState::Failed:
-		UE_LOG(LogSurvivorJobs, Warning, TEXT("Job %s failed."), *name);
+		UE_LOG(LogSurvivorJobs, Warning, TEXT("Job %s : Executing -> Failed"), *name);
 		FinalizeJob();
 		break;
 
