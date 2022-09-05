@@ -4,6 +4,7 @@
 #include "GatherDoodadJob.h"
 #include "UnitBase.h"
 #include "Doodad.h"
+#include "ZombieSiegeUtils.h"
 #include "SurvivorAiController.h"
 
 void AGatherDoodadJob::FindExecutors()
@@ -14,32 +15,12 @@ void AGatherDoodadJob::FindExecutors()
 
 	for (AUnitBase* unit : controlledUnits)
 	{
-		check(unit);
+		check(unit);		
 
-		ASurvivorAiController* controller = Cast<ASurvivorAiController>(unit->GetController());
-
-		if (!controller)
+		if (IsValidExecutor(unit) && !IsExecutorAssignedToThisJob(unit))
 		{
-			continue;
+			AssignExecutor(unit);
 		}
-
-		if (!unit->IsAlive())
-		{
-			continue;
-		}
-
-		AJobBase* unitJob = controller->GetAssignedToJob();
-		if (unitJob == this)
-		{
-			continue;
-		}
-
-		if (unitJob && unitJob->GetJobPriority() >= GetJobPriority())
-		{
-			continue;
-		}
-
-		AssignExecutor(unit);
 	}
 }
 
@@ -85,6 +66,21 @@ void AGatherDoodadJob::OnStateChanged(EJobState stateOld, EJobState stateNew)
 	{
 		Destroy();
 	}
+}
+
+bool AGatherDoodadJob::IsValidExecutor(AUnitBase* executor)
+{
+	if (!Super::IsValidExecutor(executor))
+	{
+		return false;
+	}
+
+	check(targetDoodad);
+
+	FVector locationUnused;
+	bool hasPath = UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(GetWorld(), executor, targetDoodad, 128.0f, locationUnused);
+	
+	return hasPath;
 }
 
 

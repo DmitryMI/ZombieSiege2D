@@ -34,6 +34,8 @@ protected:
 
 	virtual void OnStateChanged(EJobState stateOld, EJobState stateNew) override;
 
+	virtual bool IsValidExecutor(AUnitBase* executor) override;
+
 public:
 	
 	AGatherDoodadJob();

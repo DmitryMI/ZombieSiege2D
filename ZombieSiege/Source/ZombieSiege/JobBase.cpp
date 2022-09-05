@@ -7,19 +7,19 @@
 
 DEFINE_LOG_CATEGORY(LogSurvivorJobs);
 
-bool AJobBase::IsExecutorValid(AUnitBase* assignedExecutor)
+bool AJobBase::IsValidExecutor(AUnitBase* unit)
 {
-	if (!assignedExecutor)
+	if (!unit)
 	{
 		return false;
 	}
 
-	if (!assignedExecutor->IsAlive())
+	if (!unit->IsAlive())
 	{
 		return false;
 	}
 
-	ASurvivorAiController* controller = Cast<ASurvivorAiController>(assignedExecutor->GetController());
+	ASurvivorAiController* controller = Cast<ASurvivorAiController>(unit->GetController());
 	if (!controller)
 	{
 		return false;
@@ -96,7 +96,7 @@ void AJobBase::RemoveInvalidExecutors()
 	{
 		AUnitBase* executor = assignedExecutors[i];
 		bool bIsAssignedToThis = IsExecutorAssignedToThisJob(executor);
-		bool bIsValid = IsExecutorValid(executor);
+		bool bIsValid = IsValidExecutor(executor);
 		if (!bIsValid || !bIsAssignedToThis)
 		{
 			DeassignExecutorInternal(i);
@@ -219,7 +219,12 @@ void AJobBase::TickStateMachine()
 		}
 
 	case EJobState::WaitingForExecutors:
-		if (CanExecute())
+		if (!IsJobInitialized())
+		{
+			jobState = EJobState::Failed;
+			OnStateChanged(prevState, jobState);
+		}
+		else if (CanExecute())
 		{
 			jobState = EJobState::Executing;
 			OnStateChanged(prevState, jobState);
@@ -227,7 +232,12 @@ void AJobBase::TickStateMachine()
 		break;
 
 	case EJobState::Executing:
-		if (!CanExecute())
+		if (!IsJobInitialized())
+		{
+			jobState = EJobState::Failed;
+			OnStateChanged(prevState, jobState);
+		}
+		else if (!CanExecute())
 		{
 			jobState = EJobState::WaitingForExecutors;
 			OnStateChanged(prevState, jobState);
@@ -284,7 +294,7 @@ bool AJobBase::AssignExecutor(AUnitBase* unit)
 		return true;
 	}
 
-	if (IsExecutorValid(unit))
+	if (IsValidExecutor(unit))
 	{
 		survivorController->SetAssignedToJob(this);
 		assignedExecutors.Add(unit);
