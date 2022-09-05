@@ -7,6 +7,7 @@
 #include "SurvivorAiController.generated.h"
 
 class AJobBase;
+class AUnitBase;
 
 /**
  * 
@@ -20,13 +21,35 @@ class ZOMBIESIEGE_API ASurvivorAiController : public AAIController
 private:
 	UPROPERTY(VisibleAnywhere)
 	AJobBase* assignedToJob;
+
+	UPROPERTY(EditDefaultsOnly)
+	UBehaviorTree* holdPositionBehaviorTree;
+
+	UPROPERTY(EditDefaultsOnly)
+	UBehaviorTree* wandererBehaviorTree;
+
+	UPROPERTY(EditDefaultsOnly)
+	UBehaviorTree* gathererBehaviorTree;
+
+	AUnitBase* gatheringTarget;
 	
 protected:
+	virtual void BeginPlay() override;
 
 public:
+	virtual void Tick(float deltaTime) override;
+
 	UFUNCTION(BlueprintCallable)
 	AJobBase* GetAssignedToJob();
 
 	UFUNCTION(BlueprintCallable)
 	virtual void SetAssignedToJob(AJobBase* job);
+
+	UFUNCTION(BlueprintCallable)
+	virtual void IssueGatherOrder(AUnitBase* gatherableUnit);
+
+	UFUNCTION(BlueprintCallable)
+	virtual void IssueWanderingOrder(FVector aroundLocation, float radius = 500.0f, float standingDuration = 2.0f);
+
+	virtual void CancelOrder();
 };

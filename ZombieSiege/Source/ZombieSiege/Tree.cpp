@@ -68,5 +68,6 @@ void ATree::FinishDying(const FDamageInstance& killingDamageInstance)
 
 ATree::ATree()
 {
+	bCanEverBeGathered = true;
 }
 

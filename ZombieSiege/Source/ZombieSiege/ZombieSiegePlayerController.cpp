@@ -3,7 +3,11 @@
 
 #include "ZombieSiegePlayerController.h"
 #include "Kismet/GameplayStatics.h"
+#include "Doodad.h"
+#include "GatherDoodadJob.h"
 #include "Camera/CameraComponent.h"
+
+DEFINE_LOG_CATEGORY(LogZombieSiegePlayerController);
 
 void AZombieSiegePlayerController::OnCameraVertical(float value)
 {
@@ -71,6 +75,31 @@ void AZombieSiegePlayerController::OnSelectActionPressed()
 
 void AZombieSiegePlayerController::OnSelectActionReleased()
 {
+
+}
+
+void AZombieSiegePlayerController::OnSelectActionDoubleClick()
+{
+	float x, y;
+	bool mousePresent = GetMousePosition(x, y);
+	if (!mousePresent)
+	{
+		UE_LOG(LogZombieSiegePlayerController, Warning, TEXT("Mouse is invalid!"));
+		return;
+	}
+
+	AActor* underCursorActor = GetActorUnderScreenPoint(x, y);
+	if (underCursorActor)
+	{
+		FString actorName;
+		underCursorActor->GetName(actorName);
+		UE_LOG(LogZombieSiegePlayerController, Log, TEXT("Local player double-clicked on %s"), *actorName);
+		ADoodad* doodad = Cast<ADoodad>(underCursorActor);
+		if (doodad)
+		{
+			OnDoodadSelectDoubleClicked(doodad);
+		}
+	}
 }
 
 void AZombieSiegePlayerController::OnCommandActionReleased()
@@ -87,7 +116,77 @@ void AZombieSiegePlayerController::SetupInputComponent()
 
 	this->InputComponent->BindAction("Select", EInputEvent::IE_Pressed, this, &AZombieSiegePlayerController::OnSelectActionPressed);
 	this->InputComponent->BindAction("Select", EInputEvent::IE_Released, this, &AZombieSiegePlayerController::OnSelectActionReleased);
+	this->InputComponent->BindAction("Select", EInputEvent::IE_DoubleClick, this, &AZombieSiegePlayerController::OnSelectActionDoubleClick);
+
 	this->InputComponent->BindAction("Command", EInputEvent::IE_Released, this, &AZombieSiegePlayerController::OnSelectActionReleased);
+}
+
+void AZombieSiegePlayerController::OnDoodadSelectDoubleClicked(ADoodad* doodad)
+{
+	if (doodad->CanEverBeGathered())
+	{
+		FString name;
+		doodad->GetName(name);
+		
+		AGatherDoodadJob* existingJob = nullptr;
+
+		for (AJobBase* job : jobs)
+		{
+			AGatherDoodadJob* gatherJob = Cast<AGatherDoodadJob>(job);
+			if (gatherJob->GetTargetDoodad() == doodad)
+			{
+				existingJob = gatherJob;
+			}
+		}
+
+		if (existingJob)
+		{
+			UE_LOG(LogZombieSiegePlayerController, Log, TEXT("Player removes gather mark from %s"), *name);
+			jobs.Remove(existingJob);
+			existingJob->Destroy();
+		}
+		else
+		{
+			UE_LOG(LogZombieSiegePlayerController, Log, TEXT("Player marks the doodad %s as gather target"), *name);
+			FVector location = doodad->GetActorLocation();
+			FRotator rotation = doodad->GetActorRotation();
+			FActorSpawnParameters params;
+			AGatherDoodadJob* createdJob = GetWorld()->SpawnActor<AGatherDoodadJob>(
+				AGatherDoodadJob::StaticClass(),
+				location,
+				rotation,
+				params
+				);
+
+			check(createdJob);
+
+			createdJob->SetOwningPlayerController(this);
+			createdJob->SetTargetDoodad(doodad);
+
+			jobs.Add(createdJob);
+		}
+	}
+}
+
+AActor* AZombieSiegePlayerController::GetActorUnderScreenPoint(float x, float y)
+{
+	FVector worldLocation;
+	FVector worldDirection;
+	bool deprojectOk = DeprojectScreenPositionToWorld(x, y, worldLocation, worldDirection);
+	check(deprojectOk);
+
+	FVector traceEnd = worldLocation + worldDirection * cameraDefaultHeight * 2;
+
+	FHitResult hitResult;
+	FCollisionObjectQueryParams queryParams;
+
+	queryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_Destructible);
+	queryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_Pawn);
+
+	GetWorld()->LineTraceSingleByObjectType(hitResult, worldLocation, traceEnd, queryParams);
+
+	AActor* actor = hitResult.GetActor();
+	return actor;
 }
 
 void AZombieSiegePlayerController::AddToControlledUnits(AUnitBase* unit)
@@ -109,4 +208,9 @@ void AZombieSiegePlayerController::RemoveFromControlledUnits(AUnitBase* unit)
 const TArray<AUnitBase*>& AZombieSiegePlayerController::GetControlledUnits()
 {
 	return controlledUnits;
+}
+
+void AZombieSiegePlayerController::RemoveJob(AJobBase* job)
+{
+	jobs.Remove(job);
 }

@@ -241,8 +241,10 @@ void AUnitBase::BeginPlay()
 		APlayerController* playerController = GetWorld()->GetFirstPlayerController();
 		check(playerController);
 
-		owningPlayerController = Cast<AZombieSiegePlayerController>(playerController);
-		check(owningPlayerController);
+		AZombieSiegePlayerController *zsController = Cast<AZombieSiegePlayerController>(playerController);		
+		check(zsController);
+
+		SetOwningPlayer(zsController);
 	}
 
 	movementComponent = Cast<UFloatingPawnMovement>(GetComponentByClass(UFloatingPawnMovement::StaticClass()));

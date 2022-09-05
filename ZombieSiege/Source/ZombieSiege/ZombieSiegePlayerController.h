@@ -8,6 +8,9 @@
 
 class AUnitBase;
 class AJobBase;
+class ADoodad;
+
+DECLARE_LOG_CATEGORY_EXTERN(LogZombieSiegePlayerController, Log, All);
 
 /**
  * 
@@ -18,6 +21,9 @@ class ZOMBIESIEGE_API AZombieSiegePlayerController : public APlayerController
 	GENERATED_BODY()
 
 private:
+	UPROPERTY(EditDefaultsOnly)
+	float cameraDefaultHeight = 1000;
+
 	UPROPERTY(EditDefaultsOnly)
 	float cameraDefaultSpeed = 1000;
 
@@ -42,14 +48,21 @@ private:
 
 	void OnSelectActionPressed();
 	void OnSelectActionReleased();
+	void OnSelectActionDoubleClick();
 	void OnCommandActionReleased();
 
 protected:
 	virtual void SetupInputComponent() override;
+
+	void OnDoodadSelectDoubleClicked(ADoodad* doodad);
+
+	AActor* GetActorUnderScreenPoint(float x, float y);
 
 public:
 	void AddToControlledUnits(AUnitBase* unit);
 	void RemoveFromControlledUnits(AUnitBase* unit);
 
 	const TArray<AUnitBase*>& GetControlledUnits();
+
+	void RemoveJob(AJobBase* job);
 };

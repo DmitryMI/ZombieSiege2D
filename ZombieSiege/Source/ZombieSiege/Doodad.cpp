@@ -16,4 +16,9 @@ void ADoodad::BeginPlay()
 	
 }
 
+bool ADoodad::CanEverBeGathered()
+{
+	return bCanEverBeGathered;
+}
+
 

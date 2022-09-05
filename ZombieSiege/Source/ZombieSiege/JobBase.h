@@ -5,9 +5,14 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "JobState.h"
+#include "ZombieSiegePlayerController.h"
 #include "JobBase.generated.h"
 
 class AUnitBase;
+
+
+DECLARE_LOG_CATEGORY_EXTERN(LogSurvivorJobs, Log, All);
+
 
 UCLASS()
 class ZOMBIESIEGE_API AJobBase : public AActor
@@ -16,25 +21,55 @@ class ZOMBIESIEGE_API AJobBase : public AActor
 
 private:
 	UPROPERTY(VisibleAnywhere)
-	bool bIsExecutionAllowed;
+	bool bIsExecutionAllowed = true;
 
 	UPROPERTY(VisibleAnywhere)
-	int jobPriority;
+	int jobPriority = 0;
+
+	AZombieSiegePlayerController* owningPlayerController;
 
 protected:
 
 	UPROPERTY(VisibleAnywhere)
-	EJobState jobState = EJobState::Invalid;
+	EJobState jobState = EJobState::InvalidState;
 
 	UPROPERTY(VisibleAnywhere)
 	TArray<AUnitBase*> assignedExecutors;
 
+	virtual void DeassignExecutorInternal(int executorAtIndex);
+
+	bool IsExecutorAssignedToThisJob(AUnitBase* executor);
+
 	virtual void BeginPlay() override;
 
-	virtual void FindExecutors();
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+	virtual void TickStateMachine();
+
+	virtual bool CanExecute() { return true; }
+
+	virtual bool IsJobInitialized() { return true; }
+
+	virtual bool IsFinished() { unimplemented(); return true; }
+
+	virtual bool IsFailed() { unimplemented(); return false; }
+
+	virtual bool IsAssignedExecutorValid(AUnitBase* assignedExecutor);
+
+	virtual void OnStateChanged(EJobState stateOld, EJobState stateNew);
+
+	virtual void FinalizeJob();
+
+	void RemoveInvalidExecutors();
 
 public:	
 	AJobBase();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void SetOwningPlayerController(AZombieSiegePlayerController* owningPc);
+
+	UFUNCTION(BlueprintCallable)
+	AZombieSiegePlayerController* GetOwningPlayerController();
 
 	UFUNCTION(BlueprintCallable)
 	/// <summary>
@@ -53,13 +88,10 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable)
-	virtual int GetNumOfRequestedExecutors();
-
-	UFUNCTION(BlueprintCallable)
 	const TArray<AUnitBase*>& GetAssignedExecutors();
 
 	UFUNCTION(BlueprintCallable)
-	virtual void AssignExecutor(AUnitBase* unit);
+	virtual bool AssignExecutor(AUnitBase* unit);
 
 	UFUNCTION(BlueprintCallable)
 	virtual void DeassignExecutor(AUnitBase* unit);
@@ -74,21 +106,4 @@ public:
 
 	virtual EJobState GetJobState();
 
-	DECLARE_EVENT_OneParam(AJobBase, FOnJobFinishedEvent, AJobBase*);
-
-	FOnJobFinishedEvent& OnJobFinished() 
-	{
-		return onJobFinishedEvent;
-	}
-
-	DECLARE_EVENT_ThreeParams(AJobBase, FOnJobStateChangedEvent, AJobBase*, EJobState stateOld, EJobState stateNew);
-
-	FOnJobStateChangedEvent& OnJobStateChanged()
-	{
-		return onJobStateChangedEvent;
-	}
-
-private:
-	FOnJobFinishedEvent onJobFinishedEvent;
-	FOnJobStateChangedEvent onJobStateChangedEvent;
 };

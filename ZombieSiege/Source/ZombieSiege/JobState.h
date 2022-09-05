@@ -7,9 +7,9 @@
 UENUM(BlueprintType)
 enum class EJobState : uint8
 {
-	Invalid,
+	InvalidState,
 	Created,
-	Waiting,
+	WaitingForExecutors,
 	Executing,
 	Finished,
 	Failed

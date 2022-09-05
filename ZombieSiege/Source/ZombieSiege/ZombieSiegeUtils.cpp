@@ -183,12 +183,20 @@ bool UZombieSiegeUtils::GetFirstPointCloseToGoal(FVector goalLocation, float rea
 	for (const FVector& location : navPath->PathPoints)
 	{
 		FVector deltaVec = goalLocation - location;
-		bool isCloseEnough = deltaVec.SizeSquared2D() <= FMath::Square(reachabilityRadius);
+
+		bool isCloseEnough;
+#if UE_BUILD_SHIPPING
+		isCloseEnough = deltaVec.SizeSquared2D() <= FMath::Square(reachabilityRadius);
+#else
+		float deltaLength = deltaVec.Size();
+		isCloseEnough = deltaLength <= reachabilityRadius;
+#endif
 		if (isCloseEnough)
 		{
 			result = location;
 			return true;
 		}
+
 	}
 	result = navPath->PathPoints.Last();
 	return false;
