@@ -54,7 +54,7 @@ protected:
 
 	virtual bool IsFailed() { unimplemented(); return false; }
 
-	virtual bool IsAssignedExecutorValid(AUnitBase* assignedExecutor);
+	virtual bool IsExecutorValid(AUnitBase* assignedExecutor);
 
 	virtual void OnStateChanged(EJobState stateOld, EJobState stateNew);
 

@@ -7,7 +7,7 @@
 
 DEFINE_LOG_CATEGORY(LogSurvivorJobs);
 
-bool AJobBase::IsAssignedExecutorValid(AUnitBase* assignedExecutor)
+bool AJobBase::IsExecutorValid(AUnitBase* assignedExecutor)
 {
 	if (!assignedExecutor)
 	{
@@ -96,7 +96,7 @@ void AJobBase::RemoveInvalidExecutors()
 	{
 		AUnitBase* executor = assignedExecutors[i];
 		bool bIsAssignedToThis = IsExecutorAssignedToThisJob(executor);
-		bool bIsValid = IsAssignedExecutorValid(executor);
+		bool bIsValid = IsExecutorValid(executor);
 		if (!bIsValid || !bIsAssignedToThis)
 		{
 			DeassignExecutorInternal(i);
@@ -284,7 +284,7 @@ bool AJobBase::AssignExecutor(AUnitBase* unit)
 		return true;
 	}
 
-	if (IsAssignedExecutorValid(unit))
+	if (IsExecutorValid(unit))
 	{
 		survivorController->SetAssignedToJob(this);
 		assignedExecutors.Add(unit);
