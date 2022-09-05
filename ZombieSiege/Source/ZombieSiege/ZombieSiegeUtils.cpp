@@ -258,12 +258,7 @@ bool UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(
 		if (navPath == nullptr || !navPath->IsValid())
 		{
 			return false;
-		}
-
-		if (navPath->IsPartial())
-		{
-			return false;
-		}
+		}		
 
 		bool hasPoint = GetFirstPointCloseToGoal(targetActorLocation, useReachabilityRadius, navPath, OutLocation);
 
@@ -271,11 +266,6 @@ bool UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(
 	}
 	else
 	{
-		if (!navPath->IsPartial())
-		{
-			return true;
-		}
-
 		bool hasPoint = GetFirstPointCloseToGoal(targetActorLocation, useReachabilityRadius, navPath, OutLocation);
 
 		return hasPoint;

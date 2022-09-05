@@ -34,20 +34,7 @@ void AGatherDoodadJob::FindExecutors()
 				else
 				{
 					bool myMajorPrioGreater = GetJobPriority() > unitJobPriority;
-					bool myMajorPrioEqual = GetJobPriority() == unitJobPriority;
-
-					AGatherDoodadJob* unitsGatherJob = GetUnitAssignedJob<AGatherDoodadJob>(unit);
-					if (!unitsGatherJob)
-					{
-						bAssign = myMajorPrioGreater;
-					}
-					else
-					{
-						float theirMetric = unitsGatherJob->CalculateJobSpecificPriorityMetric(unit);
-						bool myMinorPrioGreater = myMetric > theirMetric;
-
-						bAssign = myMajorPrioGreater || (myMajorPrioEqual && myMinorPrioGreater);
-					}
+					bAssign = myMajorPrioGreater;
 				}
 			}
 		}
@@ -118,15 +105,28 @@ bool AGatherDoodadJob::IsValidExecutor(AUnitBase* executor)
 	check(targetDoodad);
 
 	FVector locationUnused;
-	bool hasPath = UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(GetWorld(), executor, targetDoodad, 128.0f, locationUnused);
+	bool hasPath = UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(GetWorld(), executor, targetDoodad, 250.0f, locationUnused);
 	
+	if (!hasPath)
+	{
+		FString executorName;
+		FString doodadName;
+		targetDoodad->GetName(doodadName);
+		executor->GetName(executorName);
+		UE_LOG(LogSurvivorJobs, Log, TEXT("Executor %s invalidated: no path to %s"), *executorName, *doodadName);
+	}
+
 	return hasPath;
 }
 
 float AGatherDoodadJob::CalculateJobSpecificPriorityMetric(AUnitBase* unit)
 {
 	check(unit);
-	check(targetDoodad);
+	
+	if (!targetDoodad)
+	{
+		return -1000;
+	}
 
 	FVector unitLocation = unit->GetActorLocation();
 	FVector targetLocation = targetDoodad->GetActorLocation();
