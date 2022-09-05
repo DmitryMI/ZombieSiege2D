@@ -19,6 +19,8 @@ void AGatherDoodadJob::FindExecutors()
 
 		bool bAssign = false;
 
+		float myMetric = CalculateJobSpecificPriorityMetric(unit);
+
 		if (IsValidExecutor(unit))
 		{
 			if (!IsExecutorAssignedToThisJob(unit))
@@ -27,11 +29,25 @@ void AGatherDoodadJob::FindExecutors()
 				bool hasJobPriority = GetUnitAssignedJobPriority(unit, unitJobPriority);
 				if (!hasJobPriority)
 				{
-					bAssign = true;
+					bAssign = ShouldAssignUnemployedUnit(unit);
 				}
 				else
 				{
-					bAssign = unitJobPriority < GetJobPriority();
+					bool myMajorPrioGreater = GetJobPriority() > unitJobPriority;
+					bool myMajorPrioEqual = GetJobPriority() == unitJobPriority;
+
+					AGatherDoodadJob* unitsGatherJob = GetUnitAssignedJob<AGatherDoodadJob>(unit);
+					if (!unitsGatherJob)
+					{
+						bAssign = myMajorPrioGreater;
+					}
+					else
+					{
+						float theirMetric = unitsGatherJob->CalculateJobSpecificPriorityMetric(unit);
+						bool myMinorPrioGreater = myMetric > theirMetric;
+
+						bAssign = myMajorPrioGreater || (myMajorPrioEqual && myMinorPrioGreater);
+					}
 				}
 			}
 		}
@@ -100,6 +116,63 @@ bool AGatherDoodadJob::IsValidExecutor(AUnitBase* executor)
 	bool hasPath = UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(GetWorld(), executor, targetDoodad, 128.0f, locationUnused);
 	
 	return hasPath;
+}
+
+float AGatherDoodadJob::CalculateJobSpecificPriorityMetric(AUnitBase* unit)
+{
+	check(unit);
+	check(targetDoodad);
+
+	FVector unitLocation = unit->GetActorLocation();
+	FVector targetLocation = targetDoodad->GetActorLocation();
+
+	// TODO Use path length, not distance!
+	float distanceSquare = (targetLocation - unitLocation).SizeSquared2D();
+
+	float metric = 1.0f / distanceSquare;
+
+	return metric;
+}
+
+bool AGatherDoodadJob::ShouldAssignUnemployedUnit(AUnitBase* unit)
+{
+	AZombieSiegePlayerController* pc = GetOwningPlayerController();
+	TArray<AJobBase*> jobs = pc->GetJobs();
+
+	float myMetric = CalculateJobSpecificPriorityMetric(unit);
+
+	int myPriority = GetJobPriority();
+
+	for (AJobBase* job : jobs)
+	{
+		if (job == this)
+		{
+			continue;
+		}
+
+		if (job->GetJobState() != EJobState::WaitingForExecutors)
+		{
+			continue;
+		}
+
+		int theirPriority = job->GetJobPriority();
+
+		AGatherDoodadJob* jobGather = Cast<AGatherDoodadJob>(job);
+		if (!jobGather)
+		{
+			continue;
+		}
+
+		float theirMetric = jobGather->CalculateJobSpecificPriorityMetric(unit);
+
+		bool isMyPriorityLower = myPriority < theirPriority || (myPriority == theirPriority && myMetric < theirMetric);
+		if (isMyPriorityLower)
+		{
+			return false;
+		}
+	}
+
+	return true;
 }
 
 

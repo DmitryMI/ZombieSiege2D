@@ -36,6 +36,10 @@ protected:
 
 	virtual bool IsValidExecutor(AUnitBase* executor) override;
 
+	virtual float CalculateJobSpecificPriorityMetric(AUnitBase* unit) override;
+
+	bool ShouldAssignUnemployedUnit(AUnitBase* unit);
+
 public:
 	
 	AGatherDoodadJob();

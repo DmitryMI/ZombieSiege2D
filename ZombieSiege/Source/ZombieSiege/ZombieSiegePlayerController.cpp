@@ -214,3 +214,8 @@ void AZombieSiegePlayerController::RemoveJob(AJobBase* job)
 {
 	jobs.Remove(job);
 }
+
+const TArray<AJobBase*> AZombieSiegePlayerController::GetJobs()
+{
+	return jobs;
+}

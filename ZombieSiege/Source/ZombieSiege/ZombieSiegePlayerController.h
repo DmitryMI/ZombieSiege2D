@@ -65,4 +65,6 @@ public:
 	const TArray<AUnitBase*>& GetControlledUnits();
 
 	void RemoveJob(AJobBase* job);
+
+	const TArray<AJobBase*> GetJobs();
 };

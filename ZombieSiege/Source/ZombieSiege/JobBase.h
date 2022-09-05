@@ -60,9 +60,30 @@ protected:
 
 	virtual void FinalizeJob();
 
+	virtual float CalculateJobSpecificPriorityMetric(AUnitBase* unit);
+
 	bool GetUnitAssignedJobPriority(AUnitBase* unit, int& priority);
 
 	void RemoveInvalidExecutors();
+
+	template<typename T>
+	T* GetUnitAssignedJob(AUnitBase* unit)
+	{
+		AController* controller = unit->GetController();
+		if (!controller)
+		{
+			return nullptr;
+		}
+		ASurvivorAiController* survivorController = Cast<ASurvivorAiController>(controller);
+		if (!survivorController)
+		{
+			return nullptr;
+		}
+
+		AJobBase* job = survivorController->GetAssignedToJob();
+
+		return Cast<T>(job);
+	}
 
 public:	
 	AJobBase();

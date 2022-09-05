@@ -88,6 +88,11 @@ void AJobBase::FinalizeJob()
 	GetOwningPlayerController()->RemoveJob(this);
 }
 
+float AJobBase::CalculateJobSpecificPriorityMetric(AUnitBase* unit)
+{
+	return 0.0f;
+}
+
 bool AJobBase::GetUnitAssignedJobPriority(AUnitBase* unit, int& priority)
 {
 	ASurvivorAiController* controller = Cast<ASurvivorAiController>(unit->GetController());
