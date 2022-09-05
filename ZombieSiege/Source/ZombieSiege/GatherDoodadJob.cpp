@@ -120,7 +120,7 @@ void AGatherDoodadJob::SetTargetDoodad(ADoodad* doodad)
 {
 	check(doodad);
 
-	if (targetDoodad && jobState == EJobState::Executing)
+	if (targetDoodad && jobState != EJobState::Created)
 	{
 		// Changing of a doodad is not implemented
 		checkNoEntry();
