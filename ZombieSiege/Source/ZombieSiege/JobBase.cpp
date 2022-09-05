@@ -161,7 +161,7 @@ void AJobBase::UnassignExecutorInternal(int executorAtIndex)
 	FString unitName;
 	GetName(jobName);
 	executor->GetName(unitName);
-	UE_LOG(LogSurvivorJobs, Warning, TEXT("Job %s: deassigned unit %s"), *jobName, *unitName);
+	UE_LOG(LogSurvivorJobs, Warning, TEXT("Job %s: unassigned unit %s"), *jobName, *unitName);
 
 	if (executor == nullptr)
 	{

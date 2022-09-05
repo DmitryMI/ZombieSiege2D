@@ -56,6 +56,11 @@ void AGatherDoodadJob::FindExecutors()
 		{
 			AssignExecutor(unit);
 		}
+
+		if (assignedExecutors.Num() > 0)
+		{
+			break;
+		}
 	}
 }
 

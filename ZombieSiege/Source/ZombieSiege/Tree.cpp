@@ -14,6 +14,11 @@ void ATree::GetRandomSizeAndType(ETreeType& outType, ETreeSize& outSize)
 
 void ATree::ReceiveDamage(const FDamageInstance& damage)
 {
+	if (damage.source != nullptr)
+	{
+		OnHarvestingHit();
+	}
+
 	// UnitBase's implementation decreases health and initiates dying sequence
 	Super::ReceiveDamage(damage);
 }

@@ -22,6 +22,12 @@ protected:
 
 	virtual void BeginPlay() override;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnHarvestingHit();
+
+protected:
+
+
 public:	
 	virtual bool CanEverBeGathered();
 };
