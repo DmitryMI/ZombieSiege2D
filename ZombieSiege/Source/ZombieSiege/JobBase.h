@@ -36,7 +36,7 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	TArray<AUnitBase*> assignedExecutors;
 
-	virtual void DeassignExecutorInternal(int executorAtIndex);
+	virtual void UnassignExecutorInternal(int executorAtIndex);
 
 	bool IsExecutorAssignedToThisJob(AUnitBase* executor);
 
@@ -59,6 +59,8 @@ protected:
 	virtual void OnStateChanged(EJobState stateOld, EJobState stateNew);
 
 	virtual void FinalizeJob();
+
+	bool GetUnitAssignedJobPriority(AUnitBase* unit, int& priority);
 
 	void RemoveInvalidExecutors();
 
@@ -94,7 +96,7 @@ public:
 	virtual bool AssignExecutor(AUnitBase* unit);
 
 	UFUNCTION(BlueprintCallable)
-	virtual void DeassignExecutor(AUnitBase* unit);
+	virtual void UnassignExecutor(AUnitBase* unit, bool bAnnounceFreeWorker = true);
 
 	UFUNCTION(BlueprintCallable)
 	virtual void AllowExecution();

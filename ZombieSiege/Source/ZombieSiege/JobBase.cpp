@@ -82,10 +82,28 @@ void AJobBase::FinalizeJob()
 {
 	for (int i = 0; i < assignedExecutors.Num(); i++)
 	{
-		DeassignExecutorInternal(i);
+		UnassignExecutorInternal(i);
 	}
 
 	GetOwningPlayerController()->RemoveJob(this);
+}
+
+bool AJobBase::GetUnitAssignedJobPriority(AUnitBase* unit, int& priority)
+{
+	ASurvivorAiController* controller = Cast<ASurvivorAiController>(unit->GetController());
+	if (!controller)
+	{
+		return false;
+	}
+
+	AJobBase* unitJob = controller->GetAssignedToJob();
+	if (unitJob == nullptr)
+	{
+		return false;
+	}
+	
+	priority = unitJob->GetJobPriority();
+	return true;
 }
 
 void AJobBase::RemoveInvalidExecutors()
@@ -99,7 +117,7 @@ void AJobBase::RemoveInvalidExecutors()
 		bool bIsValid = IsValidExecutor(executor);
 		if (!bIsValid || !bIsAssignedToThis)
 		{
-			DeassignExecutorInternal(i);
+			UnassignExecutorInternal(i);
 			i--;
 		}
 	}
@@ -126,13 +144,19 @@ int AJobBase::GetJobPriority()
 	return jobPriority;
 }
 
-void AJobBase::DeassignExecutorInternal(int executorAtIndex)
+void AJobBase::UnassignExecutorInternal(int executorAtIndex)
 {
 	checkSlow(executorAtIndex >= 0 && assignedExecutors.Num() >= executorAtIndex);
 
 	AUnitBase* executor = assignedExecutors[executorAtIndex];
 
 	assignedExecutors.RemoveAt(executorAtIndex);
+
+	FString jobName;
+	FString unitName;
+	GetName(jobName);
+	executor->GetName(unitName);
+	UE_LOG(LogSurvivorJobs, Warning, TEXT("Job %s: deassigned unit %s"), *jobName, *unitName);
 
 	if (executor == nullptr)
 	{
@@ -297,7 +321,18 @@ bool AJobBase::AssignExecutor(AUnitBase* unit)
 	if (IsValidExecutor(unit))
 	{
 		survivorController->SetAssignedToJob(this);
+		if (prevJob)
+		{
+			prevJob->UnassignExecutor(unit, false);
+		}
 		assignedExecutors.Add(unit);
+
+		FString jobName;
+		FString unitName;
+		GetName(jobName);
+		unit->GetName(unitName);
+		UE_LOG(LogSurvivorJobs, Warning, TEXT("Job %s: assigned unit %s"), *jobName, *unitName);
+
 		return true;
 	}
 	else
@@ -306,7 +341,7 @@ bool AJobBase::AssignExecutor(AUnitBase* unit)
 	}
 }
 
-void AJobBase::DeassignExecutor(AUnitBase* unit)
+void AJobBase::UnassignExecutor(AUnitBase* unit, bool bAnnounceFreeWorker)
 {
 	int index = assignedExecutors.IndexOfByKey(unit);
 	if (index == INDEX_NONE)
@@ -314,7 +349,7 @@ void AJobBase::DeassignExecutor(AUnitBase* unit)
 		return;
 	}
 
-	DeassignExecutorInternal(index);
+	UnassignExecutorInternal(index);
 }
 
 void AJobBase::AllowExecution()

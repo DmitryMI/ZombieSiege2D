@@ -17,7 +17,26 @@ void AGatherDoodadJob::FindExecutors()
 	{
 		check(unit);		
 
-		if (IsValidExecutor(unit) && !IsExecutorAssignedToThisJob(unit))
+		bool bAssign = false;
+
+		if (IsValidExecutor(unit))
+		{
+			if (!IsExecutorAssignedToThisJob(unit))
+			{
+				int unitJobPriority;
+				bool hasJobPriority = GetUnitAssignedJobPriority(unit, unitJobPriority);
+				if (!hasJobPriority)
+				{
+					bAssign = true;
+				}
+				else
+				{
+					bAssign = unitJobPriority < GetJobPriority();
+				}
+			}
+		}
+
+		if (bAssign)
 		{
 			AssignExecutor(unit);
 		}
