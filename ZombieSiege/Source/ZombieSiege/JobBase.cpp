@@ -336,7 +336,7 @@ bool AJobBase::AssignExecutor(AUnitBase* unit)
 		FString unitName;
 		GetName(jobName);
 		unit->GetName(unitName);
-		UE_LOG(LogSurvivorJobs, Warning, TEXT("Job %s: assigned unit %s"), *jobName, *unitName);
+		UE_LOG(LogSurvivorJobs, Log, TEXT("Job %s: assigned unit %s"), *jobName, *unitName);
 
 		return true;
 	}
