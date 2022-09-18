@@ -201,6 +201,7 @@ bool AGatherDoodadJob::CanExecute()
 
 AGatherDoodadJob::AGatherDoodadJob()
 {
+	targetDoodad = nullptr;
 	PrimaryActorTick.TickInterval = 0.5f;
 }
 
