@@ -189,6 +189,11 @@ AActor* AZombieSiegePlayerController::GetActorUnderScreenPoint(float x, float y)
 	return actor;
 }
 
+void AZombieSiegePlayerController::ShowGameUiInternal_Implementation(bool bShow)
+{
+	UE_LOG(LogZombieSiegePlayerController, Warning, TEXT("Exec ShowGameUiInternal_Implementation(%d) called."), bShow);
+}
+
 void AZombieSiegePlayerController::AddToControlledUnits(AUnitBase* unit)
 {
 	check(unit);
@@ -218,4 +223,11 @@ void AZombieSiegePlayerController::RemoveJob(AJobBase* job)
 const TArray<AJobBase*> AZombieSiegePlayerController::GetJobs()
 {
 	return jobs;
+}
+
+void AZombieSiegePlayerController::ShowGameUi(bool bShow)
+{
+	UE_LOG(LogZombieSiegePlayerController, Warning, TEXT("Exec ShowGameUi(%d) called"), bShow);
+
+	ShowGameUiInternal(bShow);
 }

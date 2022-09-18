@@ -58,6 +58,9 @@ protected:
 
 	AActor* GetActorUnderScreenPoint(float x, float y);
 
+	UFUNCTION(BlueprintNativeEvent)
+	void ShowGameUiInternal(bool bShow);
+
 public:
 	void AddToControlledUnits(AUnitBase* unit);
 	void RemoveFromControlledUnits(AUnitBase* unit);
@@ -67,4 +70,7 @@ public:
 	void RemoveJob(AJobBase* job);
 
 	const TArray<AJobBase*> GetJobs();
+
+	UFUNCTION(BlueprintCallable, Exec)
+	void ShowGameUi(bool bShow);
 };
