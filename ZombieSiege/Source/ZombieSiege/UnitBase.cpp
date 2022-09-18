@@ -3,9 +3,122 @@
 
 #include "UnitBase.h"
 
-AUnitBase::AUnitBase()
+UTexture2D* AUnitBase::GetPreviewTexture()
 {
+	return previewTexture;
+}
 
+TMap<EResourceType, int> AUnitBase::GetRequiredResources()
+{
+	return requiredResources;
+}
+
+AUnitBase* AUnitBase::GetPassengerCarrier()
+{
+	return passengerCarrier;
+}
+
+void AUnitBase::SetPassengerCarrier(AUnitBase* carrier)
+{
+	if (carrier == passengerCarrier)
+	{
+		return;
+	}
+
+	passengerCarrier = carrier;
+
+	if (passengerCarrier)
+	{
+		check(carrier->HasClassifications(EUnitClassification::PassengerCarrier));
+		check(!this->HasClassifications(EUnitClassification::PassengerCarrier));
+
+		SetActorHiddenInGame(true);
+	}
+	else
+	{
+		bool shouldBeHidden = ShouldBeHidden();
+		SetActorHiddenInGame(shouldBeHidden);
+	}
+}
+
+bool AUnitBase::EnterPassengerCarrier(AUnitBase* carrier)
+{
+	check(carrier);
+
+	check(carrier->HasClassifications(EUnitClassification::PassengerCarrier));
+	check(!this->HasClassifications(EUnitClassification::PassengerCarrier));
+	
+	float distSqr2D = (carrier->GetActorLocation() - GetActorLocation()).Size2D();
+
+	if (distSqr2D > FMath::Square(enterPassengerCarrierRadius))
+	{
+		return false;
+	}
+
+	if (carrier->GetFreePassengerSeats() > 0)
+	{
+		carrier->AddPassenger(this);
+		SetPassengerCarrier(carrier);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void AUnitBase::LeavePassengerCarrier()
+{
+	check(passengerCarrier);
+
+	passengerCarrier->RemovePassenger(this);
+	SetPassengerCarrier(nullptr);
+}
+
+int AUnitBase::GetFreePassengerSeats()
+{
+	return passengerSeats - passengers.Num();
+}
+
+void AUnitBase::AddPassenger(AUnitBase* passenger)
+{
+	check(HasClassifications(EUnitClassification::PassengerCarrier));
+
+	check(GetFreePassengerSeats() > 0);
+
+	passengers.Add(passenger);
+}
+
+void AUnitBase::RemovePassenger(AUnitBase* passenger)
+{
+	check(HasClassifications(EUnitClassification::PassengerCarrier));
+
+	passengers.Remove(passenger);
+}
+
+EUnitClassification AUnitBase::GetClassifications()
+{
+	return static_cast<EUnitClassification>(classificationFlags);
+}
+
+bool AUnitBase::HasClassifications(EUnitClassification flags)
+{
+	return (classificationFlags & static_cast<int>(flags)) == static_cast<int>(flags);
+}
+
+void AUnitBase::AddClassifications(EUnitClassification flags)
+{
+	classificationFlags |= static_cast<int>(flags);
+}
+
+void AUnitBase::RemoveClassifications(EUnitClassification flags)
+{
+	classificationFlags &= ~static_cast<int>(flags);
+}
+
+void AUnitBase::SetClassifications(EUnitClassification flags)
+{
+	classificationFlags = static_cast<int>(flags);
 }
 
 void AUnitBase::GetSimpleCollisionCylinder(float& CollisionRadius, float& CollisionHalfHeight) const
@@ -138,7 +251,7 @@ bool AUnitBase::IsDying()
 
 bool AUnitBase::IsAlive()
 {
-	return bIsAlive;
+	return bIsAlive && !bIsDying;
 }
 
 void AUnitBase::PreventDeath(float healthValue)
@@ -250,6 +363,13 @@ void AUnitBase::BeginPlay()
 	movementComponent = Cast<UFloatingPawnMovement>(GetComponentByClass(UFloatingPawnMovement::StaticClass()));
 
 	SetMovementComponentSpeedCap(GetMaxSpeed());
+}
+
+bool AUnitBase::ShouldBeHidden()
+{
+	bool isInCarrier = GetPassengerCarrier() != nullptr;
+
+	return isInCarrier;
 }
 
 void AUnitBase::BeginDying(const FDamageInstance& killingDamageInstance)

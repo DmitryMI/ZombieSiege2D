@@ -11,6 +11,7 @@
 #include "ZombieSiegePlayerState.h"
 #include "ZombieSiegePlayerController.h"
 #include "GameFramework/FloatingPawnMovement.h"
+#include "UnitClassification.h"
 #include "UnitBase.generated.h"
 
 UCLASS()
@@ -19,6 +20,19 @@ class ZOMBIESIEGE_API AUnitBase : public APawn
 	GENERATED_BODY()
 
 private:
+
+	UPROPERTY(EditDefaultsOnly, meta = (Bitmask, BitmaskEnum = EUnitClassification))
+	uint8 classificationFlags = (int)EUnitClassification::NONE;
+
+	UPROPERTY(EditDefaultsOnly)
+	TMap<EResourceType, int> requiredResources;
+
+	UPROPERTY(EditDefaultsOnly)
+	UTexture2D* previewTexture;
+
+	UPROPERTY(EditDefaultsOnly)
+	float enterPassengerCarrierRadius = 150.0f;
+
 	UPROPERTY(EditDefaultsOnly)
 	float collisionRadius = 50.0f;
 
@@ -49,12 +63,23 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	AZombieSiegePlayerController* owningPlayerController;
 
+	UPROPERTY(VisibleAnywhere)
+	AUnitBase* passengerCarrier;
+
+	UPROPERTY(EditDefaultsOnly)
+	int passengerSeats;
+
+	UPROPERTY(VisibleAnywhere)
+	TArray<AUnitBase*> passengers;
+
 protected:
 
 	UPROPERTY(Transient)
 	UFloatingPawnMovement* movementComponent;
 
 	virtual void BeginPlay() override;
+
+	virtual bool ShouldBeHidden();
 
 	UFUNCTION(BlueprintCallable)
 	/// <summary>
@@ -74,7 +99,42 @@ protected:
 	void SetMovementComponentSpeedCap(float speedCap);
 
 public:
-	AUnitBase();
+
+	UFUNCTION(BlueprintCallable)
+	UTexture2D* GetPreviewTexture();
+
+	TMap<EResourceType, int> GetRequiredResources();
+
+	UFUNCTION(BlueprintCallable)
+	AUnitBase* GetPassengerCarrier();
+
+	UFUNCTION(BlueprintCallable)
+	void SetPassengerCarrier(AUnitBase* carrier);
+
+	UFUNCTION(BlueprintCallable)
+	bool EnterPassengerCarrier(AUnitBase* carrier);
+
+	UFUNCTION(BlueprintCallable)
+	void LeavePassengerCarrier();
+
+	UFUNCTION(BlueprintCallable)
+	int GetFreePassengerSeats();
+
+	UFUNCTION(BlueprintCallable)
+	void AddPassenger(AUnitBase* passenger);
+
+	UFUNCTION(BlueprintCallable)
+	void RemovePassenger(AUnitBase* passenger);
+
+	EUnitClassification GetClassifications();
+
+	bool HasClassifications(EUnitClassification flags);
+
+	void AddClassifications(EUnitClassification flags);
+
+	void RemoveClassifications(EUnitClassification flags);
+
+	virtual void SetClassifications(EUnitClassification flags);
 
 	virtual void GetSimpleCollisionCylinder(float& CollisionRadius,	float& CollisionHalfHeight) const override;
 

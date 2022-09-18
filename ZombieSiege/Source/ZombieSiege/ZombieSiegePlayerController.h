@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "ZombieSiegePlayerController.generated.h"
 
+class ABuilding;
 class AUnitBase;
 class AJobBase;
 class ADoodad;
@@ -35,6 +36,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "DefaultPreferences|Camera")
 	float cameraDefaultZoomSpeed = 15000.0f;
+
+	UPROPERTY(EditDefaultsOnly)
+	TArray<TSubclassOf<AUnitBase>> buildables;
 	
 	UPROPERTY(VisibleAnywhere)
 	TArray<AUnitBase*> controlledUnits;
@@ -62,14 +66,23 @@ protected:
 	void ShowGameUiInternal(bool bShow);
 
 public:
+	UFUNCTION(BlueprintCallable)
 	void AddToControlledUnits(AUnitBase* unit);
+
+	UFUNCTION(BlueprintCallable)
 	void RemoveFromControlledUnits(AUnitBase* unit);
 
+	UFUNCTION(BlueprintCallable)
 	const TArray<AUnitBase*>& GetControlledUnits();
 
+	UFUNCTION(BlueprintCallable)
 	void RemoveJob(AJobBase* job);
 
+	UFUNCTION(BlueprintCallable)
 	const TArray<AJobBase*> GetJobs();
+
+	UFUNCTION(BlueprintCallable)
+	const TArray<TSubclassOf<AUnitBase>>& GetBuildableUnits();
 
 	UFUNCTION(BlueprintCallable, Exec)
 	void ShowGameUi(bool bShow);

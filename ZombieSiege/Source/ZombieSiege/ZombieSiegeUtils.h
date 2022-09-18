@@ -73,6 +73,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
 	static int CompareDistances2D(AActor* actorA, AActor* actorB, AActor* pivotActor);
 
+	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
+	static UObject* GetClassDefaultObject(UClass* clazz)
+	{
+		if (!clazz)
+		{
+			return nullptr;
+		}
+		UObject* obj = clazz->GetDefaultObject();
+
+		return obj;
+	}
+
 	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils", meta = (WorldContext = "WorldContextObject", AutoCreateRefTerm = "ignoredActors"))
 	static AUnitBase* FindClosestAliveUnitInRadius(
 		const UObject* WorldContextObject,

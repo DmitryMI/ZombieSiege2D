@@ -225,6 +225,11 @@ const TArray<AJobBase*> AZombieSiegePlayerController::GetJobs()
 	return jobs;
 }
 
+const TArray<TSubclassOf<AUnitBase>>& AZombieSiegePlayerController::GetBuildableUnits()
+{
+	return buildables;
+}
+
 void AZombieSiegePlayerController::ShowGameUi(bool bShow)
 {
 	UE_LOG(LogZombieSiegePlayerController, Warning, TEXT("Exec ShowGameUi(%d) called"), bShow);
