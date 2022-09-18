@@ -6,12 +6,15 @@
 #include "Doodad.h"
 #include "ZombieSiegeUtils.h"
 #include "SurvivorAiController.h"
+#include "ZombieSiegeUtils.h"
 
 void AGatherDoodadJob::FindExecutors()
 {
 	check(GetOwningPlayerController());
 
 	const TArray<AUnitBase*>& controlledUnits = GetOwningPlayerController()->GetControlledUnits();
+
+	TArray<AUnitBase*> suitableExecutors;
 
 	for (AUnitBase* unit : controlledUnits)
 	{
@@ -41,13 +44,19 @@ void AGatherDoodadJob::FindExecutors()
 
 		if (bAssign)
 		{
-			AssignExecutor(unit);
-		}
+			auto comparator = [this](AUnitBase* a, AUnitBase* b)
+			{
+				return UZombieSiegeUtils::CompareDistances2D(a, b, this);
+			};
 
-		if (assignedExecutors.Num() > 0)
-		{
-			break;
-		}
+			UZombieSiegeUtils::InsertSortedAscending(suitableExecutors, unit, comparator);
+		}		
+	}
+
+	if (suitableExecutors.Num() > 0)
+	{
+		AUnitBase* bestExecutor = suitableExecutors[0];
+		AssignExecutor(bestExecutor);
 	}
 }
 

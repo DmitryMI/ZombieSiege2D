@@ -7,6 +7,27 @@
 #include "Kismet/KismetSystemLibrary.h"
 
 
+int UZombieSiegeUtils::CompareDistances2D(AActor* actorA, AActor* actorB, AActor* pivotActor)
+{
+	FVector pivot = pivotActor->GetActorLocation();
+
+	float distA = FVector::DistSquared2D(actorA->GetActorLocation(), pivot);
+	float distB = FVector::DistSquared2D(actorB->GetActorLocation(), pivot);
+
+	if (distA < distB)
+	{
+		return -1;
+	}
+	else if (distA > distB)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 AUnitBase* UZombieSiegeUtils::FindClosestAliveUnitInRadius(
 	const UObject* WorldContextObject,
 	const FVector& center,

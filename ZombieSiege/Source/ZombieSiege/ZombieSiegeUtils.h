@@ -17,6 +17,62 @@ class ZOMBIESIEGE_API UZombieSiegeUtils : public UBlueprintFunctionLibrary
 
 public:
 
+	template<typename T>
+	static bool CompareArrays(const TArray<T>& a, const TArray<T>& b)
+	{
+		if (a.Num() != b.Num())
+		{
+			return false;
+		}
+
+		for (int i = 0; i < a.Num(); i++)
+		{
+			if (a[i] != b[i])
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+
+	/// <summary>
+	/// Inserts an item to an array keeping the ascending sort order.
+	/// </summary>
+	/// <typeparam name="T">Array item type</typeparam>
+	/// <typeparam name="Comparator">Callable comparator typeparam with signature (T a, T b) -> int.</typeparam>
+	/// <param name="arr">Array to insert to</param>
+	/// <param name="item">Inserted item</param>
+	/// <param name="comparator">Comparator object</param>
+	template<typename T, typename Comparator>
+	static void InsertSortedAscending(TArray<T>& arr, const T& item, const Comparator& comparator)
+	{
+		int index = 0;
+		for (index; index < arr.Num(); index++)
+		{
+			if (comparator(item, arr[index]) < 0)
+			{
+				break;
+			}
+		}
+
+		if (index == arr.Num())
+		{
+			arr.Add(item);
+		}
+		else
+		{
+			arr.Insert(item, index);
+		}
+	}
+
+	template<typename T>
+	static int DefaultComparator(T a, T b);
+
+	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
+	static int CompareDistances2D(AActor* actorA, AActor* actorB, AActor* pivotActor);
+
 	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils", meta = (WorldContext = "WorldContextObject", AutoCreateRefTerm = "ignoredActors"))
 	static AUnitBase* FindClosestAliveUnitInRadius(
 		const UObject* WorldContextObject,
@@ -70,3 +126,18 @@ public:
 		float tolerance,
 		FVector& OutLocation);
 };
+
+template<typename T>
+inline int UZombieSiegeUtils::DefaultComparator(T a, T b)
+{
+	if (a < b)
+	{
+		return -1;
+	}
+	else if (a > b)
+	{
+		return 1;
+	}
+
+	return 0;
+}
