@@ -6,7 +6,6 @@
 
 bool UZombieSiegeUtilsTest::TestInsertSortedAscending()
 {
-	// Test empty array
 	TArray<int> arr;
 	int value = 1;
 	UZombieSiegeUtils::InsertSortedAscending(arr, value, [](int a, int b) {return UZombieSiegeUtils::DefaultComparator(a, b);});
@@ -40,6 +39,22 @@ bool UZombieSiegeUtilsTest::TestInsertSortedAscending()
 	expected = { 1, 2, 3, 4 };
 	value = 3;
 	UZombieSiegeUtils::InsertSortedAscending(arr, value, [](int a, int b) {return UZombieSiegeUtils::DefaultComparator(a, b); });
+
+	if (!UZombieSiegeUtils::CompareArrays(arr, expected))
+	{
+		return false;
+	}
+
+	arr.Empty();
+	expected.Empty();
+
+	for (int i = 0; i < 100; i++)
+	{
+		value = FMath::Rand() % 10;
+		UZombieSiegeUtils::InsertSortedAscending(arr, value, [](int a, int b) {return UZombieSiegeUtils::DefaultComparator(a, b); });
+		expected.Add(value);
+	}
+	expected.Sort();
 
 	if (!UZombieSiegeUtils::CompareArrays(arr, expected))
 	{
