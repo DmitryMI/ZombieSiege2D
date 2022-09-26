@@ -46,7 +46,7 @@ void AGatherDoodadJob::FindExecutors()
 		{
 			auto comparator = [this](AUnitBase* a, AUnitBase* b)
 			{
-				return UZombieSiegeUtils::CompareDistances2D(a, b, this);
+				return UZombieSiegeUtils::CompareDistances2D(a, b, targetDoodad);
 			};
 
 			UZombieSiegeUtils::InsertSortedAscending(suitableExecutors, unit, comparator);
