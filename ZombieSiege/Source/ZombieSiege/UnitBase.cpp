@@ -436,17 +436,18 @@ void AUnitBase::BeginDying(const FDamageInstance& killingDamageInstance)
 	}
 }
 
-void AUnitBase::ReceiveDamage(const FDamageInstance& damage)
+float AUnitBase::ReceiveDamage(const FDamageInstance& damage)
 {
 	// Simple implementation, should be overriden in child classes
 
 	if (bIsDying || !bIsAlive)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("ReceiveDamage invoked for a unit with bIsDying == %d and bIsAlive == %d"), bIsDying, bIsAlive);
-		return;
+		return 0.0f;
 	}
 
 	float currentHealth = GetHealth();
+	float healthOld = currentHealth;
 
 	currentHealth -= damage.amount;
 
@@ -466,6 +467,34 @@ void AUnitBase::ReceiveDamage(const FDamageInstance& damage)
 	{
 		BeginDying(damage);
 	}
+
+	return healthOld - GetHealth();
+}
+
+float AUnitBase::ReceiveHealing(const FHealingInstance& healing)
+{
+	if (bIsDying || !bIsAlive)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ReceiveHealing invoked for a unit with bIsDying == %d and bIsAlive == %d"), bIsDying, bIsAlive);
+		return 0.0f;
+	}
+
+	float currentHealth = GetHealth();
+	float healthOld = currentHealth;
+
+	currentHealth += healing.amount;
+
+	if (currentHealth >= maxHealth)
+	{
+		SetHealth(maxHealth);
+	}
+	else
+	{
+		SetHealth(currentHealth);
+	}
+
+
+	return GetHealth() - healthOld;
 }
 
 

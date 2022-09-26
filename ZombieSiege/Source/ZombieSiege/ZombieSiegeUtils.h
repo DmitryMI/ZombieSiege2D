@@ -100,7 +100,20 @@ public:
 	}
 
 	template<typename T>
-	static int DefaultComparator(T a, T b);
+	static int DefaultComparator(T a, T b)
+	{
+		if (a < b)
+		{
+			return -1;
+		}
+		else if (a > b)
+		{
+			return 1;
+		}
+
+		return 0;
+	}
+
 
 	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
 	static int CompareDistances2D(AActor* actorA, AActor* actorB, AActor* pivotActor);
@@ -169,19 +182,7 @@ public:
 		AUnitBase* goalAgent,
 		float tolerance,
 		FVector& OutLocation);
+
+	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
+	static bool AreEnemies(AUnitBase* unitA, AUnitBase* unitB);
 };
-
-template<typename T>
-inline int UZombieSiegeUtils::DefaultComparator(T a, T b)
-{
-	if (a < b)
-	{
-		return -1;
-	}
-	else if (a > b)
-	{
-		return 1;
-	}
-
-	return 0;
-}

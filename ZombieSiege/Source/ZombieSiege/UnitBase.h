@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "DamageInstance.h"
+#include "HealingInstance.h"
 #include "DamageReceivedEventArgs.h"
 #include "HealthChangedEventArgs.h"
 #include "UnitIsDyingEventArgs.h"
@@ -139,14 +140,19 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RemovePassenger(AUnitBase* passenger);
 
+	UFUNCTION(BlueprintCallable)
 	EUnitClassification GetClassifications();
 
+	UFUNCTION(BlueprintCallable)
 	bool HasClassifications(EUnitClassification flags);
 
+	UFUNCTION(BlueprintCallable)
 	void AddClassifications(EUnitClassification flags);
-
+	
+	UFUNCTION(BlueprintCallable)
 	void RemoveClassifications(EUnitClassification flags);
 
+	UFUNCTION(BlueprintCallable)
 	virtual void SetClassifications(EUnitClassification flags);
 
 	virtual void GetSimpleCollisionCylinder(float& CollisionRadius,	float& CollisionHalfHeight) const override;
@@ -155,6 +161,7 @@ public:
 	/// Gets controlling player state of this unit. Can be nullptr if unit is uncontrolled.
 	/// </summary>
 	/// <returns>PlayerState of a player, responsible for this unit</returns>
+	UFUNCTION(BlueprintCallable)
 	AZombieSiegePlayerState* GetOwningPlayerState();
 
 	/// <summary>
@@ -262,7 +269,16 @@ public:
 	/// <summary>
 	/// Receive a damage instance unconditionally.
 	/// </summary>
-	virtual void ReceiveDamage(const FDamageInstance& damage);
+	/// <param name="damage"></param>
+	/// <returns>Actual inflicted damage (after all reductions or amplifications)</returns>
+	virtual float ReceiveDamage(const FDamageInstance& damage);
+	
+	UFUNCTION(BlueprintCallable)
+	/// <summary>
+	/// Receive a healing instance unconditionally.
+	/// </summary>
+	virtual float ReceiveHealing(const FHealingInstance& healing);
+
 
 	DECLARE_EVENT_OneParam(AUnitBase, FOnDamagedReceivedEvent, const FDamageReceivedEventArgs&);
 

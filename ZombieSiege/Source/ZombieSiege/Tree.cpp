@@ -12,7 +12,7 @@ void ATree::GetRandomSizeAndType(ETreeType& outType, ETreeSize& outSize)
 	outSize = static_cast<ETreeSize>(FMath::RandRange(0, static_cast<uint8>(ETreeSize::ETREESIZE_MAX) - 1));
 }
 
-void ATree::ReceiveDamage(const FDamageInstance& damage)
+float ATree::ReceiveDamage(const FDamageInstance& damage)
 {
 	if (damage.source != nullptr)
 	{
@@ -20,7 +20,7 @@ void ATree::ReceiveDamage(const FDamageInstance& damage)
 	}
 
 	// UnitBase's implementation decreases health and initiates dying sequence
-	Super::ReceiveDamage(damage);
+	return Super::ReceiveDamage(damage);
 }
 
 void ATree::GetTreeTypeAndSize(ETreeType& outType, ETreeSize& outSize)

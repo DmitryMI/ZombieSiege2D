@@ -22,12 +22,17 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	float buildingProgress = 0.0f;
 
+protected:
+	virtual void BeginPlay() override;
+
 public:
 	ABuilding();
 
-	void ReceiveRepair(const FHealingInstance& repair);
+	virtual float ReceiveHealing(const FHealingInstance& repair);
 
 	bool IsBuiltOnSpawn();
+
+	bool IsFullyBuilt();
 
 	void SetIsBuiltOnSpawn(bool isBuiltOnSpawn);
 };

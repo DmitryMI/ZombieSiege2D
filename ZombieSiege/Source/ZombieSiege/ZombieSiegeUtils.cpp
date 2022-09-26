@@ -293,3 +293,14 @@ bool UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(
 	}
 
 }
+
+bool UZombieSiegeUtils::AreEnemies(AUnitBase* unitA, AUnitBase* unitB)
+{
+	check(unitA);
+	check(unitB);
+
+	AZombieSiegePlayerController* controllerA = unitA->GetOwningPlayerController();
+	AZombieSiegePlayerController* controllerB = unitB->GetOwningPlayerController();
+
+	return controllerA != controllerB;
+}
