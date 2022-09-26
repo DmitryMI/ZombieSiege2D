@@ -21,6 +21,12 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	AUnitBase* unit;
 
+	UFUNCTION(BlueprintCallable)
+	bool ShouldShowBuildingProgress();
+
+	UFUNCTION(BlueprintCallable)
+	float GetBuildingProgressFraction();
+
 public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateUnitHud();

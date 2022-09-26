@@ -7,39 +7,71 @@ void ABuilding::BeginPlay()
 {
 	if (bIsBuiltOnSpawn)
 	{
-		buildingProgress = GetMaxHealth();
-		SetUnitState(EUnitState::None);
+		SetBuildingProgress(GetMaxHealth());
 	}
 	else
 	{
-		buildingProgress = 0;
 		SetUnitState(EUnitState::Birth);
+		SetBuildingProgress(0);
 	}
 }
 
 ABuilding::ABuilding()
 {
 	AddClassifications(EUnitClassification::Building);
-
-	
 }
 
 float ABuilding::ReceiveHealing(const FHealingInstance& repair)
 {
 	float healingActual = Super::ReceiveHealing(repair);
 
-	if (buildingProgress < GetMaxHealth())
+	if (!IsFullyBuilt())
 	{
-		buildingProgress += healingActual;
+		AddBuildingProgress(healingActual);
 	}
 
-	if (buildingProgress >= GetMaxHealth() && GetUnitState() == EUnitState::Birth)
+	return healingActual;
+}
+
+float ABuilding::GetBuildingProgressFraction()
+{
+	return buildingProgress / GetMaxHealth();
+}
+
+float ABuilding::GetBuildingProgress()
+{
+	return buildingProgress;
+}
+
+void ABuilding::SetBuildingProgressFraction(float progressFraction)
+{
+	progressFraction = FMath::Clamp(progressFraction, 0.0f, 1.0f);
+
+	SetBuildingProgress(progressFraction * GetMaxHealth());
+}
+
+void ABuilding::SetBuildingProgress(float progress)
+{
+	progress = FMath::Clamp(progress, 0, GetMaxHealth());
+	buildingProgress = progress;
+
+	if (GetUnitState() == EUnitState::Birth && IsFullyBuilt())
 	{
 		buildingProgress = GetMaxHealth();
 		SetUnitState(EUnitState::None);
 	}
+	else if (GetUnitState() != EUnitState::Birth && buildingProgress < GetMaxHealth())
+	{
+		UE_LOG(LogTemp, Fatal, TEXT("SetBuildingProgress decreased building progress of a fully-built building! This is not supported."));
+	}
+}
 
-	return healingActual;
+void ABuilding::AddBuildingProgress(float addProgress)
+{
+	check(addProgress >= 0);
+	float progress = GetBuildingProgress() + addProgress;
+
+	SetBuildingProgress(progress);
 }
 
 bool ABuilding::IsBuiltOnSpawn()

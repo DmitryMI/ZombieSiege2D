@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "UnitBase.h"
 #include "Components/WidgetComponent.h"
+#include "BuildingProgressChangedEventArgs.h"
 #include "UnitHudComponent.generated.h"
 
 class UUnitHudWidget;
@@ -30,6 +31,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void OnOwnerHealthChangedHandler(const FHealthChangedEventArgs& args);
+	virtual void OnOwnerBuildingProgressChangedHandler(const FBuildingProgressChangedEventArgs& args);
 
 	virtual void UpdateUnitHudWidget();
 

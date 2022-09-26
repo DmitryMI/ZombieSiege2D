@@ -4,6 +4,7 @@
 #include "UnitHudComponent.h"
 #include "ZombieSiegeUtils.h"
 #include "UnitHudWidget.h"
+#include "Building.h"
 #include "Blueprint/UserWidget.h"
 
 
@@ -15,9 +16,20 @@ void UUnitHudComponent::BeginPlay()
 	AUnitBase* owner = GetOwnerUnit();
 
 	owner->OnHealthChanged().AddUObject(this, &UUnitHudComponent::OnOwnerHealthChangedHandler);
+
+	ABuilding* building = Cast<ABuilding>(owner);
+	if (building)
+	{
+		building->OnBuildingProgressChanged().AddUObject(this, &UUnitHudComponent::OnOwnerBuildingProgressChangedHandler);
+	}
 }
 
 void UUnitHudComponent::OnOwnerHealthChangedHandler(const FHealthChangedEventArgs& args)
+{
+	UpdateUnitHudWidget();
+}
+
+void UUnitHudComponent::OnOwnerBuildingProgressChangedHandler(const FBuildingProgressChangedEventArgs& args)
 {
 	UpdateUnitHudWidget();
 }

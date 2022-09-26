@@ -44,7 +44,7 @@ public:
 	/// <param name="type">Resource Type</param>
 	/// <param name="amount">Amount of resource to remove</param>
 	/// <returns>Returns false, if the storage contained less resource than requested</returns>
-	bool TakeLumberFromStorage(EResourceType type, int amount);
+	bool TakeResourceFromStorage(EResourceType type, int amount);
 
 	UFUNCTION(BlueprintCallable)
 	/// <summary>

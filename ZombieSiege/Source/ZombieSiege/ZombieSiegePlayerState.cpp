@@ -31,7 +31,7 @@ void AZombieSiegePlayerState::AddResourceToStorage(EResourceType type, int amoun
 	SetStoredResourceAmount(type, currentAmount + amount);
 }
 
-bool AZombieSiegePlayerState::TakeLumberFromStorage(EResourceType type, int amount)
+bool AZombieSiegePlayerState::TakeResourceFromStorage(EResourceType type, int amount)
 {
 	CHECK_RESOURCE_VALID(type);
 
