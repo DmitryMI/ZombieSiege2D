@@ -5,8 +5,8 @@
 #include "CoreMinimal.h"
 #include "UnitBase.h"
 #include "FaceDirection.h"
-#include "HumanoidState.h"
-#include "HumanoidGraphicsComponent.h"
+#include "UnitState.h"
+#include "UnitGraphicsComponent.h"
 #include "WeaponInfo.h"
 #include "WeaponManager.h"
 #include "GameFramework/FloatingPawnMovement.h"
@@ -20,9 +20,6 @@ class ZOMBIESIEGE_API AHumanoid : public AUnitBase
 private:
 	UPROPERTY(VisibleAnywhere)
 	EFaceDirection facingDirection = EFaceDirection::Down;
-
-	UPROPERTY(VisibleAnywhere)
-	EHumanoidState currentState = EHumanoidState::None;
 
 	UPROPERTY(VisibleAnywhere)
 	AWeaponManager* weaponManager;
@@ -50,17 +47,12 @@ private:
 	void OnCooldownTimerElapsed();
 
 public:
-	AHumanoid();
-
-	DECLARE_EVENT_TwoParams(AHumanoid, FOnHumanoidStateChangedEvent, EHumanoidState stateOld, EHumanoidState stateNew);
-	FOnHumanoidStateChangedEvent& OnHumanoidStateChanged() { return onHumanoidStateChangedEvent; }
-private:
-	FOnHumanoidStateChangedEvent onHumanoidStateChangedEvent;
+	AHumanoid();	
 
 protected:
 
 	UPROPERTY(Transient)
-	UHumanoidGraphicsComponent* graphicsComponent;	
+	UUnitGraphicsComponent* graphicsComponent;	
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UWeaponInfo* weaponInfo;
@@ -71,13 +63,7 @@ protected:
 
 	virtual bool CanCommitAttackTarget(AUnitBase* target);
 
-	UFUNCTION(BlueprintCallable)
-	void SetHumanoidState(EHumanoidState nextState);	
-
-public:	
-
-	UFUNCTION(BlueprintCallable)
-	EHumanoidState GetHumanoidState();
+public:		
 
 	UFUNCTION(BlueprintCallable)
 	bool IsOnCooldown();

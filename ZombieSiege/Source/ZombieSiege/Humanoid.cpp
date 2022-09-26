@@ -13,7 +13,7 @@ void AHumanoid::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	graphicsComponent = Cast<UHumanoidGraphicsComponent>(GetComponentByClass(UHumanoidGraphicsComponent::StaticClass()));
+	graphicsComponent = Cast<UUnitGraphicsComponent>(GetComponentByClass(UUnitGraphicsComponent::StaticClass()));
 	check(graphicsComponent);
 
 	weaponManager = AWeaponManager::GetInstance(GetWorld());
@@ -26,18 +26,6 @@ void AHumanoid::SetupDefaultWeapon()
 {
 	weaponInfo = weaponManager->GetWeaponInfo("SurvivorFists");
 	check(weaponInfo);
-}
-
-void AHumanoid::SetHumanoidState(EHumanoidState nextState)
-{
-	EHumanoidState oldState = currentState;
-	currentState = nextState;
-	onHumanoidStateChangedEvent.Broadcast(oldState, nextState);
-}
-
-EHumanoidState AHumanoid::GetHumanoidState()
-{
-	return currentState;
 }
 
 bool AHumanoid::IsOnCooldown()
@@ -102,14 +90,14 @@ void AHumanoid::Tick(float DeltaTime)
 		if (CanMove())
 		{
 			facingDirection = directionFlags;			
-			SetHumanoidState(EHumanoidState::Moving);
+			SetUnitState(EUnitState::Moving);
 		}
 	}
 	else
 	{
-		if (GetHumanoidState() == EHumanoidState::Moving)
+		if (GetUnitState() == EUnitState::Moving)
 		{
-			SetHumanoidState(EHumanoidState::None);
+			SetUnitState(EUnitState::None);
 		}
 	}
 }
@@ -117,8 +105,8 @@ void AHumanoid::Tick(float DeltaTime)
 bool AHumanoid::CanMove()
 {
 	return
-		currentState == EHumanoidState::Moving ||
-		currentState == EHumanoidState::None;
+		GetUnitState() == EUnitState::Moving ||
+		GetUnitState() == EUnitState::None;
 }
 
 bool AHumanoid::CanAttackTarget(AUnitBase* target)
@@ -128,7 +116,7 @@ bool AHumanoid::CanAttackTarget(AUnitBase* target)
 		return false;
 	}
 
-	if (currentState != EHumanoidState::None)
+	if (GetUnitState() != EUnitState::None)
 	{
 		return false;
 	}
@@ -171,7 +159,7 @@ void AHumanoid::OnBackswingTimerElapsed(AUnitBase* target)
 		weaponInfo->AttackTarget(this, target);
 	}
 
-	SetHumanoidState(EHumanoidState::AttackingRelaxation);
+	SetUnitState(EUnitState::AttackingRelaxation);
 
 	check(weaponInfo);
 
@@ -186,7 +174,7 @@ void AHumanoid::OnRelaxationTimerElapsed()
 {
 	attackRelaxationTimerDelegate.Unbind();
 
-	SetHumanoidState(EHumanoidState::None);
+	SetUnitState(EUnitState::None);
 
 	if (weaponInfo == nullptr)
 	{
@@ -231,7 +219,7 @@ bool AHumanoid::AttackTarget(AUnitBase* target)
 
 	check(weaponInfo);
 
-	SetHumanoidState(EHumanoidState::AttackingBackswing);
+	SetUnitState(EUnitState::AttackingBackswing);
 
 	bIsOnCooldown = true;
 

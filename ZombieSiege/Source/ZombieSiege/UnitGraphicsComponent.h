@@ -7,11 +7,11 @@
 #include "PaperFlipbook.h"
 #include "FaceDirection.h"
 #include "PaperFlipbookComponent.h"
-#include "HumanoidGraphicsComponent.generated.h"
+#include "UnitGraphicsComponent.generated.h"
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class ZOMBIESIEGE_API UHumanoidGraphicsComponent : public USceneComponent
+class ZOMBIESIEGE_API UUnitGraphicsComponent : public USceneComponent
 {
 	GENERATED_BODY()
 
@@ -24,26 +24,23 @@ private:
 	TArray<UPaperFlipbook*> attackingFlipbooks;
 	UPROPERTY(EditDefaultsOnly)
 	TArray<UPaperFlipbook*> dyingFlipbooks;
+	UPROPERTY(EditDefaultsOnly)
+	TArray<UPaperFlipbook*> birthFlipbooks;
 
 	UFUNCTION()
-	void OnHumanoidStateChangedHandler(EHumanoidState stateOld, EHumanoidState stateNew);
-
-	UFUNCTION()
-	void UpdateFlipbook(EHumanoidState state, EFaceDirection direction);
+	void UpdateFlipbook(EUnitState state, EFaceDirection direction);
 	
 protected:
 
 	UPROPERTY(Transient)
-	UPaperFlipbookComponent* humanoidFlipbookRenderer;
+	UPaperFlipbookComponent* flipbookRenderer;
 
 	virtual void BeginPlay() override;
-
-	
 
 public:	
 
 	static int GetDirectionSpriteIndex(EFaceDirection faceDirectionEnum);
 
-	UHumanoidGraphicsComponent();
+	UUnitGraphicsComponent();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;		
 };

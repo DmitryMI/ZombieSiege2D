@@ -3,6 +3,18 @@
 
 #include "UnitBase.h"
 
+void AUnitBase::SetUnitState(EUnitState nextState)
+{
+	EUnitState oldState = currentState;
+	currentState = nextState;
+	onUnitStateChangedEvent.Broadcast(oldState, nextState);
+}
+
+EUnitState AUnitBase::GetUnitState()
+{
+	return currentState;
+}
+
 UTexture2D* AUnitBase::GetPreviewTexture()
 {
 	return previewTexture;
@@ -201,7 +213,8 @@ bool AUnitBase::CanMove()
 
 void AUnitBase::KillUnit(bool bForceDeath)
 {
-	health = 0;
+	//health = 0;
+	SetHealth(0);
 
 	FDamageInstance emptyDamage;
 
@@ -278,12 +291,20 @@ void AUnitBase::SetHealth(float healthValue)
 {
 	healthValue = FMath::Clamp(healthValue, 0, maxHealth);
 
-	health = healthValue;
-
-	if (FMath::IsNearlyZero(health))
+	if (!FMath::IsNearlyEqual(health, healthValue))
 	{
-		FDamageInstance emptyDamage;
-		BeginDying(emptyDamage);
+		FHealthChangedEventArgs args(this, health, healthValue);		
+		health = healthValue;
+
+		onHealthChangedEvent.Broadcast(args);
+
+		/*
+		if (FMath::IsNearlyZero(health))
+		{
+			FDamageInstance emptyDamage;
+			BeginDying(emptyDamage);
+		}
+		*/
 	}
 }
 
@@ -299,12 +320,13 @@ void AUnitBase::SetMaxHealth(float maxHealthValue)
 		maxHealthValue = 0;
 	}
 
-	if (health > maxHealthValue)
+	if (GetHealth() > maxHealthValue)
 	{
-		health = maxHealthValue;
+		//health = maxHealthValue;
+		SetHealth(maxHealthValue);
 	}
 
-	if (FMath::IsNearlyZero(health))
+	if (FMath::IsNearlyZero(GetHealth()))
 	{
 		FDamageInstance emptyDamage;
 		BeginDying(emptyDamage);
@@ -324,6 +346,7 @@ bool AUnitBase::CanAttackTarget(AUnitBase* target)
 void AUnitBase::FinishDying(const FDamageInstance& killingDamageInstance)
 {
 	// Should be overwritten by child classes (e.g. to start death animation).
+
 	bIsAlive = false;
 	Destroy();
 }
@@ -374,6 +397,15 @@ bool AUnitBase::ShouldBeHidden()
 
 void AUnitBase::BeginDying(const FDamageInstance& killingDamageInstance)
 {
+	FString name;
+	GetName(name);
+
+	if (bIsDying || !bIsAlive)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BeginDying invoked for a unit %s with bIsDying == %d and bIsAlive == %d"), *name, bIsDying, bIsAlive);
+		return;
+	}
+
 	bIsDying = true;
 
 	FUnitIsDyingEventArgs args(this, killingDamageInstance.source);
@@ -383,15 +415,23 @@ void AUnitBase::BeginDying(const FDamageInstance& killingDamageInstance)
 	// Check if unit is still dying (no one has prevented that)
 	if (bIsDying)
 	{
+		FString killerName = "<NO KILLER>";
+		if (killingDamageInstance.source)
+		{
+			killingDamageInstance.source->GetName(killerName);
+		}
+		
+		UE_LOG(LogTemp, Display, TEXT("Unit %s was killed by %s"), *name, *killerName);
 		FinishDying(killingDamageInstance);
 	}
 	else
 	{
 		// Alive units should never have 0 health. Usually, the death preventer must directly set health to non-zero value
-		if (FMath::IsNearlyZero(health))
+		if (FMath::IsNearlyZero(GetHealth()))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Death of %s was prevented, but it's health is still zero. Preventer should always directly set health to non-zero."));
-			health = 1.0f;
+			//health = 1.0f;
+			SetHealth(1.0f);
 		}
 	}
 }
@@ -400,23 +440,29 @@ void AUnitBase::ReceiveDamage(const FDamageInstance& damage)
 {
 	// Simple implementation, should be overriden in child classes
 
-	float currentHealth = health;
+	if (bIsDying || !bIsAlive)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ReceiveDamage invoked for a unit with bIsDying == %d and bIsAlive == %d"), bIsDying, bIsAlive);
+		return;
+	}
+
+	float currentHealth = GetHealth();
 
 	currentHealth -= damage.amount;
 
 	if (currentHealth < 0)
 	{
-		health = 0;
+		SetHealth(0);
 	}
 	else
 	{
-		health = currentHealth;
+		SetHealth(currentHealth);
 	}
 
 	FDamageReceivedEventArgs damageEventArgs(this, damage.source, damage.amount);
 	onDamageReceivedEvent.Broadcast(damageEventArgs);
 
-	if (FMath::IsNearlyZero(health))
+	if (FMath::IsNearlyZero(GetHealth()))
 	{
 		BeginDying(damage);
 	}

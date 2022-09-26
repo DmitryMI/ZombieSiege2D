@@ -5,6 +5,8 @@
 
 FDamageInstance::FDamageInstance()
 {
+	this->source = nullptr;
+	this->amount = 0;
 }
 
 FDamageInstance::FDamageInstance(AUnitBase* source, float amount)

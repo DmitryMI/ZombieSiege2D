@@ -6,12 +6,14 @@
 #include "GameFramework/Pawn.h"
 #include "DamageInstance.h"
 #include "DamageReceivedEventArgs.h"
+#include "HealthChangedEventArgs.h"
 #include "UnitIsDyingEventArgs.h"
 #include "UnitDiedEventArgs.h"
 #include "ZombieSiegePlayerState.h"
 #include "ZombieSiegePlayerController.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "UnitClassification.h"
+#include "UnitState.h"
 #include "UnitBase.generated.h"
 
 UCLASS()
@@ -20,6 +22,9 @@ class ZOMBIESIEGE_API AUnitBase : public APawn
 	GENERATED_BODY()
 
 private:
+
+	UPROPERTY(VisibleAnywhere)
+	EUnitState currentState = EUnitState::None;
 
 	UPROPERTY(EditDefaultsOnly, meta = (Bitmask, BitmaskEnum = EUnitClassification))
 	uint8 classificationFlags = (int)EUnitClassification::NONE;
@@ -81,6 +86,11 @@ protected:
 
 	virtual bool ShouldBeHidden();
 
+
+	UFUNCTION(BlueprintCallable)
+	void SetUnitState(EUnitState nextState);
+
+
 	UFUNCTION(BlueprintCallable)
 	/// <summary>
 	/// Used internally to start dying process for this Unit after it received damage.
@@ -99,6 +109,9 @@ protected:
 	void SetMovementComponentSpeedCap(float speedCap);
 
 public:
+
+	UFUNCTION(BlueprintCallable)
+	EUnitState GetUnitState();
 
 	UFUNCTION(BlueprintCallable)
 	UTexture2D* GetPreviewTexture();
@@ -208,7 +221,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	/// <summary>
-	/// Directly sets this unit's health. Will not revive dead units, but WILL kill alive ones, if healthValue is less or equal to Zero
+	/// Directly sets this unit's health. Will neither revive dead units, nor kill alive ones
 	/// </summary>
 	/// <param name="healthValue"></param>
 	virtual void SetHealth(float healthValue);
@@ -251,7 +264,7 @@ public:
 	/// </summary>
 	virtual void ReceiveDamage(const FDamageInstance& damage);
 
-	DECLARE_EVENT_OneParam(AUnitBase, FOnDamagedReceivedEvent, FDamageReceivedEventArgs);
+	DECLARE_EVENT_OneParam(AUnitBase, FOnDamagedReceivedEvent, const FDamageReceivedEventArgs&);
 
 	/// <summary>
 	/// This event triggers when this unit receives damage
@@ -259,7 +272,7 @@ public:
 	/// <returns>Event declaration</returns>
 	FOnDamagedReceivedEvent& OnDamageReceived() { return onDamageReceivedEvent; }
 
-	DECLARE_EVENT_OneParam(AUnitBase, FOnUnitIsDyingEvent, FUnitIsDyingEventArgs);
+	DECLARE_EVENT_OneParam(AUnitBase, FOnUnitIsDyingEvent, const FUnitIsDyingEventArgs&);
 
 	/// <summary>
 	/// This event triggers when this unit hits zero health, but is not yet considered death.
@@ -268,7 +281,7 @@ public:
 	/// <returns>Event declaration</returns>
 	FOnUnitIsDyingEvent& OnUnitIsDying() { return onUnitIsDyingEvent; }
 
-	DECLARE_EVENT_OneParam(AUnitBase, FOnUnitDiedEvent, FUnitDiedEventArgs);
+	DECLARE_EVENT_OneParam(AUnitBase, FOnUnitDiedEvent, const FUnitDiedEventArgs&);
 
 	/// <summary>
 	/// This event triggers when this unit becomes dead.
@@ -276,7 +289,14 @@ public:
 	/// <returns>Event declaration</returns>
 	FOnUnitDiedEvent& OnUnitDied() { return onUnitDiedEvent; }
 
+	DECLARE_EVENT_TwoParams(AUnitBase, FOnUnitStateChangedEvent, EUnitState stateOld, EUnitState stateNew);
+	FOnUnitStateChangedEvent& OnUnitStateChanged() { return onUnitStateChangedEvent; }
+	
+	DECLARE_EVENT_OneParam(AUnitBase, FOnHealthChangedEvent, const FHealthChangedEventArgs&);
+	FOnHealthChangedEvent& OnHealthChanged() { return onHealthChangedEvent; }
 private:
+	FOnHealthChangedEvent onHealthChangedEvent;
+	FOnUnitStateChangedEvent onUnitStateChangedEvent;
 	FOnDamagedReceivedEvent onDamageReceivedEvent;
 	FOnUnitIsDyingEvent onUnitIsDyingEvent;
 	FOnUnitDiedEvent onUnitDiedEvent;

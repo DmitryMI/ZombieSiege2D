@@ -18,6 +18,38 @@ class ZOMBIESIEGE_API UZombieSiegeUtils : public UBlueprintFunctionLibrary
 public:
 
 	template<typename T>
+	static bool SetObjectProperty(UObject* obj, const FName& propName, const T& value)
+	{
+		FProperty* Property = obj->GetClass()->FindPropertyByName(propName);
+		if (Property)
+		{
+			T* ptrValue = Property->ContainerPtrToValuePtr<T>(obj);
+			if (ptrValue)
+			{
+				*ptrValue = value;
+				return true;
+			}
+		}
+		return false;
+	}
+
+	template<typename T>
+	static bool GetObjectProperty(UObject* obj, const FName& propName, T& outValue)
+	{
+		FProperty* Property = obj->GetClass()->FindPropertyByName(propName);
+		if (Property)
+		{
+			T* ptrValue = Property->ContainerPtrToValuePtr<T>(obj);
+			if (ptrValue)
+			{
+				outValue = *ptrValue;
+				return true;
+			}
+		}
+		return false;
+	}
+
+	template<typename T>
 	static bool CompareArrays(const TArray<T>& a, const TArray<T>& b)
 	{
 		if (a.Num() != b.Num())

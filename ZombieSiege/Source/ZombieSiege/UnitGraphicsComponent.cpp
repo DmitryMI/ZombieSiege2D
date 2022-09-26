@@ -1,12 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "HumanoidGraphicsComponent.h"
+#include "UnitGraphicsComponent.h"
 #include "Humanoid.h"
 #include "FaceDirection.h"
-#include "HumanoidState.h"
+#include "UnitState.h"
 
-int UHumanoidGraphicsComponent::GetDirectionSpriteIndex(EFaceDirection faceDirectionEnum)
+int UUnitGraphicsComponent::GetDirectionSpriteIndex(EFaceDirection faceDirectionEnum)
 {
 	if (static_cast<uint8>(faceDirectionEnum) & static_cast<uint8>(EFaceDirection::Up))
 	{
@@ -30,7 +30,7 @@ int UHumanoidGraphicsComponent::GetDirectionSpriteIndex(EFaceDirection faceDirec
 	}
 }
 
-UHumanoidGraphicsComponent::UHumanoidGraphicsComponent()
+UUnitGraphicsComponent::UUnitGraphicsComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
@@ -38,7 +38,7 @@ UHumanoidGraphicsComponent::UHumanoidGraphicsComponent()
 }
 
 
-void UHumanoidGraphicsComponent::BeginPlay()
+void UUnitGraphicsComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -49,28 +49,21 @@ void UHumanoidGraphicsComponent::BeginPlay()
 		UPaperFlipbookComponent* flipbookComponent = Cast<UPaperFlipbookComponent>(child);
 		if (flipbookComponent != nullptr)
 		{
-			humanoidFlipbookRenderer = flipbookComponent;
+			flipbookRenderer = flipbookComponent;
 		}
 	}
-	check(humanoidFlipbookRenderer);
+	check(flipbookRenderer);
 
-	humanoidFlipbookRenderer->SetWorldRotation(FRotator(0, 0, -90));
+	flipbookRenderer->SetWorldRotation(FRotator(0, 0, -90));
 
 	AActor* owner = GetOwner();
 	check(owner);
 
 	AHumanoid* humanoid = Cast<AHumanoid>(owner);
 	check(humanoid);
-
-	humanoid->OnHumanoidStateChanged().AddUObject(this, &UHumanoidGraphicsComponent::OnHumanoidStateChangedHandler);
 }
 
-void UHumanoidGraphicsComponent::OnHumanoidStateChangedHandler(EHumanoidState stateOld, EHumanoidState stateNew)
-{
-
-}
-
-void UHumanoidGraphicsComponent::UpdateFlipbook(EHumanoidState state, EFaceDirection direction)
+void UUnitGraphicsComponent::UpdateFlipbook(EUnitState state, EFaceDirection direction)
 {
 	int directionIndex = GetDirectionSpriteIndex(direction);
 
@@ -78,18 +71,21 @@ void UHumanoidGraphicsComponent::UpdateFlipbook(EHumanoidState state, EFaceDirec
 
 	switch (state)
 	{
-	case EHumanoidState::None:
+	case EUnitState::None:
 		animationSet = &standFlipbooks;
 		break;
-	case EHumanoidState::Moving:
+	case EUnitState::Moving:
 		animationSet = &movingFlipbooks;
 		break;
-	case EHumanoidState::AttackingBackswing:
-	case EHumanoidState::AttackingRelaxation:
+	case EUnitState::AttackingBackswing:
+	case EUnitState::AttackingRelaxation:
 		animationSet = &attackingFlipbooks;
 		break;
-	case EHumanoidState::Dying:
+	case EUnitState::Dying:
 		animationSet = &dyingFlipbooks;
+		break;
+	case EUnitState::Birth:
+		animationSet = &birthFlipbooks;
 		break;
 	}
 
@@ -99,12 +95,12 @@ void UHumanoidGraphicsComponent::UpdateFlipbook(EHumanoidState state, EFaceDirec
 	UPaperFlipbook* flipbook = (*animationSet)[directionIndex];
 	check(flipbook);
 
-	check(humanoidFlipbookRenderer);
-	humanoidFlipbookRenderer->SetFlipbook(flipbook);
+	check(flipbookRenderer);
+	flipbookRenderer->SetFlipbook(flipbook);
 }
 
 
-void UHumanoidGraphicsComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UUnitGraphicsComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
@@ -114,6 +110,6 @@ void UHumanoidGraphicsComponent::TickComponent(float DeltaTime, ELevelTick TickT
 	AHumanoid* humanoid = Cast<AHumanoid>(owner);
 	check(humanoid);
 
-	UpdateFlipbook(humanoid->GetHumanoidState(), humanoid->GetFacingDirection());
+	UpdateFlipbook(humanoid->GetUnitState(), humanoid->GetFacingDirection());
 }
 

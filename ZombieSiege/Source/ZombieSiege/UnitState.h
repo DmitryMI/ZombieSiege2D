@@ -5,12 +5,13 @@
 #include "CoreMinimal.h"
 
 UENUM(BlueprintType)
-enum class EHumanoidState : uint8
+enum class EUnitState : uint8
 {
-	None,
+	None,	
 	Moving,
 	AttackingBackswing,
 	AttackingRelaxation,
 	Dying,
-	Dead
+	Dead,
+	Birth
 };
