@@ -24,37 +24,37 @@ protected:
 
 public:
 	
-	virtual float GetBackswingDuration() override
+	virtual float GetBackswingDuration() const override
 	{
 		return Super::GetBackswingDuration();
 	}
 
-	virtual float GetRelaxationDuration() override
+	virtual float GetRelaxationDuration() const override
 	{
 		return Super::GetRelaxationDuration();
 	}
 
-	virtual float GetCooldownDuration() override
+	virtual float GetCooldownDuration() const override
 	{
 		return Super::GetCooldownDuration();
 	}
 
-	virtual FVector2D GetDamageMinMax() override
+	virtual FVector2D GetDamageMinMax() const override
 	{
 		return Super::GetDamageMinMax();
 	}
 
-	virtual float GetRange() override
+	virtual float GetRange() const override
 	{
 		return Super::GetRange();
 	}
 
-	virtual bool CanThisWeaponEverAttackTarget() override
+	virtual bool CanThisWeaponEverAttackTarget() const override
 	{
 		return Super::CanThisWeaponEverAttackTarget();
 	}
 
-	virtual bool CanThisWeaponEverAttackPoint() override
+	virtual bool CanThisWeaponEverAttackPoint() const override
 	{
 		return Super::CanThisWeaponEverAttackPoint();
 	}

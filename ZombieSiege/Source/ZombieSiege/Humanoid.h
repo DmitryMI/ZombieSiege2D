@@ -93,7 +93,7 @@ public:
 
 	virtual void Tick(float DeltaTime) override;	
 
-	virtual bool CanMove() override;
+	virtual bool CanMove() const override;
 
 	virtual bool CanAttackTarget(AUnitBase* target);
 

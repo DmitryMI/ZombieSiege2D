@@ -113,7 +113,7 @@ void AHumanoid::Tick(float DeltaTime)
 	}
 }
 
-bool AHumanoid::CanMove()
+bool AHumanoid::CanMove() const
 {
 	return
 		GetUnitState() == EUnitState::Moving ||

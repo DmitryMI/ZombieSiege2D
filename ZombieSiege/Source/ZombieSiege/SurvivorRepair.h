@@ -6,6 +6,7 @@
 #include "WeaponInfo.h"
 #include "ResourceType.h"
 #include "Building.h"
+#include "Macros.h"
 #include "SurvivorRepair.generated.h"
 
 /**
@@ -17,7 +18,7 @@ class ZOMBIESIEGE_API USurvivorRepair : public UWeaponInfo
 	GENERATED_BODY()
 
 protected:
-	TMap<EResourceType, int> CalculateRequiredResourceAmount(ABuilding* building, float repairAmount);
+	TMap<EResourceType, float> CalculateRequiredResourceAmount(ABuilding* building, float repairAmount) const;
 	
 public:
 

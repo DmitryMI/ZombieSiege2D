@@ -5,7 +5,7 @@
 
 #define CHECK_RESOURCE_VALID(resourceType) check(resourceType != EResourceType::RESOURCETYPE_MAX);
 
-int AZombieSiegePlayerState::GetStoredResourceAmount(EResourceType type)
+float AZombieSiegePlayerState::GetStoredResourceAmount(EResourceType type)
 {
 	CHECK_RESOURCE_VALID(type);
 
@@ -23,19 +23,19 @@ int AZombieSiegePlayerState::GetStoredResourceAmount(EResourceType type)
 	return value;
 }
 
-void AZombieSiegePlayerState::AddResourceToStorage(EResourceType type, int amount)
+void AZombieSiegePlayerState::AddResourceToStorage(EResourceType type, float amount)
 {
 	CHECK_RESOURCE_VALID(type);
 
-	int currentAmount = GetStoredResourceAmount(type);
+	float currentAmount = GetStoredResourceAmount(type);
 	SetStoredResourceAmount(type, currentAmount + amount);
 }
 
-bool AZombieSiegePlayerState::TakeResourceFromStorage(EResourceType type, int amount)
+bool AZombieSiegePlayerState::TakeResourceFromStorage(EResourceType type, float amount)
 {
 	CHECK_RESOURCE_VALID(type);
 
-	int currentAmount = GetStoredResourceAmount(type);
+	float currentAmount = GetStoredResourceAmount(type);
 	if (currentAmount < amount)
 	{
 		return false;
@@ -45,7 +45,38 @@ bool AZombieSiegePlayerState::TakeResourceFromStorage(EResourceType type, int am
 	return true;
 }
 
-void AZombieSiegePlayerState::SetStoredResourceAmount(EResourceType type, int amount)
+bool AZombieSiegePlayerState::TakeResourcesFromStorage(TMap<EResourceType, float> resources)
+{
+	if (!HasEnoughResourcesInStorage(resources))
+	{
+		return false;
+	}
+
+	for (auto resourcePair : resources)
+	{
+		EResourceType resource = resourcePair.Key;
+		float amount = resourcePair.Value;
+		bool resourceTaken = TakeResourceFromStorage(resource, amount);
+		check(resourceTaken);
+	}
+
+	return true;
+}
+
+bool AZombieSiegePlayerState::HasEnoughResourcesInStorage(TMap<EResourceType, float> resources)
+{
+	for (auto resourcePair : resources)
+	{
+		float stored = GetStoredResourceAmount(resourcePair.Key);
+		if (stored < resourcePair.Value)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+void AZombieSiegePlayerState::SetStoredResourceAmount(EResourceType type, float amount)
 {
 	CHECK_RESOURCE_VALID(type);
 

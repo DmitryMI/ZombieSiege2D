@@ -79,7 +79,7 @@ void AZombieSiegePlayerController::OnSelectActionReleased()
 {
 	if (buildingPlacementMarker)
 	{
-		if (buildingPlacementMarker->CanBeBuiltNow())
+		if (buildingPlacementMarker->CanBeBuiltLater())
 		{
 			ABuildingJob* job = ABuildingJob::FromExistingMarker(GetWorld(), buildingPlacementMarker, ABuildingJob::StaticClass());
 			job->SetOwningPlayerController(this);
@@ -121,6 +121,11 @@ void AZombieSiegePlayerController::OnSelectActionDoubleClick()
 
 void AZombieSiegePlayerController::OnCommandActionReleased()
 {
+	if (buildingPlacementMarker)
+	{
+		buildingPlacementMarker->Destroy();
+		buildingPlacementMarker = nullptr;
+	}
 }
 
 void AZombieSiegePlayerController::SetupInputComponent()
@@ -135,7 +140,7 @@ void AZombieSiegePlayerController::SetupInputComponent()
 	this->InputComponent->BindAction("Select", EInputEvent::IE_Released, this, &AZombieSiegePlayerController::OnSelectActionReleased);
 	this->InputComponent->BindAction("Select", EInputEvent::IE_DoubleClick, this, &AZombieSiegePlayerController::OnSelectActionDoubleClick);
 
-	this->InputComponent->BindAction("Command", EInputEvent::IE_Released, this, &AZombieSiegePlayerController::OnSelectActionReleased);
+	this->InputComponent->BindAction("Command", EInputEvent::IE_Released, this, &AZombieSiegePlayerController::OnCommandActionReleased);
 }
 
 void AZombieSiegePlayerController::OnDoodadSelectDoubleClicked(ADoodad* doodad)
@@ -268,6 +273,7 @@ void AZombieSiegePlayerController::BeginBuildingJobPlacement(TSubclassOf<ABuildi
 
 		check(buildingPlacementMarker);
 
+		buildingPlacementMarker->SetOwningPlayerController(this);
 		buildingPlacementMarker->SetBuildingClass(buildingClass);
 	}
 }

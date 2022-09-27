@@ -28,6 +28,9 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	TSubclassOf<ABuilding> buildingClass;
 
+	UPROPERTY(VisibleAnywhere)
+	AZombieSiegePlayerController* owningPlayerController;
+
 	ABuilding* buildingDefaultObject;
 
 	UUnitGraphicsData* buildingGraphicsData;
@@ -56,4 +59,13 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	bool CanBeBuiltNow();
+
+	UFUNCTION(BlueprintCallable)
+	bool CanBeBuiltLater();
+
+	UFUNCTION(BlueprintCallable)
+	void SetOwningPlayerController(AZombieSiegePlayerController* pc);
+
+	UFUNCTION(BlueprintCallable)
+	AZombieSiegePlayerController* GetOwningPlayerController();
 };

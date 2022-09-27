@@ -328,3 +328,14 @@ int UZombieSiegeUtils::GetDirectionSpriteIndex(EFaceDirection faceDirectionEnum)
 		return 1;
 	}
 }
+
+bool UZombieSiegeUtils::IsFree(const TMap<EResourceType, float> requiredResources)
+{
+	float summ = 0.0f;
+	for (auto resourcePair : requiredResources)
+	{
+		summ += resourcePair.Value;
+	}
+
+	return FMath::IsNearlyZero(summ);
+}

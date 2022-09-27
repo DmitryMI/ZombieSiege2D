@@ -23,7 +23,12 @@ bool ASurvivor::CanBuild(const TSubclassOf<ABuilding>& buildingClass, FVector lo
 
 	ABuilding* clazzDefaultObject = Cast<ABuilding>(clazz->GetDefaultObject());
 
-	if (!clazzDefaultObject->CanBeBuildAt(GetWorld(), location, this))
+	if (!clazzDefaultObject->CanBeBuiltBy(GetOwningPlayerController()))
+	{
+		return false;
+	}
+
+	if (!clazzDefaultObject->CanBeBuiltAt(GetWorld(), location, this))
 	{
 		return false;
 	}
@@ -59,12 +64,32 @@ ABuilding* ASurvivor::Build(const TSubclassOf<ABuilding>& buildingClass, FVector
 	FActorSpawnParameters spawnParams;
 	ABuilding* building = world->SpawnActor<ABuilding>(clazz, location, FRotator::ZeroRotator, spawnParams);
 
-	AZombieSiegePlayerController* pc = GetOwningPlayerController();
-	building->SetOwningPlayer(pc);
+	if (building)
+	{
+		AZombieSiegePlayerController* player = GetOwningPlayerController();
+		if (player)
+		{
+			AZombieSiegePlayerState* playerState = player->GetPlayerState<AZombieSiegePlayerState>();
+			bool resoursesTaken = playerState->TakeResourcesFromStorage(building->GetRequiredResources());
+			check(resoursesTaken);
+		}
+		else
+		{
+			// This case must be already addressed in CanBuild()
+		}
 
-	FUnitStartedBuildingEventArgs args(this, building);
+		AZombieSiegePlayerController* pc = GetOwningPlayerController();
+		building->SetOwningPlayer(pc);
 
-	onUnitStartedBuildingEvent.Broadcast(args);
+		FUnitStartedBuildingEventArgs args(this, building);
+
+		onUnitStartedBuildingEvent.Broadcast(args);
+	}
+	else
+	{
+		FString name = GetUnitTypeName().ToString();
+		UE_LOG(LogTemp, Error, TEXT("Failed to spawn a Building %s at %s!"), *name, *location.ToString());
+	}
 
 	return building;
 }

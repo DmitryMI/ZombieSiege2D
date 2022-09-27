@@ -4,6 +4,7 @@
 #include "Tree.h"
 #include "PaperSprite.h"
 #include "ZombieSiegePlayerState.h"
+#include "Macros.h"
 #include "Kismet/GameplayStatics.h"
 
 void ATree::GetRandomSizeAndType(ETreeType& outType, ETreeSize& outSize)
@@ -61,7 +62,7 @@ void ATree::FinishDying(const FDamageInstance& killingDamageInstance)
 		if (attackerPlayerState)
 		{
 			// Flooring the Max Health
-			int lumberAmount = static_cast<int>(GetMaxHealth());
+			float lumberAmount = static_cast<float>(GetMaxHealth());
 
 			attackerPlayerState->AddResourceToStorage(EResourceType::Lumber, lumberAmount);
 		}

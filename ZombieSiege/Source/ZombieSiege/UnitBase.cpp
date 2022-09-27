@@ -10,32 +10,32 @@ void AUnitBase::SetUnitState(EUnitState nextState)
 	onUnitStateChangedEvent.Broadcast(oldState, nextState);
 }
 
-FName AUnitBase::GetUnitTypeName()
+FName AUnitBase::GetUnitTypeName() const
 {
 	return unitTypeName;
 }
 
-FName AUnitBase::GetUnitGraphicsDataName()
+FName AUnitBase::GetUnitGraphicsDataName() const
 {
 	return unitGraphicsDataName;
 }
 
-EUnitState AUnitBase::GetUnitState()
+EUnitState AUnitBase::GetUnitState() const
 {
 	return currentState;
 }
 
-UTexture2D* AUnitBase::GetPreviewTexture()
+UTexture2D* AUnitBase::GetPreviewTexture() const
 {
 	return previewTexture;
 }
 
-const TMap<EResourceType, int>& AUnitBase::GetRequiredResources()
+const TMap<EResourceType, float>& AUnitBase::GetRequiredResources() const
 {
 	return requiredResources;
 }
 
-AUnitBase* AUnitBase::GetPassengerCarrier()
+AUnitBase* AUnitBase::GetPassengerCarrier() const
 {
 	return passengerCarrier;
 }
@@ -97,7 +97,7 @@ void AUnitBase::LeavePassengerCarrier()
 	SetPassengerCarrier(nullptr);
 }
 
-int AUnitBase::GetFreePassengerSeats()
+int AUnitBase::GetFreePassengerSeats() const
 {
 	return passengerSeats - passengers.Num();
 }
@@ -118,12 +118,12 @@ void AUnitBase::RemovePassenger(AUnitBase* passenger)
 	passengers.Remove(passenger);
 }
 
-EUnitClassification AUnitBase::GetClassifications()
+EUnitClassification AUnitBase::GetClassifications() const
 {
 	return static_cast<EUnitClassification>(classificationFlags);
 }
 
-bool AUnitBase::HasClassifications(EUnitClassification flags)
+bool AUnitBase::HasClassifications(EUnitClassification flags) const
 {
 	return (classificationFlags & static_cast<int>(flags)) == static_cast<int>(flags);
 }
@@ -149,7 +149,7 @@ void AUnitBase::GetSimpleCollisionCylinder(float& CollisionRadius, float& Collis
 	CollisionHalfHeight = collisionHeight / 2.0f;
 }
 
-AZombieSiegePlayerState* AUnitBase::GetOwningPlayerState()
+AZombieSiegePlayerState* AUnitBase::GetOwningPlayerState() const
 {
 	AZombieSiegePlayerController* zombieSiegeController = GetOwningPlayerController();
 	if (zombieSiegeController)
@@ -168,7 +168,7 @@ AZombieSiegePlayerState* AUnitBase::GetOwningPlayerState()
 	}
 }
 
-AZombieSiegePlayerController* AUnitBase::GetOwningPlayerController()
+AZombieSiegePlayerController* AUnitBase::GetOwningPlayerController() const
 {
 	if (owningPlayerController)
 	{
@@ -211,12 +211,12 @@ void AUnitBase::SetMaxSpeed(float speedArg)
 	SetMovementComponentSpeedCap(speed);
 }
 
-float AUnitBase::GetMaxSpeed()
+float AUnitBase::GetMaxSpeed() const
 {
 	return speed;
 }
 
-bool AUnitBase::CanMove()
+bool AUnitBase::CanMove() const
 {
 	return false;
 }
@@ -267,12 +267,12 @@ void AUnitBase::ReviveUnitWithHealth(float setHealthTo)
 	ReviveUnit();
 }
 
-bool AUnitBase::IsDying()
+bool AUnitBase::IsDying() const
 {
 	return bIsDying;
 }
 
-bool AUnitBase::IsAlive()
+bool AUnitBase::IsAlive() const
 {
 	return bIsAlive && !bIsDying;
 }
@@ -318,7 +318,7 @@ void AUnitBase::SetHealth(float healthValue)
 	}
 }
 
-float AUnitBase::GetHealth()
+float AUnitBase::GetHealth() const
 {
 	return health;
 }
@@ -343,7 +343,7 @@ void AUnitBase::SetMaxHealth(float maxHealthValue)
 	}
 }
 
-float AUnitBase::GetMaxHealth()
+float AUnitBase::GetMaxHealth() const
 {
 	return maxHealth;
 }

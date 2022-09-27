@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
 #include "ResourceType.h"
+#include "Macros.h"
 #include "ZombieSiegePlayerState.generated.h"
 
 /**
@@ -17,7 +18,7 @@ class ZOMBIESIEGE_API AZombieSiegePlayerState : public APlayerState
 
 private:
 	UPROPERTY(EditAnywhere)
-	TMap<EResourceType, int> storedResources;
+	TMap<EResourceType, float> storedResources;
 	
 public:
 	UFUNCTION(BlueprintCallable)
@@ -26,7 +27,7 @@ public:
 	/// </summary>
 	/// <param name="type">Resource Type</param>
 	/// <returns>Stored Amount</returns>
-	int GetStoredResourceAmount(EResourceType type);
+	float GetStoredResourceAmount(EResourceType type);
 
 	UFUNCTION(BlueprintCallable)
 	/// <summary>
@@ -34,7 +35,7 @@ public:
 	/// </summary>
 	/// <param name="type">Resource Type</param>
 	/// <param name="amount">Amount to add to storage</param>
-	void AddResourceToStorage(EResourceType type, int amount);
+	void AddResourceToStorage(EResourceType type, float amount);
 
 	UFUNCTION(BlueprintCallable)
 	/// <summary>
@@ -44,7 +45,13 @@ public:
 	/// <param name="type">Resource Type</param>
 	/// <param name="amount">Amount of resource to remove</param>
 	/// <returns>Returns false, if the storage contained less resource than requested</returns>
-	bool TakeResourceFromStorage(EResourceType type, int amount);
+	bool TakeResourceFromStorage(EResourceType type, float amount);
+
+	UFUNCTION(BlueprintCallable)
+	bool TakeResourcesFromStorage(TMap<EResourceType, float> resources);
+
+	UFUNCTION(BlueprintCallable)
+	bool HasEnoughResourcesInStorage(TMap<EResourceType, float> resources);
 
 	UFUNCTION(BlueprintCallable)
 	/// <summary>
@@ -52,5 +59,5 @@ public:
 	/// </summary>
 	/// <param name="type">Resource Type</param>
 	/// <param name="amount">Amount</param>
-	void SetStoredResourceAmount(EResourceType type, int amount);
+	void SetStoredResourceAmount(EResourceType type, float amount);
 };

@@ -7,23 +7,22 @@
 #include "ZombieSiegePlayerState.h"
 #include "ZombieSiegeUtils.h"
 
-TMap<EResourceType, int> USurvivorRepair::CalculateRequiredResourceAmount(ABuilding* building, float repairAmount)
+TMap<EResourceType, float> USurvivorRepair::CalculateRequiredResourceAmount(ABuilding* building, float repairAmount) const
 {
-	TMap<EResourceType, int> map;
+	TMap<EResourceType, float> map;
 
-	TMap<EResourceType, int> requiredResources = building->GetRequiredResources();
+	TMap<EResourceType, float> requiredResources = building->GetRequiredResources();
 
 	float repairFraction = repairAmount / building->GetMaxHealth();
 
 	for (auto requiredResource : requiredResources)
 	{
 		EResourceType resource = requiredResource.Key;
-		int amount = requiredResource.Value;
+		float amount = requiredResource.Value;
 
 		if (amount > 0)
 		{
-			float resultingAmountFloat = repairFraction * amount;
-			int resultingAmount = FMath::CeilToInt(resultingAmountFloat);
+			float resultingAmount = repairFraction * amount;
 			map.Add(resource, resultingAmount);
 		}
 	}
@@ -49,15 +48,18 @@ void USurvivorRepair::AttackTarget(AUnitBase* attacker, AUnitBase* target)
 
 	float repairAmount = FMath::Min(requiredRepair, damageMinMax.X);
 
-	TMap<EResourceType, int> requiredResources = CalculateRequiredResourceAmount(building, repairAmount);
-
-	for (auto requiredResource : requiredResources)
+	if (building->IsFullyBuilt())
 	{
-		EResourceType resource = requiredResource.Key;
-		int amount = requiredResource.Value;
+		TMap<EResourceType, float> requiredResources = CalculateRequiredResourceAmount(building, repairAmount);
 
-		bool resourceTaken = playerState->TakeResourceFromStorage(resource, amount);
-		check(resourceTaken);
+		for (auto requiredResource : requiredResources)
+		{
+			EResourceType resource = requiredResource.Key;
+			float amount = requiredResource.Value;
+
+			bool resourceTaken = playerState->TakeResourceFromStorage(resource, amount);
+			check(resourceTaken);
+		}
 	}
 
 	FHealingInstance healingInstance(target, repairAmount);
@@ -97,16 +99,19 @@ bool USurvivorRepair::CanAttackTarget(AUnitBase* attacker, AUnitBase* target)
 		return false;
 	}
 
-	TMap<EResourceType, int> requiredResources = CalculateRequiredResourceAmount(building, repairAmount);
-
-	for (auto requiredResource : requiredResources)
+	if (building->IsFullyBuilt())
 	{
-		EResourceType resource = requiredResource.Key;
-		int amount = requiredResource.Value;
+		TMap<EResourceType, float> requiredResources = CalculateRequiredResourceAmount(building, repairAmount);
 
-		if (playerState->GetStoredResourceAmount(resource) < amount)
+		for (auto requiredResource : requiredResources)
 		{
-			return false;
+			EResourceType resource = requiredResource.Key;
+			float amount = requiredResource.Value;
+
+			if (playerState->GetStoredResourceAmount(resource) < amount)
+			{
+				return false;
+			}
 		}
 	}
 

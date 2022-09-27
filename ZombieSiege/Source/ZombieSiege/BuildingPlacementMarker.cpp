@@ -40,7 +40,6 @@ void ABuildingPlacementMarker::UpdateMarkerRenderer()
 	markerRenderer->SetFlipbook(flipbook);
 }
 
-// Called every frame
 void ABuildingPlacementMarker::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -50,9 +49,14 @@ void ABuildingPlacementMarker::Tick(float DeltaTime)
 		return;
 	}
 
+	if (!owningPlayerController)
+	{
+		return;
+	}
+
 	FVector location = GetActorLocation();
 
-	bCanBeBuiltNow = buildingDefaultObject->CanBeBuildAt(GetWorld(), location);
+	bCanBeBuiltNow = buildingDefaultObject->CanBeBuilt(GetWorld(), location, owningPlayerController);
 	if (bCanBeBuiltNow)
 	{
 		markerRenderer->SetSpriteColor(buildingPossibleColor);
@@ -89,5 +93,25 @@ void ABuildingPlacementMarker::SetBuildingClass(TSubclassOf<ABuilding> clazz)
 bool ABuildingPlacementMarker::CanBeBuiltNow()
 {
 	return bCanBeBuiltNow;
+}
+
+bool ABuildingPlacementMarker::CanBeBuiltLater()
+{
+	buildingDefaultObject = Cast<ABuilding>(buildingClass->GetDefaultObject());
+	if (!buildingDefaultObject)
+	{
+		return false;
+	}
+	return buildingDefaultObject->CanBeBuiltAt(GetWorld(), GetActorLocation());
+}
+
+void ABuildingPlacementMarker::SetOwningPlayerController(AZombieSiegePlayerController* pc)
+{
+	owningPlayerController = pc;
+}
+
+AZombieSiegePlayerController* ABuildingPlacementMarker::GetOwningPlayerController()
+{
+	return owningPlayerController;
 }
 

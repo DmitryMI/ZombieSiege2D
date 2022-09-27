@@ -57,7 +57,7 @@ public:
 	/// Duration in seconds of the animation preceding the hit or projectile launch. E.g. duration of a bowstring stretching
 	/// </summary>
 	/// <returns>Duration in seconds</returns>
-	virtual float GetBackswingDuration()
+	virtual float GetBackswingDuration() const
 	{
 		return backswingDuration;
 	}
@@ -67,7 +67,7 @@ public:
 	/// Duration in seconds of the animation after the hit or projectile launch. E.g. time that a swordman needs to return his weapon after a swing
 	/// </summary>
 	/// <returns>Duration in seconds</returns>
-	virtual float GetRelaxationDuration()
+	virtual float GetRelaxationDuration() const
 	{
 		return relaxationDuration;
 	}
@@ -77,7 +77,7 @@ public:
 	/// Duration in seconds of a pause between two hits (excluding backswing and relaxation)
 	/// </summary>
 	/// <returns></returns>
-	virtual float GetCooldownDuration()
+	virtual float GetCooldownDuration() const
 	{
 		return cooldownDuration;
 	}
@@ -87,7 +87,7 @@ public:
 	/// Approximate damage that this weapon can inflict to a single target. Only used in GUI and by AI decisions.
 	/// </summary>
 	/// <returns>Min and Max damage of this weapon</returns>
-	virtual FVector2D GetDamageMinMax()
+	virtual FVector2D GetDamageMinMax() const
 	{
 		return damageMinMax;
 	}
@@ -97,7 +97,7 @@ public:
 	/// Approximate range of the weapon. Only used in GUI and by AI decisions.
 	/// </summary>
 	/// <returns>Range in Unreal units</returns>
-	virtual float GetRange() 
+	virtual float GetRange() const
 	{
 		return range;
 	}
@@ -107,7 +107,7 @@ public:
 	/// Determines if this weapon can ever target a unit.
 	/// </summary>
 	/// <returns>True if weapon can target a unit</returns>
-	virtual bool CanThisWeaponEverAttackTarget()
+	virtual bool CanThisWeaponEverAttackTarget() const
 	{
 		return canEverAttackTarget;
 	}
@@ -117,7 +117,7 @@ public:
 	/// Determines if this weapon can ever target a point.
 	/// </summary>
 	/// <returns>True if weapon can target a point</returns>
-	virtual bool CanThisWeaponEverAttackPoint()
+	virtual bool CanThisWeaponEverAttackPoint() const
 	{
 		return canEverAttackPoint;
 	}

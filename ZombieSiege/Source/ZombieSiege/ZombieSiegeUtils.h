@@ -189,4 +189,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
 	static int GetDirectionSpriteIndex(EFaceDirection faceDirectionEnum);
+
+	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
+	static bool IsFree(const TMap<EResourceType, float> requiredResources);
 };

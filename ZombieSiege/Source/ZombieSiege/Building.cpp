@@ -4,6 +4,7 @@
 #include "Building.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
+#include "ZombieSiegeUtils.h"
 #include "Macros.h"
 
 void ABuilding::BeginPlay()
@@ -38,12 +39,12 @@ float ABuilding::ReceiveHealing(const FHealingInstance& repair)
 	return healingActual;
 }
 
-float ABuilding::GetBuildingProgressFraction()
+float ABuilding::GetBuildingProgressFraction() const
 {
 	return buildingProgress / GetMaxHealth();
 }
 
-float ABuilding::GetBuildingProgress()
+float ABuilding::GetBuildingProgress() const
 {
 	return buildingProgress;
 }
@@ -88,28 +89,25 @@ void ABuilding::AddBuildingProgress(float addProgress)
 	SetBuildingProgress(progress);
 }
 
-bool ABuilding::IsBuiltOnSpawn()
+bool ABuilding::IsBuiltOnSpawn() const
 {
 	return bIsBuiltOnSpawn;
 }
 
-bool ABuilding::IsFullyBuilt()
+bool ABuilding::IsFullyBuilt() const
 {
 	return FMath::IsNearlyEqual(buildingProgress, GetMaxHealth());
 }
 
-bool ABuilding::NeedsRepair()
+bool ABuilding::NeedsRepair() const
 {
 	return !IsFullyBuilt() || GetHealth() < GetMaxHealth();
 }
 
-bool ABuilding::CanBeBuildAt(UWorld* world, const FVector& location, AUnitBase* builder)
+bool ABuilding::CanBeBuiltAt(UWorld* world, const FVector& location, AUnitBase* builder) const
 {
 	float radius;
 	float halfHeight;
-
-	FVector traceStart = location - FVector::UpVector * 1000;
-	FVector traceEnd = location + FVector::UpVector * 1000;
 
 	GetSimpleCollisionCylinder(radius, halfHeight);
 
@@ -132,6 +130,27 @@ bool ABuilding::CanBeBuildAt(UWorld* world, const FVector& location, AUnitBase* 
 	DrawDebugCapsule(world, location, halfHeight, radius, FQuat::Identity, FColor::Blue);
 
 	return !overlap;
+}
+
+bool ABuilding::CanBeBuiltBy(AZombieSiegePlayerController* playerController) const
+{
+	const auto& required = GetRequiredResources();
+
+	if (!playerController)
+	{
+		return UZombieSiegeUtils::IsFree(required);
+	}
+
+	AZombieSiegePlayerState* playerState = playerController->GetPlayerState<AZombieSiegePlayerState>();
+	check(playerState);
+
+	bool hasEnough = playerState->HasEnoughResourcesInStorage(required);
+	return hasEnough;
+}
+
+bool ABuilding::CanBeBuilt(UWorld* world, const FVector& location, AZombieSiegePlayerController* playerController, AUnitBase* builder)
+{
+	return CanBeBuiltBy(playerController) && CanBeBuiltAt(world, location, builder);
 }
 
 void ABuilding::SetIsBuiltOnSpawn(bool isBuiltOnSpawn)

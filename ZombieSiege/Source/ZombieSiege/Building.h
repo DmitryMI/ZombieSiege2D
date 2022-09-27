@@ -6,6 +6,7 @@
 #include "UnitBase.h"
 #include "HealingInstance.h"
 #include "BuildingProgressChangedEventArgs.h"
+#include "ZombieSiegePlayerController.h"
 #include "Building.generated.h"
 
 /**
@@ -32,10 +33,10 @@ public:
 	virtual float ReceiveHealing(const FHealingInstance& repair);
 
 	UFUNCTION(BlueprintCallable)
-	float GetBuildingProgressFraction();
+	float GetBuildingProgressFraction() const;
 	
 	UFUNCTION(BlueprintCallable)
-	float GetBuildingProgress();
+	float GetBuildingProgress() const;
 
 	UFUNCTION(BlueprintCallable)
 	void SetBuildingProgressFraction(float progressFraction);
@@ -47,22 +48,26 @@ public:
 	void AddBuildingProgress(float addProgress);
 
 	UFUNCTION(BlueprintCallable)
-	bool IsBuiltOnSpawn();
+	bool IsBuiltOnSpawn() const;
 
 	UFUNCTION(BlueprintCallable)
 	void SetIsBuiltOnSpawn(bool isBuiltOnSpawn);
 
 	UFUNCTION(BlueprintCallable)
-	bool IsFullyBuilt();
+	bool IsFullyBuilt() const;
 
 	UFUNCTION(BlueprintCallable)
-	bool NeedsRepair();
+	bool NeedsRepair() const;
 
 	DECLARE_EVENT_OneParam(ABuilding, FOnBuildingProgressChanged, const FBuildingProgressChangedEventArgs&);
 
 	FOnBuildingProgressChanged& OnBuildingProgressChanged() { return onBuildingProgressChangedEvent; }
 
-	virtual bool CanBeBuildAt(UWorld* world, const FVector& location, AUnitBase* builder = nullptr);
+	virtual bool CanBeBuiltAt(UWorld* world, const FVector& location, AUnitBase* builder = nullptr) const;
+
+	virtual bool CanBeBuiltBy(AZombieSiegePlayerController* playerController) const;
+
+	virtual bool CanBeBuilt(UWorld* world, const FVector& location, AZombieSiegePlayerController* playerController, AUnitBase* builder = nullptr);
 
 private:
 	FOnBuildingProgressChanged onBuildingProgressChangedEvent;

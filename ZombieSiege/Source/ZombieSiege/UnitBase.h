@@ -16,6 +16,7 @@
 #include "UnitClassification.h"
 #include "FaceDirection.h"
 #include "UnitState.h"
+#include "Macros.h"
 #include "UnitBase.generated.h"
 
 UCLASS()
@@ -41,7 +42,7 @@ private:
 	uint8 classificationFlags = (int)EUnitClassification::NONE;
 
 	UPROPERTY(EditDefaultsOnly)
-	TMap<EResourceType, int> requiredResources;
+	TMap<EResourceType, float> requiredResources;
 
 	UPROPERTY(EditDefaultsOnly)
 	UTexture2D* previewTexture;
@@ -134,22 +135,22 @@ public:
 	}
 
 	UFUNCTION(BlueprintCallable)
-	virtual FName GetUnitTypeName();
+	virtual FName GetUnitTypeName() const;
 
 	UFUNCTION(BlueprintCallable)
-	virtual FName GetUnitGraphicsDataName();
+	virtual FName GetUnitGraphicsDataName() const;
 
 	UFUNCTION(BlueprintCallable)
-	EUnitState GetUnitState();
+	EUnitState GetUnitState() const;
 
 	UFUNCTION(BlueprintCallable)
-	UTexture2D* GetPreviewTexture();
+	UTexture2D* GetPreviewTexture() const;
 
 	UFUNCTION(BlueprintCallable)
-	const TMap<EResourceType, int>& GetRequiredResources();
+	const TMap<EResourceType, float>& GetRequiredResources() const;
 
 	UFUNCTION(BlueprintCallable)
-	AUnitBase* GetPassengerCarrier();
+	AUnitBase* GetPassengerCarrier() const;
 
 	UFUNCTION(BlueprintCallable)
 	void SetPassengerCarrier(AUnitBase* carrier);
@@ -161,7 +162,7 @@ public:
 	void LeavePassengerCarrier();
 
 	UFUNCTION(BlueprintCallable)
-	int GetFreePassengerSeats();
+	int GetFreePassengerSeats() const;
 
 	UFUNCTION(BlueprintCallable)
 	void AddPassenger(AUnitBase* passenger);
@@ -170,10 +171,10 @@ public:
 	void RemovePassenger(AUnitBase* passenger);
 
 	UFUNCTION(BlueprintCallable)
-	EUnitClassification GetClassifications();
+	EUnitClassification GetClassifications() const;
 
 	UFUNCTION(BlueprintCallable)
-	bool HasClassifications(EUnitClassification flags);
+	bool HasClassifications(EUnitClassification flags) const;
 
 	UFUNCTION(BlueprintCallable)
 	void AddClassifications(EUnitClassification flags);
@@ -191,13 +192,13 @@ public:
 	/// </summary>
 	/// <returns>PlayerState of a player, responsible for this unit</returns>
 	UFUNCTION(BlueprintCallable)
-	AZombieSiegePlayerState* GetOwningPlayerState();
+	AZombieSiegePlayerState* GetOwningPlayerState() const;
 
 	/// <summary>
 	/// Gets controlling player of this Unit. Can be nullptr if unit is uncontrolled.
 	/// </summary>
 	/// <returns>PlayerController responsible for this unit</returns>
-	AZombieSiegePlayerController* GetOwningPlayerController();
+	AZombieSiegePlayerController* GetOwningPlayerController() const;
 
 	void SetOwningPlayer(AZombieSiegePlayerController* controller);
 
@@ -205,14 +206,14 @@ public:
 	virtual void SetMaxSpeed(float speedArg);
 
 	UFUNCTION(BlueprintCallable)
-	virtual float GetMaxSpeed();
+	virtual float GetMaxSpeed() const;
 
 	UFUNCTION(BlueprintCallable)
 	/// <summary>
 	/// Determines if a Unit can move now. Can be used by the AI
 	/// </summary>
 	/// <returns>True if unit can move</returns>
-	virtual bool CanMove();
+	virtual bool CanMove() const;
 
 	UFUNCTION(BlueprintCallable)
 	/// <summary>
@@ -239,14 +240,14 @@ public:
 	/// Must be be called during OnUnitIsDying Event to check, if somebody has already prevented this Unit's death
 	/// </summary>
 	/// <returns>True if Unit is still marked as dying</returns>
-	bool IsDying();
+	bool IsDying() const;
 
 	UFUNCTION(BlueprintCallable)
 	/// <summary>
 	/// Check if Unit is alive 
 	/// </summary>
 	/// <returns>True if unit is alive</returns>
-	bool IsAlive();
+	bool IsAlive() const;
 
 	UFUNCTION(BlueprintCallable)
 	/// <summary>
@@ -267,7 +268,7 @@ public:
 	/// Gets current health of this unit
 	/// </summary>
 	/// <returns>Current health</returns>
-	float GetHealth();
+	float GetHealth() const;
 
 	UFUNCTION(BlueprintCallable)
 	/// <summary>
@@ -281,7 +282,7 @@ public:
 	/// Gets max health of this unit.
 	/// </summary>
 	/// <returns>Unit's max health</returns>
-	float GetMaxHealth();
+	float GetMaxHealth() const;
 
 	UFUNCTION(BlueprintCallable)
 	virtual bool CanAttackTarget(AUnitBase* target);

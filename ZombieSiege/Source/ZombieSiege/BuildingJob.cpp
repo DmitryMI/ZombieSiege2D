@@ -146,6 +146,17 @@ bool ABuildingJob::IsValidExecutor(AUnitBase* executor)
 		return false;
 	}
 
+	AZombieSiegePlayerState* playerState = GetOwningPlayerController()->GetPlayerState<AZombieSiegePlayerState>();
+	check(playerState);
+
+	ABuilding* buildingDefaultObject = buildingClass.GetDefaultObject();
+	check(buildingDefaultObject);
+
+	if (!building && !playerState->HasEnoughResourcesInStorage(buildingDefaultObject->GetRequiredResources()))
+	{
+		return false;
+	}
+
 	bool hasPath;
 
 	if (building)
