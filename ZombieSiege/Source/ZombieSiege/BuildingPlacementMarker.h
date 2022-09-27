@@ -16,6 +16,12 @@ class ZOMBIESIEGE_API ABuildingPlacementMarker : public AActor
 
 private:
 
+	UPROPERTY(EditDefaultsOnly)
+	FLinearColor buildingPossibleColor = FLinearColor(0.3, 0.3, 1, 0.6);
+
+	UPROPERTY(EditDefaultsOnly)
+	FLinearColor obstacleDetectedColor = FLinearColor(1, 0.3, 0.3, 0.6);;
+
 	UPROPERTY(Transient)
 	UPaperFlipbookComponent* markerRenderer;
 

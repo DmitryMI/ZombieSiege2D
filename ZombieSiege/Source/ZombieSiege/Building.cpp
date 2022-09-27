@@ -2,6 +2,9 @@
 
 
 #include "Building.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/GameplayStatics.h"
+#include "Macros.h"
 
 void ABuilding::BeginPlay()
 {
@@ -84,9 +87,29 @@ bool ABuilding::IsFullyBuilt()
 	return FMath::IsNearlyEqual(buildingProgress, GetMaxHealth());
 }
 
-bool ABuilding::CanBeBuildAt(const FVector& location)
+bool ABuilding::CanBeBuildAt(UWorld* world, const FVector& location)
 {
-	return false;
+	float radius;
+	float halfHeight;
+
+	FVector traceStart = location - FVector::UpVector * 1000;
+	FVector traceEnd = location + FVector::UpVector * 1000;
+
+	GetSimpleCollisionCylinder(radius, halfHeight);
+
+	FCollisionShape shape = FCollisionShape::MakeCapsule(radius, halfHeight);
+
+	FCollisionObjectQueryParams queryParams;
+
+	queryParams.AddObjectTypesToQuery(BUILDING_TRACE);
+	queryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_Pawn);
+	queryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_Destructible);
+
+	bool overlap = world->OverlapAnyTestByObjectType(location, FQuat::Identity, queryParams, shape);
+
+	DrawDebugCapsule(world, location, halfHeight, radius, FQuat::Identity, FColor::Blue);
+
+	return !overlap;
 }
 
 void ABuilding::SetIsBuiltOnSpawn(bool isBuiltOnSpawn)

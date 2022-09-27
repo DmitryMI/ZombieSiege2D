@@ -45,6 +45,22 @@ void ABuildingPlacementMarker::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (!buildingDefaultObject)
+	{
+		return;
+	}
+
+	FVector location = GetActorLocation();
+
+	bool canBeBuilt = buildingDefaultObject->CanBeBuildAt(GetWorld(), location);
+	if (canBeBuilt)
+	{
+		markerRenderer->SetSpriteColor(buildingPossibleColor);
+	}
+	else
+	{
+		markerRenderer->SetSpriteColor(obstacleDetectedColor);
+	}
 }
 
 TSubclassOf<ABuilding> ABuildingPlacementMarker::GetBuildingClass()

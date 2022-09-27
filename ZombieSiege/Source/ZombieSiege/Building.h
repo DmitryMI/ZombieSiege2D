@@ -62,7 +62,7 @@ public:
 
 	FOnBuildingProgressChanged& OnBuildingProgressChanged() { return onBuildingProgressChangedEvent; }
 
-	virtual bool CanBeBuildAt(const FVector& location);
+	virtual bool CanBeBuildAt(UWorld* world, const FVector& location);
 
 private:
 	FOnBuildingProgressChanged onBuildingProgressChangedEvent;

@@ -1,0 +1,2 @@
+
+#define BUILDING_TRACE ECC_GameTraceChannel3

@@ -23,7 +23,7 @@ bool ASurvivor::CanBuild(const TSubclassOf<ABuilding>& buildingClass, FVector lo
 
 	ABuilding* clazzDefaultObject = Cast<ABuilding>(clazz->GetDefaultObject());
 
-	if (!clazzDefaultObject->CanBeBuildAt(location))
+	if (!clazzDefaultObject->CanBeBuildAt(GetWorld(), location))
 	{
 		return false;
 	}
