@@ -2,6 +2,7 @@
 
 
 #include "BuildingPlacementMarker.h"
+#include "UnitGraphicsManager.h"
 #include "UnitGraphicsComponent.h"
 
 // Sets default values
@@ -17,9 +18,9 @@ void ABuildingPlacementMarker::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	UActorComponent* rendererComponent = GetComponentByClass(UPaperSpriteComponent::StaticClass());
+	UActorComponent* rendererComponent = GetComponentByClass(UPaperFlipbookComponent::StaticClass());
 
-	markerRenderer = Cast<UPaperSpriteComponent>(rendererComponent);
+	markerRenderer = Cast<UPaperFlipbookComponent>(rendererComponent);
 	check(markerRenderer);
 
 	UpdateMarkerRenderer();
@@ -34,8 +35,9 @@ void ABuildingPlacementMarker::UpdateMarkerRenderer()
 
 	check(markerRenderer);	
 
-	//UPaperFlipbook* flipbook = graphics->GetPreviewFlipbook();
-	//markerRenderer->SetSprite();
+	UPaperFlipbook* flipbook = buildingGraphicsData->GetFlipbook(EUnitState::None, EFaceDirection::Up);
+	check(flipbook);
+	markerRenderer->SetFlipbook(flipbook);
 }
 
 // Called every frame
@@ -59,6 +61,11 @@ void ABuildingPlacementMarker::SetBuildingClass(TSubclassOf<ABuilding> clazz)
 	buildingDefaultObject = Cast<ABuilding>(buildingClass->GetDefaultObject());
 
 	check(buildingDefaultObject);
+
+	AUnitGraphicsManager* graphicsManager = AUnitGraphicsManager::GetInstance(GetWorld());
+	check(graphicsManager);
+
+	buildingGraphicsData = graphicsManager->GetUnitGraphicsData(buildingDefaultObject->GetUnitGraphicsDataName());
 
 	UpdateMarkerRenderer();
 }

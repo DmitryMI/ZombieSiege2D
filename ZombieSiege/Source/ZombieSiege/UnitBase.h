@@ -24,6 +24,12 @@ class ZOMBIESIEGE_API AUnitBase : public APawn
 
 private:
 
+	UPROPERTY(EditDefaultsOnly)
+	FName unitTypeName;
+
+	UPROPERTY(EditDefaultsOnly)
+	FName unitGraphicsDataName;
+
 	UPROPERTY(VisibleAnywhere)
 	EUnitState currentState = EUnitState::None;
 
@@ -110,6 +116,12 @@ protected:
 	void SetMovementComponentSpeedCap(float speedCap);
 
 public:
+
+	UFUNCTION(BlueprintCallable)
+	virtual FName GetUnitTypeName();
+
+	UFUNCTION(BlueprintCallable)
+	virtual FName GetUnitGraphicsDataName();
 
 	UFUNCTION(BlueprintCallable)
 	EUnitState GetUnitState();

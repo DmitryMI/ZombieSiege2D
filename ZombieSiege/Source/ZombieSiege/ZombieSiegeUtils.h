@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "UnitBase.h"
+#include "FaceDirection.h"
 #include "ZombieSiegeUtils.generated.h"
 
 /**
@@ -185,4 +186,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
 	static bool AreEnemies(AUnitBase* unitA, AUnitBase* unitB);
+
+	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
+	static int GetDirectionSpriteIndex(EFaceDirection faceDirectionEnum);
 };

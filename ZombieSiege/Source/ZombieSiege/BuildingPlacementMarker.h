@@ -4,7 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "PaperSpriteComponent.h"
+#include "PaperFlipbookComponent.h"
+#include "UnitGraphicsData.h"
 #include "Building.h"
 #include "BuildingPlacementMarker.generated.h"
 
@@ -16,12 +17,14 @@ class ZOMBIESIEGE_API ABuildingPlacementMarker : public AActor
 private:
 
 	UPROPERTY(Transient)
-	UPaperSpriteComponent* markerRenderer;
+	UPaperFlipbookComponent* markerRenderer;
 
 	UPROPERTY(VisibleAnywhere)
 	TSubclassOf<ABuilding> buildingClass;
 
 	ABuilding* buildingDefaultObject;
+
+	UUnitGraphicsData* buildingGraphicsData;
 	
 public:	
 	// Sets default values for this actor's properties

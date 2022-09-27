@@ -304,3 +304,27 @@ bool UZombieSiegeUtils::AreEnemies(AUnitBase* unitA, AUnitBase* unitB)
 
 	return controllerA != controllerB;
 }
+
+int UZombieSiegeUtils::GetDirectionSpriteIndex(EFaceDirection faceDirectionEnum)
+{
+	if (static_cast<uint8>(faceDirectionEnum) & static_cast<uint8>(EFaceDirection::Up))
+	{
+		return 0;
+	}
+	else if (static_cast<uint8>(faceDirectionEnum) & static_cast<uint8>(EFaceDirection::Down))
+	{
+		return 1;
+	}
+	else if (static_cast<uint8>(faceDirectionEnum) & static_cast<uint8>(EFaceDirection::Right))
+	{
+		return 2;
+	}
+	else if (static_cast<uint8>(faceDirectionEnum) & static_cast<uint8>(EFaceDirection::Left))
+	{
+		return 3;
+	}
+	else
+	{
+		return 1;
+	}
+}

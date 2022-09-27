@@ -10,6 +10,16 @@ void AUnitBase::SetUnitState(EUnitState nextState)
 	onUnitStateChangedEvent.Broadcast(oldState, nextState);
 }
 
+FName AUnitBase::GetUnitTypeName()
+{
+	return unitTypeName;
+}
+
+FName AUnitBase::GetUnitGraphicsDataName()
+{
+	return unitGraphicsDataName;
+}
+
 EUnitState AUnitBase::GetUnitState()
 {
 	return currentState;

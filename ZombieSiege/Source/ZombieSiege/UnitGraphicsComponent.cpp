@@ -4,37 +4,12 @@
 #include "UnitGraphicsComponent.h"
 #include "Humanoid.h"
 #include "FaceDirection.h"
+#include "UnitGraphicsManager.h"
 #include "UnitState.h"
-
-int UUnitGraphicsComponent::GetDirectionSpriteIndex(EFaceDirection faceDirectionEnum)
-{
-	if (static_cast<uint8>(faceDirectionEnum) & static_cast<uint8>(EFaceDirection::Up))
-	{
-		return 0;
-	}
-	else if (static_cast<uint8>(faceDirectionEnum) & static_cast<uint8>(EFaceDirection::Down))
-	{
-		return 1;
-	}
-	else if (static_cast<uint8>(faceDirectionEnum) & static_cast<uint8>(EFaceDirection::Right))
-	{
-		return 2;
-	}
-	else if (static_cast<uint8>(faceDirectionEnum) & static_cast<uint8>(EFaceDirection::Left))
-	{
-		return 3;
-	}
-	else
-	{
-		return 1;
-	}
-}
 
 UUnitGraphicsComponent::UUnitGraphicsComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-
-	
 }
 
 
@@ -42,6 +17,17 @@ void UUnitGraphicsComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	AUnitBase* unitOwner = Cast<AUnitBase>(GetOwner());
+
+	unitGraphicsData = AUnitGraphicsManager::GetInstance(GetWorld())->GetUnitGraphicsData(unitOwner->GetUnitGraphicsDataName());
+
+	if (!unitGraphicsData)
+	{
+		FString ownerName;
+		GetOwner()->GetName(ownerName);
+		UE_LOG(LogTemp, Error, TEXT("Failed to setup graphics for unit %s"), *ownerName);
+	}
+	
 	TArray<USceneComponent*> children;
 	GetChildrenComponents(true, children);
 	for (USceneComponent* child : children)
@@ -55,45 +41,16 @@ void UUnitGraphicsComponent::BeginPlay()
 	check(flipbookRenderer);
 
 	flipbookRenderer->SetWorldRotation(FRotator(0, 0, -90));
-
-	AActor* owner = GetOwner();
-	check(owner);
-
-	AHumanoid* humanoid = Cast<AHumanoid>(owner);
-	check(humanoid);
 }
 
 void UUnitGraphicsComponent::UpdateFlipbook(EUnitState state, EFaceDirection direction)
 {
-	int directionIndex = GetDirectionSpriteIndex(direction);
-
-	TArray<UPaperFlipbook*>* animationSet = nullptr;
-
-	switch (state)
+	if (!unitGraphicsData)
 	{
-	case EUnitState::None:
-		animationSet = &standFlipbooks;
-		break;
-	case EUnitState::Moving:
-		animationSet = &movingFlipbooks;
-		break;
-	case EUnitState::AttackingBackswing:
-	case EUnitState::AttackingRelaxation:
-		animationSet = &attackingFlipbooks;
-		break;
-	case EUnitState::Dying:
-		animationSet = &dyingFlipbooks;
-		break;
-	case EUnitState::Birth:
-		animationSet = &birthFlipbooks;
-		break;
+		return;
 	}
 
-	check(animationSet);
-	check(animationSet->Num() > directionIndex);
-
-	UPaperFlipbook* flipbook = (*animationSet)[directionIndex];
-	check(flipbook);
+	UPaperFlipbook* flipbook = unitGraphicsData->GetFlipbook(state, direction);
 
 	check(flipbookRenderer);
 	flipbookRenderer->SetFlipbook(flipbook);
@@ -112,9 +69,3 @@ void UUnitGraphicsComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 	UpdateFlipbook(humanoid->GetUnitState(), humanoid->GetFacingDirection());
 }
-
-UPaperFlipbook* UUnitGraphicsComponent::GetPreviewFlipbook()
-{
-	return standFlipbooks[0];
-}
-
