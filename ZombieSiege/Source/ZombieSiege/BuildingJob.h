@@ -4,22 +4,30 @@
 
 #include "CoreMinimal.h"
 #include "JobBase.h"
-#include "GatherDoodadJob.generated.h"
+#include "BuildingJob.generated.h"
 
-class ADoodad;
+class ABuilding;
 
 /**
  * 
  */
 UCLASS()
-class ZOMBIESIEGE_API AGatherDoodadJob : public AJobBase
+class ZOMBIESIEGE_API ABuildingJob : public AJobBase
 {
 	GENERATED_BODY()
+	
+private:
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ABuilding> buildingClass;
+
+	UPROPERTY(EditAnywhere)
+	FVector targetLocation;
+
+	UPROPERTY(VisibleAnywhere)
+	ABuilding* building;
 
 protected:
-	UPROPERTY(VisibleAnywhere)
-	ADoodad* targetDoodad;
-
 	virtual void FindExecutors() override;
 
 	virtual void BeginPlay() override;
@@ -38,19 +46,19 @@ protected:
 
 	virtual float CalculateJobSpecificPriorityMetric(AUnitBase* unit) override;
 
-	bool ShouldAssignUnemployedUnit(AUnitBase* unit);
-
 	virtual void IssueOrders();
 
 public:
-	
-	AGatherDoodadJob();
-
-	virtual void Tick(float deltaSeconds) override;
 
 	UFUNCTION(BlueprintCallable)
-	void SetTargetDoodad(ADoodad* doodad);
+	void SetBuildingClass(const TSubclassOf<ABuilding>& clazz);
 
 	UFUNCTION(BlueprintCallable)
-	ADoodad* GetTargetDoodad();
+	TSubclassOf<ABuilding> GetBuildingClass();
+
+	UFUNCTION(BlueprintCallable)
+	FVector GetBuildingLocation();
+
+	UFUNCTION(BlueprintCallable)
+	void SetTargetLocation(const FVector& location);
 };

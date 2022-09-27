@@ -46,7 +46,7 @@ protected:
 
 	virtual void TickStateMachine();
 
-	virtual bool CanExecute() { return true; }
+	virtual bool CanExecute();
 
 	virtual bool IsJobInitialized() { return true; }
 
@@ -55,6 +55,8 @@ protected:
 	virtual bool IsFailed() { unimplemented(); return false; }
 
 	virtual bool IsValidExecutor(AUnitBase* unit);
+
+	virtual void FindExecutors();
 
 	virtual void OnStateChanged(EJobState stateOld, EJobState stateNew);
 

@@ -5,6 +5,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Doodad.h"
 #include "GatherDoodadJob.h"
+#include "BuildingPlacementMarker.h"
 #include "Camera/CameraComponent.h"
 
 DEFINE_LOG_CATEGORY(LogZombieSiegePlayerController);
@@ -230,9 +231,70 @@ const TArray<TSubclassOf<AUnitBase>>& AZombieSiegePlayerController::GetBuildable
 	return buildables;
 }
 
+void AZombieSiegePlayerController::BeginBuildingJobPlacement(TSubclassOf<ABuilding> buildingClass)
+{
+	if (buildingPlacementMarker)
+	{
+		// Already busy with another building placement
+		return;
+	}
+
+	FVector deprojected;
+
+	if (DeprojectMouseOnTerrain(deprojected))
+	{
+
+		buildingPlacementMarker = GetWorld()->SpawnActor<ABuildingPlacementMarker>(
+			buildingPlacementMarkerClass,
+			deprojected,
+			FRotator::ZeroRotator
+			);
+
+		check(buildingPlacementMarker);
+
+		buildingPlacementMarker->SetBuildingClass(buildingClass);
+	}
+}
+
 void AZombieSiegePlayerController::ShowGameUi(bool bShow)
 {
 	UE_LOG(LogZombieSiegePlayerController, Warning, TEXT("Exec ShowGameUi(%d) called"), bShow);
 
 	ShowGameUiInternal(bShow);
+}
+
+bool AZombieSiegePlayerController::DeprojectMouseOnTerrain(FVector& deprojectedLocation)
+{
+	FVector worldLocation;
+	FVector worldDirection;
+	bool mouseDeprojected = DeprojectMousePositionToWorld(worldLocation, worldDirection);
+	if (!mouseDeprojected)
+	{
+		UE_LOG(LogZombieSiegePlayerController, Error, TEXT("Failed to deproject mouse during BeginBuildingJobPlacement"));
+		return false;
+	}
+
+	FVector secondWorldPoint = worldLocation + worldDirection * cameraDefaultHeight * 2;
+
+	FPlane plane(FVector(0, 0, terrainHeight), FVector::UpVector);
+	FVector intersection = FMath::LinePlaneIntersection(worldLocation, secondWorldPoint, plane);
+
+	deprojectedLocation = intersection;
+
+	return true;
+}
+
+void AZombieSiegePlayerController::Tick(float deltaSeconds)
+{
+	Super::Tick(deltaSeconds);
+
+	if (buildingPlacementMarker)
+	{
+		FVector deprojected;
+
+		if (DeprojectMouseOnTerrain(deprojected))
+		{
+			buildingPlacementMarker->SetActorLocation(deprojected);
+		}
+	}
 }

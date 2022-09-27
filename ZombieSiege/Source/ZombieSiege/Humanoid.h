@@ -18,11 +18,17 @@ class ZOMBIESIEGE_API AHumanoid : public AUnitBase
 	GENERATED_BODY()
 
 private:
+	UPROPERTY(EditDefaultsOnly)
+	FName weaponDefaultName = "SurvivorFists";
+
 	UPROPERTY(VisibleAnywhere)
 	EFaceDirection facingDirection = EFaceDirection::Down;
 
 	UPROPERTY(VisibleAnywhere)
 	AWeaponManager* weaponManager;
+
+	UPROPERTY(VisibleAnywhere)
+	UWeaponInfo* weaponDefault;
 
 	UPROPERTY(VisibleAnywhere)
 	bool bIsOnCooldown;
@@ -34,8 +40,7 @@ private:
 	FTimerDelegate attackRelaxationTimerDelegate;
 
 	FTimerHandle attackCooldownTimerHandle;
-	FTimerDelegate attackCooldownTimerDelegate;
-	
+	FTimerDelegate attackCooldownTimerDelegate;	
 
 	UFUNCTION()
 	void OnBackswingTimerElapsed(AUnitBase* target);
@@ -55,13 +60,19 @@ protected:
 	UUnitGraphicsComponent* graphicsComponent;	
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	UWeaponInfo* weaponInfo;
+	UWeaponInfo* activeWeapon;
+
+	UFUNCTION(BlueprintCallable)
+	AWeaponManager* GetWeaponManager();
 	
 	virtual void BeginPlay() override;
 
-	virtual void SetupDefaultWeapon();
+	virtual UWeaponInfo* GetDefaultWeapon();
 
-	virtual bool CanCommitAttackTarget(AUnitBase* target);
+	virtual bool CanCommitAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon);
+	virtual bool CanAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon);
+
+	virtual bool AttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon);
 
 public:		
 
@@ -71,13 +82,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	UWeaponInfo* GetWeaponInfo() 
 	{ 
-		return weaponInfo;
+		return activeWeapon;
 	}
 
 	UFUNCTION(BlueprintCallable)
 	void SetWeaponInfo(UWeaponInfo* weapon)
 	{ 
-		weaponInfo = weapon;
+		activeWeapon = weapon;
 	}
 
 	UFUNCTION(BlueprintCallable)

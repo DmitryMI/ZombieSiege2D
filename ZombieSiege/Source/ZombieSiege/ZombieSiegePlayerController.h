@@ -10,6 +10,7 @@ class ABuilding;
 class AUnitBase;
 class AJobBase;
 class ADoodad;
+class ABuildingPlacementMarker;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogZombieSiegePlayerController, Log, All);
 
@@ -22,6 +23,9 @@ class ZOMBIESIEGE_API AZombieSiegePlayerController : public APlayerController
 	GENERATED_BODY()
 
 private:
+	UPROPERTY(EditDefaultsOnly)
+	float terrainHeight = 0.0f;
+
 	UPROPERTY(EditDefaultsOnly)
 	float cameraDefaultHeight = 1000;
 
@@ -36,6 +40,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "DefaultPreferences|Camera")
 	float cameraDefaultZoomSpeed = 15000.0f;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ABuildingPlacementMarker> buildingPlacementMarkerClass;
 
 	UPROPERTY(EditDefaultsOnly)
 	TArray<TSubclassOf<AUnitBase>> buildables;
@@ -55,6 +62,8 @@ private:
 	void OnSelectActionDoubleClick();
 	void OnCommandActionReleased();
 
+	ABuildingPlacementMarker* buildingPlacementMarker;
+
 protected:
 	virtual void SetupInputComponent() override;
 
@@ -65,7 +74,12 @@ protected:
 	UFUNCTION(BlueprintNativeEvent)
 	void ShowGameUiInternal(bool bShow);
 
+	bool DeprojectMouseOnTerrain(FVector& deprojectedLocation);
+
 public:
+
+	virtual void Tick(float deltaSeconds) override;
+
 	UFUNCTION(BlueprintCallable)
 	void AddToControlledUnits(AUnitBase* unit);
 
@@ -83,6 +97,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	const TArray<TSubclassOf<AUnitBase>>& GetBuildableUnits();
+
+	UFUNCTION(BlueprintCallable)
+	void BeginBuildingJobPlacement(TSubclassOf<ABuilding> buildingClass);
 
 	UFUNCTION(BlueprintCallable, Exec)
 	void ShowGameUi(bool bShow);

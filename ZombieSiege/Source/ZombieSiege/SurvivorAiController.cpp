@@ -3,6 +3,7 @@
 
 #include "SurvivorAiController.h"
 #include "UnitBase.h"
+#include "Building.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
 void ASurvivorAiController::BeginPlay()
@@ -45,6 +46,21 @@ void ASurvivorAiController::SetAssignedToJob(AJobBase* job)
     }
 }
 
+void ASurvivorAiController::IssueAttackUnitOrder(AUnitBase* target)
+{
+    check(target);
+
+    attackTarget = target;
+
+    bool ok = RunBehaviorTree(attackUnitBehaviorTree);
+    check(ok);
+
+    UBlackboardComponent* blackboard = GetBlackboardComponent();
+    check(blackboard);
+
+    blackboard->SetValueAsObject("Target", target);
+}
+
 void ASurvivorAiController::IssueGatherOrder(AUnitBase* gatherableUnit)
 {
     check(gatherableUnit);    
@@ -73,9 +89,33 @@ void ASurvivorAiController::IssueWanderingOrder(FVector aroundLocation, float ra
     blackboard->SetValueAsFloat("StandingDuration", standingDuration);
 }
 
+void ASurvivorAiController::IssueBuildOrder(TSubclassOf<ABuilding> buildingClass, const FVector& location)
+{
+    bool ok = RunBehaviorTree(buildBehaviorTree);
+    check(ok);
+
+    UBlackboardComponent* blackboard = GetBlackboardComponent();
+    check(blackboard);
+
+    blackboard->SetValueAsObject("BuildingClass", buildingClass);
+    blackboard->SetValueAsVector("Location", location);
+}
+
+void ASurvivorAiController::IssueRepairOrder(ABuilding* building)
+{
+    bool ok = RunBehaviorTree(repairBehaviorTree);
+    check(ok);
+
+    UBlackboardComponent* blackboard = GetBlackboardComponent();
+    check(blackboard);
+
+    blackboard->SetValueAsObject("Building", building);
+}
+
 void ASurvivorAiController::CancelOrder()
 {
     gatheringTarget = nullptr;
+    attackTarget = nullptr;
 
     bool ok = RunBehaviorTree(holdPositionBehaviorTree);
     check(ok);

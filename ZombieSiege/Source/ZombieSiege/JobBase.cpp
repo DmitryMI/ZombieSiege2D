@@ -3,6 +3,7 @@
 
 #include "JobBase.h"
 #include "UnitBase.h"
+#include "ZombieSiegeUtils.h"
 #include "SurvivorAiController.h"
 
 DEFINE_LOG_CATEGORY(LogSurvivorJobs);
@@ -26,6 +27,68 @@ bool AJobBase::IsValidExecutor(AUnitBase* unit)
 	}
 
 	return true;
+}
+
+void AJobBase::FindExecutors()
+{
+	// Basic implementation, assigns the first available executor.
+
+	check(GetOwningPlayerController());
+
+	const TArray<AUnitBase*>& controlledUnits = GetOwningPlayerController()->GetControlledUnits();
+
+	TArray<AUnitBase*> unemployedExecutors;
+
+	// First, check only unemployed units
+	for (AUnitBase* unit : controlledUnits)
+	{
+		check(unit);
+
+		bool bAssign = false;
+
+		float myMetric = CalculateJobSpecificPriorityMetric(unit);
+
+		if (IsValidExecutor(unit))
+		{
+			if (!IsExecutorAssignedToThisJob(unit))
+			{
+				int unitJobPriority;
+				bool hasJobPriority = GetUnitAssignedJobPriority(unit, unitJobPriority);
+				if (!hasJobPriority)
+				{
+					bAssign = true;
+				}
+				else
+				{
+					unemployedExecutors.Add(unit);
+				}
+			}
+		}
+
+		if (bAssign)
+		{
+			AssignExecutor(unit);
+			return;
+		}
+	}
+
+	// Now check employed units. We want to steal workers from jobs with lower priority
+	for (AUnitBase* unit : unemployedExecutors)
+	{
+		check(unit);
+
+		int unitJobPriority;
+
+		if (GetUnitAssignedJobPriority(unit, unitJobPriority))
+		{
+			bool myMajorPrioGreater = GetJobPriority() > unitJobPriority;
+			if (myMajorPrioGreater)
+			{
+				AssignExecutor(unit);
+				return;
+			}
+		}
+	}
 }
 
 void AJobBase::OnStateChanged(EJobState stateOld, EJobState stateNew)
@@ -283,6 +346,18 @@ void AJobBase::TickStateMachine()
 		}
 		break;
 	}
+}
+
+bool AJobBase::CanExecute()
+{
+	RemoveInvalidExecutors();
+
+	if (assignedExecutors.Num() == 0)
+	{
+		FindExecutors();
+	}
+
+	return assignedExecutors.Num() > 0;
 }
 
 

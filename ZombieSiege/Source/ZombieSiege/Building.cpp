@@ -84,6 +84,11 @@ bool ABuilding::IsFullyBuilt()
 	return FMath::IsNearlyEqual(buildingProgress, GetMaxHealth());
 }
 
+bool ABuilding::CanBeBuildAt(const FVector& location)
+{
+	return false;
+}
+
 void ABuilding::SetIsBuiltOnSpawn(bool isBuiltOnSpawn)
 {
 	bIsBuiltOnSpawn = isBuiltOnSpawn;

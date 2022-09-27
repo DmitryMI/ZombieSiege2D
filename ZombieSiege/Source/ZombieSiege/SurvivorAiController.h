@@ -8,6 +8,7 @@
 
 class AJobBase;
 class AUnitBase;
+class ABuilding;
 
 /**
  * 
@@ -23,14 +24,24 @@ private:
 	AJobBase* assignedToJob;
 
 	UPROPERTY(EditDefaultsOnly)
-	UBehaviorTree* holdPositionBehaviorTree;
+	UBehaviorTree* holdPositionBehaviorTree;	
 
 	UPROPERTY(EditDefaultsOnly)
 	UBehaviorTree* wandererBehaviorTree;
 
 	UPROPERTY(EditDefaultsOnly)
+	UBehaviorTree* attackUnitBehaviorTree;
+
+	UPROPERTY(EditDefaultsOnly)
 	UBehaviorTree* gathererBehaviorTree;
 
+	UPROPERTY(EditDefaultsOnly)
+	UBehaviorTree* buildBehaviorTree;
+
+	UPROPERTY(EditDefaultsOnly)
+	UBehaviorTree* repairBehaviorTree;
+
+	AUnitBase* attackTarget;
 	AUnitBase* gatheringTarget;
 	
 protected:
@@ -46,10 +57,19 @@ public:
 	virtual void SetAssignedToJob(AJobBase* job);
 
 	UFUNCTION(BlueprintCallable)
+	virtual void IssueAttackUnitOrder(AUnitBase* target);
+
+	UFUNCTION(BlueprintCallable)
 	virtual void IssueGatherOrder(AUnitBase* gatherableUnit);
 
 	UFUNCTION(BlueprintCallable)
 	virtual void IssueWanderingOrder(FVector aroundLocation, float radius = 500.0f, float standingDuration = 2.0f);
+
+	UFUNCTION(BlueprintCallable)
+	virtual void IssueBuildOrder(TSubclassOf<ABuilding> buildingClass, const FVector& location);
+
+	UFUNCTION(BlueprintCallable)
+	virtual void IssueRepairOrder(ABuilding* building);
 
 	virtual void CancelOrder();
 };

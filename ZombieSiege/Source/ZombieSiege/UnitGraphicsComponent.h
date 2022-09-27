@@ -43,4 +43,7 @@ public:
 
 	UUnitGraphicsComponent();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;		
+
+	UFUNCTION(BlueprintCallable)
+	UPaperFlipbook* GetPreviewFlipbook();
 };

@@ -113,3 +113,8 @@ void UUnitGraphicsComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	UpdateFlipbook(humanoid->GetUnitState(), humanoid->GetFacingDirection());
 }
 
+UPaperFlipbook* UUnitGraphicsComponent::GetPreviewFlipbook()
+{
+	return standFlipbooks[0];
+}
+

@@ -143,7 +143,7 @@ float AGatherDoodadJob::CalculateJobSpecificPriorityMetric(AUnitBase* unit)
 	// TODO Use path length, not distance!
 	float distanceSquare = (targetLocation - unitLocation).SizeSquared2D();
 
-	float metric = 1000.0f / distanceSquare;
+	float metric = 1000.0f - distanceSquare;
 
 	return metric;
 }
@@ -198,14 +198,7 @@ void AGatherDoodadJob::BeginPlay()
 
 bool AGatherDoodadJob::CanExecute()
 {
-	RemoveInvalidExecutors();
-
-	if (assignedExecutors.Num() == 0)
-	{
-		FindExecutors();
-	}
-
-	return assignedExecutors.Num() > 0;
+	return Super::CanExecute();
 }
 
 AGatherDoodadJob::AGatherDoodadJob()

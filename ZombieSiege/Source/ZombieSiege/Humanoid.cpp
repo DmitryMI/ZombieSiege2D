@@ -9,6 +9,17 @@ AHumanoid::AHumanoid()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
+AWeaponManager* AHumanoid::GetWeaponManager()
+{
+	if (!weaponManager)
+	{
+		weaponManager = AWeaponManager::GetInstance(GetWorld());
+		check(weaponManager);
+	}
+	
+	return weaponManager;
+}
+
 void AHumanoid::BeginPlay()
 {
 	Super::BeginPlay();
@@ -19,13 +30,13 @@ void AHumanoid::BeginPlay()
 	weaponManager = AWeaponManager::GetInstance(GetWorld());
 	check(weaponManager);	
 
-	SetupDefaultWeapon();
+	weaponDefault = GetDefaultWeapon();
+	check(weaponDefault);
 }
 
-void AHumanoid::SetupDefaultWeapon()
+UWeaponInfo* AHumanoid::GetDefaultWeapon()
 {
-	weaponInfo = weaponManager->GetWeaponInfo("SurvivorFists");
-	check(weaponInfo);
+	return weaponManager->GetWeaponInfo(weaponDefaultName);
 }
 
 bool AHumanoid::IsOnCooldown()
@@ -111,6 +122,11 @@ bool AHumanoid::CanMove()
 
 bool AHumanoid::CanAttackTarget(AUnitBase* target)
 {
+	return CanAttackTargetWithWeapon(target, weaponDefault);
+}
+
+bool AHumanoid::CanAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon)
+{
 	if (bIsOnCooldown)
 	{
 		return false;
@@ -121,7 +137,7 @@ bool AHumanoid::CanAttackTarget(AUnitBase* target)
 		return false;
 	}
 
-	if (!CanCommitAttackTarget(target))
+	if (!CanCommitAttackTargetWithWeapon(target, weapon))
 	{
 		return false;
 	}
@@ -129,19 +145,19 @@ bool AHumanoid::CanAttackTarget(AUnitBase* target)
 	return true;
 }
 
-bool AHumanoid::CanCommitAttackTarget(AUnitBase* target)
+bool AHumanoid::CanCommitAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon)
 {
-	if (!weaponInfo)
+	if (!weapon)
 	{
 		return false;
 	}
 
-	if (!weaponInfo->CanThisWeaponEverAttackTarget())
+	if (!weapon->CanThisWeaponEverAttackTarget())
 	{
 		return false;
 	}
 
-	if (!weaponInfo->CanAttackTarget(this, target))
+	if (!weapon->CanAttackTarget(this, target))
 	{
 		return false;
 	}
@@ -153,19 +169,19 @@ void AHumanoid::OnBackswingTimerElapsed(AUnitBase* target)
 {
 	attackBackswingTimerDelegate.Unbind();
 
-	if (CanCommitAttackTarget(target))
+	if (CanCommitAttackTargetWithWeapon(target, activeWeapon))
 	{
 		//Commit the attack
-		weaponInfo->AttackTarget(this, target);
+		activeWeapon->AttackTarget(this, target);
 	}
 
 	SetUnitState(EUnitState::AttackingRelaxation);
 
-	check(weaponInfo);
+	check(activeWeapon);
 
 	FTimerManager& timerManager = GetWorld()->GetTimerManager();
 
-	float relaxationDuration = weaponInfo->GetRelaxationDuration();
+	float relaxationDuration = activeWeapon->GetRelaxationDuration();
 	attackRelaxationTimerDelegate.BindUObject(this, &AHumanoid::OnRelaxationTimerElapsed);
 	timerManager.SetTimer(attackRelaxationTimerHandle, attackRelaxationTimerDelegate, relaxationDuration, false, relaxationDuration);
 }
@@ -176,14 +192,14 @@ void AHumanoid::OnRelaxationTimerElapsed()
 
 	SetUnitState(EUnitState::None);
 
-	if (weaponInfo == nullptr)
+	if (activeWeapon == nullptr)
 	{
 		// If weaponInfo is suddenly nullptr, we don't have any option than to reset cooldown right away
 		OnCooldownTimerElapsed();
 		return;
 	}
 
-	float cooldownDuration = weaponInfo->GetCooldownDuration();
+	float cooldownDuration = activeWeapon->GetCooldownDuration();
 
 	if (!FMath::IsNearlyZero(cooldownDuration))
 	{
@@ -212,20 +228,27 @@ void AHumanoid::OnCooldownTimerElapsed()
 
 bool AHumanoid::AttackTarget(AUnitBase* target)
 {
-	if (!CanAttackTarget(target))
+	return AttackTargetWithWeapon(target, weaponDefault);
+}
+
+bool AHumanoid::AttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon)
+{
+	activeWeapon = weapon;
+
+	if (!CanAttackTargetWithWeapon(target, activeWeapon))
 	{
 		return false;
 	}
 
-	check(weaponInfo);
+	check(activeWeapon);
 
 	SetUnitState(EUnitState::AttackingBackswing);
 
 	bIsOnCooldown = true;
 
 	FTimerManager& timerManager = GetWorld()->GetTimerManager();
-	
-	float backswingDuration = weaponInfo->GetBackswingDuration();
+
+	float backswingDuration = activeWeapon->GetBackswingDuration();
 	attackBackswingTimerDelegate.BindUObject(this, &AHumanoid::OnBackswingTimerElapsed, target);
 	timerManager.SetTimer(attackBackswingTimerHandle, attackBackswingTimerDelegate, backswingDuration, false, backswingDuration);
 
