@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Humanoid.h"
+#include "UnitStartedBuildingEventArgs.h"
 #include "Survivor.generated.h"
 
 /**
@@ -29,9 +30,22 @@ protected:
 public:
 	ASurvivor();
 	
+	UFUNCTION(BlueprintCallable)
 	virtual bool CanBuild(const TSubclassOf<ABuilding>& buildingClass, FVector location);
+
+	UFUNCTION(BlueprintCallable)
 	virtual ABuilding* Build(const TSubclassOf<ABuilding>& buildingClass, FVector location);
 
+	UFUNCTION(BlueprintCallable)
 	virtual bool CanRepairTarget(ABuilding* target);
+
+	UFUNCTION(BlueprintCallable)
 	virtual float RepairTarget(ABuilding* target);
+
+public:
+	DECLARE_EVENT_OneParam(ASurvivor, FOnUnitStartedBuildingEvent, const FUnitStartedBuildingEventArgs&);
+	FOnUnitStartedBuildingEvent& OnUnitStartedBuilding() { return onUnitStartedBuildingEvent; }
+	
+private:
+	FOnUnitStartedBuildingEvent onUnitStartedBuildingEvent;
 };

@@ -97,7 +97,7 @@ void ASurvivorAiController::IssueBuildOrder(TSubclassOf<ABuilding> buildingClass
     UBlackboardComponent* blackboard = GetBlackboardComponent();
     check(blackboard);
 
-    blackboard->SetValueAsObject("BuildingClass", buildingClass);
+    blackboard->SetValueAsClass("BuildingClass", buildingClass);
     blackboard->SetValueAsVector("Location", location);
 }
 

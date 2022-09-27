@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "JobBase.h"
+#include "BuildingPlacementMarker.h"
+#include "UnitStartedBuildingEventArgs.h"
 #include "BuildingJob.generated.h"
 
 class ABuilding;
@@ -18,11 +20,17 @@ class ZOMBIESIEGE_API ABuildingJob : public AJobBase
 	
 private:
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ABuilding> markerClass;
+
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ABuilding> buildingClass;
 
 	UPROPERTY(EditAnywhere)
 	FVector targetLocation;
+
+	UPROPERTY(VisibleAnywhere)
+	ABuildingPlacementMarker* marker;
 
 	UPROPERTY(VisibleAnywhere)
 	ABuilding* building;
@@ -46,7 +54,7 @@ protected:
 
 	virtual float CalculateJobSpecificPriorityMetric(AUnitBase* unit) override;
 
-	virtual void IssueOrders();
+	virtual void OnUnitStartedBuildingHandler(const FUnitStartedBuildingEventArgs& args);
 
 public:
 
@@ -61,4 +69,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetTargetLocation(const FVector& location);
+
+	UFUNCTION(BlueprintCallable)
+	static ABuildingJob* FromExistingMarker(UWorld* world, ABuildingPlacementMarker* markerArg, TSubclassOf<ABuildingJob> buildingJobClass);
 };

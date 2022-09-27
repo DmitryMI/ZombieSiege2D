@@ -31,6 +31,8 @@ private:
 	ABuilding* buildingDefaultObject;
 
 	UUnitGraphicsData* buildingGraphicsData;
+
+	bool bCanBeBuiltNow;
 	
 public:	
 	// Sets default values for this actor's properties
@@ -51,4 +53,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetBuildingClass(TSubclassOf<ABuilding> clazz);
+
+	UFUNCTION(BlueprintCallable)
+	bool CanBeBuiltNow();
 };

@@ -5,6 +5,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Doodad.h"
 #include "GatherDoodadJob.h"
+#include "BuildingJob.h"
 #include "BuildingPlacementMarker.h"
 #include "Camera/CameraComponent.h"
 
@@ -76,7 +77,22 @@ void AZombieSiegePlayerController::OnSelectActionPressed()
 
 void AZombieSiegePlayerController::OnSelectActionReleased()
 {
+	if (buildingPlacementMarker)
+	{
+		if (buildingPlacementMarker->CanBeBuiltNow())
+		{
+			ABuildingJob* job = ABuildingJob::FromExistingMarker(GetWorld(), buildingPlacementMarker, ABuildingJob::StaticClass());
+			job->SetOwningPlayerController(this);
+			jobs.Add(job);
+		}
+		else
+		{
+			// TODO Print error for the player.			
+			buildingPlacementMarker->Destroy();
+		}
 
+		buildingPlacementMarker = nullptr;
+	}
 }
 
 void AZombieSiegePlayerController::OnSelectActionDoubleClick()
@@ -134,7 +150,7 @@ void AZombieSiegePlayerController::OnDoodadSelectDoubleClicked(ADoodad* doodad)
 		for (AJobBase* job : jobs)
 		{
 			AGatherDoodadJob* gatherJob = Cast<AGatherDoodadJob>(job);
-			if (gatherJob->GetTargetDoodad() == doodad)
+			if (gatherJob && gatherJob->GetTargetDoodad() == doodad)
 			{
 				existingJob = gatherJob;
 			}

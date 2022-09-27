@@ -3,16 +3,16 @@
 
 #include "BuildingJob.h"
 #include "Building.h"
+#include "Kismet/GameplayStatics.h"
+#include "SurvivorAiController.h"
+#include "Survivor.h"
 #include "ZombieSiegeUtils.h"
-
-void ABuildingJob::IssueOrders()
-{
-
-}
 
 void ABuildingJob::SetBuildingClass(const TSubclassOf<ABuilding>& clazz)
 {
 	buildingClass = clazz;
+
+	marker->SetBuildingClass(clazz);
 }
 
 TSubclassOf<ABuilding> ABuildingJob::GetBuildingClass()
@@ -28,6 +28,26 @@ FVector ABuildingJob::GetBuildingLocation()
 void ABuildingJob::SetTargetLocation(const FVector& location)
 {
 	targetLocation = location;
+	marker->SetActorLocation(location);
+}
+
+ABuildingJob* ABuildingJob::FromExistingMarker(UWorld* world, ABuildingPlacementMarker* markerArg, TSubclassOf<ABuildingJob> buildingJobClass)
+{
+	ABuildingJob* job = world->SpawnActorDeferred<ABuildingJob>(
+		buildingJobClass,
+		markerArg->GetActorTransform()
+		);
+
+	check(job->marker == nullptr);
+
+	job->marker = markerArg;
+
+	job->targetLocation = markerArg->GetActorLocation();
+	job->buildingClass = markerArg->GetBuildingClass();
+
+	UGameplayStatics::FinishSpawningActor(job, markerArg->GetActorTransform());
+
+	return job;
 }
 
 void ABuildingJob::FindExecutors()
@@ -39,6 +59,15 @@ void ABuildingJob::BeginPlay()
 {
 	Super::BeginPlay();
 	jobState = EJobState::Created;
+
+	if (!marker)
+	{
+		FActorSpawnParameters spawnParams;
+		spawnParams.bNoFail = true;
+		marker = GetWorld()->SpawnActor<ABuildingPlacementMarker>(markerClass, GetActorTransform(), spawnParams);
+		check(marker);
+		marker->SetBuildingClass(buildingClass);
+	}
 }
 
 bool ABuildingJob::CanExecute()
@@ -78,7 +107,7 @@ bool ABuildingJob::IsFinished()
 
 bool ABuildingJob::IsFailed()
 {
-	return !building || !building->IsAlive();
+	return building && !building->IsAlive();
 }
 
 void ABuildingJob::OnStateChanged(EJobState stateOld, EJobState stateNew)
@@ -87,7 +116,22 @@ void ABuildingJob::OnStateChanged(EJobState stateOld, EJobState stateNew)
 
 	if (stateNew == EJobState::Executing)
 	{
-		IssueOrders();
+		for (AUnitBase* executor : assignedExecutors)
+		{
+			ASurvivor* survivorExecutor = Cast<ASurvivor>(executor);
+			if (!survivorExecutor)
+			{
+				continue;
+			}
+
+			ASurvivorAiController* controller = Cast<ASurvivorAiController>(executor->GetController());
+			check(controller);
+			controller->IssueBuildOrder(buildingClass, targetLocation);
+
+			survivorExecutor->OnUnitStartedBuilding().AddUObject(this, &ABuildingJob::OnUnitStartedBuildingHandler);
+		
+			break;
+		}
 	}
 	else if (stateNew == EJobState::Finished || stateNew == EJobState::Failed)
 	{
@@ -136,4 +180,26 @@ float ABuildingJob::CalculateJobSpecificPriorityMetric(AUnitBase* unit)
 	float metric = 1000.0f - distanceSquare;
 
 	return metric;
+}
+
+void ABuildingJob::OnUnitStartedBuildingHandler(const FUnitStartedBuildingEventArgs& args)
+{
+	AUnitBase* unit = args.builderUnit;
+	ABuilding* buildingArg = args.building;
+
+	check(unit);
+	check(buildingArg);
+
+	checkSlow(assignedExecutors.Contains(unit));
+	check(!building);
+
+	building = buildingArg;
+
+	for (AUnitBase* executor : assignedExecutors)
+	{
+		ASurvivorAiController* controller = Cast<ASurvivorAiController>(executor->GetController());
+		check(controller);
+
+		controller->IssueRepairOrder(building);
+	}
 }

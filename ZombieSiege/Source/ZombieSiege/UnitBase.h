@@ -14,6 +14,7 @@
 #include "ZombieSiegePlayerController.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "UnitClassification.h"
+#include "FaceDirection.h"
 #include "UnitState.h"
 #include "UnitBase.generated.h"
 
@@ -32,6 +33,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	EUnitState currentState = EUnitState::None;
+
+	UPROPERTY(VisibleAnywhere)
+	EFaceDirection facingDirection = EFaceDirection::Up;
 
 	UPROPERTY(EditDefaultsOnly, meta = (Bitmask, BitmaskEnum = EUnitClassification))
 	uint8 classificationFlags = (int)EUnitClassification::NONE;
@@ -118,6 +122,18 @@ protected:
 public:
 
 	UFUNCTION(BlueprintCallable)
+	void SetFacingDirection(EFaceDirection direction)
+	{
+		facingDirection = direction;
+	}
+
+	UFUNCTION(BlueprintCallable)
+	EFaceDirection GetFacingDirection()
+	{
+		return facingDirection;
+	}
+
+	UFUNCTION(BlueprintCallable)
 	virtual FName GetUnitTypeName();
 
 	UFUNCTION(BlueprintCallable)
@@ -129,7 +145,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	UTexture2D* GetPreviewTexture();
 
-	TMap<EResourceType, int> GetRequiredResources();
+	UFUNCTION(BlueprintCallable)
+	const TMap<EResourceType, int>& GetRequiredResources();
 
 	UFUNCTION(BlueprintCallable)
 	AUnitBase* GetPassengerCarrier();

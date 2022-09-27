@@ -52,8 +52,8 @@ void ABuildingPlacementMarker::Tick(float DeltaTime)
 
 	FVector location = GetActorLocation();
 
-	bool canBeBuilt = buildingDefaultObject->CanBeBuildAt(GetWorld(), location);
-	if (canBeBuilt)
+	bCanBeBuiltNow = buildingDefaultObject->CanBeBuildAt(GetWorld(), location);
+	if (bCanBeBuiltNow)
 	{
 		markerRenderer->SetSpriteColor(buildingPossibleColor);
 	}
@@ -84,5 +84,10 @@ void ABuildingPlacementMarker::SetBuildingClass(TSubclassOf<ABuilding> clazz)
 	buildingGraphicsData = graphicsManager->GetUnitGraphicsData(buildingDefaultObject->GetUnitGraphicsDataName());
 
 	UpdateMarkerRenderer();
+}
+
+bool ABuildingPlacementMarker::CanBeBuiltNow()
+{
+	return bCanBeBuiltNow;
 }
 

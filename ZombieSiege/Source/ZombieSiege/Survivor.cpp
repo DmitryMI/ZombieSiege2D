@@ -23,15 +23,19 @@ bool ASurvivor::CanBuild(const TSubclassOf<ABuilding>& buildingClass, FVector lo
 
 	ABuilding* clazzDefaultObject = Cast<ABuilding>(clazz->GetDefaultObject());
 
-	if (!clazzDefaultObject->CanBeBuildAt(GetWorld(), location))
+	if (!clazzDefaultObject->CanBeBuildAt(GetWorld(), location, this))
 	{
 		return false;
 	}
 
-	float distanceSqr = (GetActorLocation() - location).SizeSquared2D();
+	float buildingRadius;
+	float buildingHalfHeight;
+	clazzDefaultObject->GetSimpleCollisionCylinder(buildingRadius, buildingHalfHeight);
+
+	float distance = (GetActorLocation() - location).Size2D() - buildingRadius;
 	float range = repairWeapon->GetRange();
 
-	if (FMath::Square(range) < distanceSqr)
+	if (range < distance)
 	{
 		return false;
 	}
@@ -54,6 +58,13 @@ ABuilding* ASurvivor::Build(const TSubclassOf<ABuilding>& buildingClass, FVector
 
 	FActorSpawnParameters spawnParams;
 	ABuilding* building = world->SpawnActor<ABuilding>(clazz, location, FRotator::ZeroRotator, spawnParams);
+
+	AZombieSiegePlayerController* pc = GetOwningPlayerController();
+	building->SetOwningPlayer(pc);
+
+	FUnitStartedBuildingEventArgs args(this, building);
+
+	onUnitStartedBuildingEvent.Broadcast(args);
 
 	return building;
 }

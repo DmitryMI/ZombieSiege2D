@@ -20,9 +20,6 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	bool bIsBuiltOnSpawn = false;
 
-	UPROPERTY(EditDefaultsOnly)
-	float initialHealth = 100.0f;
-
 	UPROPERTY(VisibleAnywhere)
 	float buildingProgress = 0.0f;
 
@@ -58,11 +55,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool IsFullyBuilt();
 
+	UFUNCTION(BlueprintCallable)
+	bool NeedsRepair();
+
 	DECLARE_EVENT_OneParam(ABuilding, FOnBuildingProgressChanged, const FBuildingProgressChangedEventArgs&);
 
 	FOnBuildingProgressChanged& OnBuildingProgressChanged() { return onBuildingProgressChangedEvent; }
 
-	virtual bool CanBeBuildAt(UWorld* world, const FVector& location);
+	virtual bool CanBeBuildAt(UWorld* world, const FVector& location, AUnitBase* builder = nullptr);
 
 private:
 	FOnBuildingProgressChanged onBuildingProgressChangedEvent;

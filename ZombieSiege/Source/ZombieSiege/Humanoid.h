@@ -19,10 +19,7 @@ class ZOMBIESIEGE_API AHumanoid : public AUnitBase
 
 private:
 	UPROPERTY(EditDefaultsOnly)
-	FName weaponDefaultName = "SurvivorFists";
-
-	UPROPERTY(VisibleAnywhere)
-	EFaceDirection facingDirection = EFaceDirection::Down;
+	FName weaponDefaultName = "SurvivorFists";	
 
 	UPROPERTY(VisibleAnywhere)
 	AWeaponManager* weaponManager;
@@ -94,19 +91,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	static EFaceDirection GetDirectionFromVector(const FVector& vec);
 
-	virtual void Tick(float DeltaTime) override;
-
-	UFUNCTION(BlueprintCallable)
-	void SetFacingDirection(EFaceDirection direction)
-	{
-		facingDirection = direction;
-	}
-
-	UFUNCTION(BlueprintCallable)
-	EFaceDirection GetFacingDirection()
-	{
-		return facingDirection;
-	}
+	virtual void Tick(float DeltaTime) override;	
 
 	virtual bool CanMove() override;
 

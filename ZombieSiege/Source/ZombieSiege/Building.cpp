@@ -8,6 +8,8 @@
 
 void ABuilding::BeginPlay()
 {
+	Super::BeginPlay();
+
 	if (bIsBuiltOnSpawn)
 	{
 		SetBuildingProgress(GetMaxHealth());
@@ -30,7 +32,7 @@ float ABuilding::ReceiveHealing(const FHealingInstance& repair)
 
 	if (!IsFullyBuilt())
 	{
-		AddBuildingProgress(healingActual);
+		AddBuildingProgress(repair.amount);
 	}
 
 	return healingActual;
@@ -87,7 +89,12 @@ bool ABuilding::IsFullyBuilt()
 	return FMath::IsNearlyEqual(buildingProgress, GetMaxHealth());
 }
 
-bool ABuilding::CanBeBuildAt(UWorld* world, const FVector& location)
+bool ABuilding::NeedsRepair()
+{
+	return !IsFullyBuilt() || GetHealth() < GetMaxHealth();
+}
+
+bool ABuilding::CanBeBuildAt(UWorld* world, const FVector& location, AUnitBase* builder)
 {
 	float radius;
 	float halfHeight;
@@ -99,13 +106,19 @@ bool ABuilding::CanBeBuildAt(UWorld* world, const FVector& location)
 
 	FCollisionShape shape = FCollisionShape::MakeCapsule(radius, halfHeight);
 
-	FCollisionObjectQueryParams queryParams;
+	FCollisionObjectQueryParams queryObjectParams;
 
-	queryParams.AddObjectTypesToQuery(BUILDING_TRACE);
-	queryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_Pawn);
-	queryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_Destructible);
+	queryObjectParams.AddObjectTypesToQuery(BUILDING_TRACE);
+	queryObjectParams.AddObjectTypesToQuery(ECollisionChannel::ECC_Pawn);
+	queryObjectParams.AddObjectTypesToQuery(ECollisionChannel::ECC_Destructible);
 
-	bool overlap = world->OverlapAnyTestByObjectType(location, FQuat::Identity, queryParams, shape);
+	FCollisionQueryParams queryParams;
+	if (builder)
+	{
+		queryParams.AddIgnoredActor(builder);
+	}
+
+	bool overlap = world->OverlapAnyTestByObjectType(location, FQuat::Identity, queryObjectParams, shape, queryParams);
 
 	DrawDebugCapsule(world, location, halfHeight, radius, FQuat::Identity, FColor::Blue);
 

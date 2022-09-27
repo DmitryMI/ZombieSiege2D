@@ -30,7 +30,7 @@ UTexture2D* AUnitBase::GetPreviewTexture()
 	return previewTexture;
 }
 
-TMap<EResourceType, int> AUnitBase::GetRequiredResources()
+const TMap<EResourceType, int>& AUnitBase::GetRequiredResources()
 {
 	return requiredResources;
 }

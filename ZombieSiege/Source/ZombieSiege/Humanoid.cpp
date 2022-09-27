@@ -100,7 +100,7 @@ void AHumanoid::Tick(float DeltaTime)
 	{
 		if (CanMove())
 		{
-			facingDirection = directionFlags;			
+			SetFacingDirection(directionFlags);			
 			SetUnitState(EUnitState::Moving);
 		}
 	}

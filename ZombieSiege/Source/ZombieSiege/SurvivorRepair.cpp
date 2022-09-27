@@ -1,0 +1,114 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "SurvivorRepair.h"
+#include "Building.h"
+#include "HealingInstance.h"
+#include "ZombieSiegePlayerState.h"
+#include "ZombieSiegeUtils.h"
+
+TMap<EResourceType, int> USurvivorRepair::CalculateRequiredResourceAmount(ABuilding* building, float repairAmount)
+{
+	TMap<EResourceType, int> map;
+
+	TMap<EResourceType, int> requiredResources = building->GetRequiredResources();
+
+	float repairFraction = repairAmount / building->GetMaxHealth();
+
+	for (auto requiredResource : requiredResources)
+	{
+		EResourceType resource = requiredResource.Key;
+		int amount = requiredResource.Value;
+
+		if (amount > 0)
+		{
+			float resultingAmountFloat = repairFraction * amount;
+			int resultingAmount = FMath::CeilToInt(resultingAmountFloat);
+			map.Add(resource, resultingAmount);
+		}
+	}
+
+	return map;
+}
+
+void USurvivorRepair::AttackTarget(AUnitBase* attacker, AUnitBase* target)
+{
+	if (!CanAttackTarget(attacker, target))
+	{
+		return;
+	}
+
+	AZombieSiegePlayerState* playerState = attacker->GetOwningPlayerState();
+
+	check(playerState);
+
+	ABuilding* building = Cast<ABuilding>(target);
+	check(building);
+
+	float requiredRepair = FMath::Max(building->GetMaxHealth() - building->GetHealth(), building->GetMaxHealth() - building->GetBuildingProgress());
+
+	float repairAmount = FMath::Min(requiredRepair, damageMinMax.X);
+
+	TMap<EResourceType, int> requiredResources = CalculateRequiredResourceAmount(building, repairAmount);
+
+	for (auto requiredResource : requiredResources)
+	{
+		EResourceType resource = requiredResource.Key;
+		int amount = requiredResource.Value;
+
+		bool resourceTaken = playerState->TakeResourceFromStorage(resource, amount);
+		check(resourceTaken);
+	}
+
+	FHealingInstance healingInstance(target, repairAmount);
+	building->ReceiveHealing(healingInstance);
+}
+
+bool USurvivorRepair::CanAttackTarget(AUnitBase* attacker, AUnitBase* target)
+{
+	check(attacker);
+	check(target);
+
+	float distance = UZombieSiegeUtils::GetDistance2DBetweenSimpleCollisions(attacker, target);
+
+	if (distance > range)
+	{
+		return false;
+	}
+
+	AZombieSiegePlayerState* playerState = attacker->GetOwningPlayerState();
+
+	if (!playerState)
+	{
+		return false;
+	}
+
+	ABuilding* building = Cast<ABuilding>(target);
+	if (!building)
+	{
+		return false;
+	}
+
+	float requiredRepair = FMath::Max(building->GetMaxHealth() - building->GetHealth(), building->GetMaxHealth() - building->GetBuildingProgress());
+	float repairAmount = FMath::Min(requiredRepair, damageMinMax.X);
+
+	if (!building->NeedsRepair())
+	{
+		return false;
+	}
+
+	TMap<EResourceType, int> requiredResources = CalculateRequiredResourceAmount(building, repairAmount);
+
+	for (auto requiredResource : requiredResources)
+	{
+		EResourceType resource = requiredResource.Key;
+		int amount = requiredResource.Value;
+
+		if (playerState->GetStoredResourceAmount(resource) < amount)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}

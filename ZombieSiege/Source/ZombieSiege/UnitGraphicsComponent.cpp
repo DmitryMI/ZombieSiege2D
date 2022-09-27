@@ -64,8 +64,8 @@ void UUnitGraphicsComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	AActor* owner = GetOwner();
 	check(owner);
 
-	AHumanoid* humanoid = Cast<AHumanoid>(owner);
-	check(humanoid);
+	AUnitBase* unitOwner = Cast<AUnitBase>(owner);
+	check(unitOwner);
 
-	UpdateFlipbook(humanoid->GetUnitState(), humanoid->GetFacingDirection());
+	UpdateFlipbook(unitOwner->GetUnitState(), unitOwner->GetFacingDirection());
 }
