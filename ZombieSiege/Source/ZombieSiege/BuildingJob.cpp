@@ -195,6 +195,9 @@ void ABuildingJob::OnUnitStartedBuildingHandler(const FUnitStartedBuildingEventA
 
 	building = buildingArg;
 
+	marker->Destroy();
+	marker = nullptr;
+
 	for (AUnitBase* executor : assignedExecutors)
 	{
 		ASurvivorAiController* controller = Cast<ASurvivorAiController>(executor->GetController());

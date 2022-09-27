@@ -57,18 +57,27 @@ void ABuilding::SetBuildingProgressFraction(float progressFraction)
 
 void ABuilding::SetBuildingProgress(float progress)
 {
+	float progressOld = buildingProgress;
+
 	progress = FMath::Clamp(progress, 0, GetMaxHealth());
 	buildingProgress = progress;
 
-	if (GetUnitState() == EUnitState::Birth && IsFullyBuilt())
+	if (!FMath::IsNearlyEqual(progressOld, buildingProgress))
 	{
-		buildingProgress = GetMaxHealth();
-		SetUnitState(EUnitState::None);
+		if (GetUnitState() == EUnitState::Birth && IsFullyBuilt())
+		{
+			buildingProgress = GetMaxHealth();
+			SetUnitState(EUnitState::None);
+		}
+		else if (GetUnitState() != EUnitState::Birth && buildingProgress < GetMaxHealth())
+		{
+			UE_LOG(LogTemp, Fatal, TEXT("SetBuildingProgress decreased building progress of a fully-built building! This is not supported."));
+		}
+
+		FBuildingProgressChangedEventArgs args(this, progressOld, buildingProgress);
+		onBuildingProgressChangedEvent.Broadcast(args);
 	}
-	else if (GetUnitState() != EUnitState::Birth && buildingProgress < GetMaxHealth())
-	{
-		UE_LOG(LogTemp, Fatal, TEXT("SetBuildingProgress decreased building progress of a fully-built building! This is not supported."));
-	}
+
 }
 
 void ABuilding::AddBuildingProgress(float addProgress)
