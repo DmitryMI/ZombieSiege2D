@@ -21,7 +21,7 @@ class ZOMBIESIEGE_API ABuildingJob : public AJobBase
 private:
 
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ABuilding> markerClass;
+	TSubclassOf<ABuildingPlacementMarker> markerClass;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ABuilding> buildingClass;

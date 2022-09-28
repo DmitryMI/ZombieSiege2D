@@ -5,10 +5,10 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "JobState.h"
-#include "ZombieSiegePlayerController.h"
 #include "JobBase.generated.h"
 
 class AUnitBase;
+class AZombieSiegePlayerController;
 
 
 DECLARE_LOG_CATEGORY_EXTERN(LogSurvivorJobs, Log, All);
@@ -23,7 +23,7 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	bool bIsExecutionAllowed = true;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(EditAnywhere)
 	int jobPriority = 0;
 
 	AZombieSiegePlayerController* owningPlayerController;

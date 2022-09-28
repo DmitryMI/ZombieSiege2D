@@ -10,6 +10,8 @@ class ABuilding;
 class AUnitBase;
 class AJobBase;
 class ADoodad;
+class AGatherDoodadJob;
+class ABuildingJob;
 class ABuildingPlacementMarker;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogZombieSiegePlayerController, Log, All);
@@ -43,6 +45,12 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ABuildingPlacementMarker> buildingPlacementMarkerClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AGatherDoodadJob> gatherDoodadJobClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ABuildingJob> buildingJobClass;
 
 	UPROPERTY(EditDefaultsOnly)
 	TArray<TSubclassOf<AUnitBase>> buildables;

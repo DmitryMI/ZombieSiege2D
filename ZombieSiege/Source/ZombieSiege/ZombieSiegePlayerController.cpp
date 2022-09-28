@@ -81,7 +81,7 @@ void AZombieSiegePlayerController::OnSelectActionReleased()
 	{
 		if (buildingPlacementMarker->CanBeBuiltLater())
 		{
-			ABuildingJob* job = ABuildingJob::FromExistingMarker(GetWorld(), buildingPlacementMarker, ABuildingJob::StaticClass());
+			ABuildingJob* job = ABuildingJob::FromExistingMarker(GetWorld(), buildingPlacementMarker, buildingJobClass);
 			job->SetOwningPlayerController(this);
 			jobs.Add(job);
 		}
@@ -174,7 +174,7 @@ void AZombieSiegePlayerController::OnDoodadSelectDoubleClicked(ADoodad* doodad)
 			FRotator rotation = doodad->GetActorRotation();
 			FActorSpawnParameters params;
 			AGatherDoodadJob* createdJob = GetWorld()->SpawnActor<AGatherDoodadJob>(
-				AGatherDoodadJob::StaticClass(),
+				gatherDoodadJobClass,
 				location,
 				rotation,
 				params

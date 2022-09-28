@@ -4,6 +4,7 @@
 #include "JobBase.h"
 #include "UnitBase.h"
 #include "ZombieSiegeUtils.h"
+#include "ZombieSiegePlayerController.h"
 #include "SurvivorAiController.h"
 
 DEFINE_LOG_CATEGORY(LogSurvivorJobs);
