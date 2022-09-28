@@ -23,6 +23,8 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	UWeaponInfo* repairWeapon;
 
+	void PushFromBuildingRadius(FVector buildingLocation, float radius);
+
 protected:
 	
 	virtual void BeginPlay() override;

@@ -3,6 +3,26 @@
 
 #include "Survivor.h"
 #include "Building.h"
+#include "ZombieSiegeUtils.h"
+
+void ASurvivor::PushFromBuildingRadius(FVector buildingLocation, float radius)
+{
+	FVector actorLocation = GetActorLocation();
+
+	FVector vec = actorLocation - buildingLocation;
+
+	FVector pushDirection = vec.GetSafeNormal2D(SMALL_NUMBER, FVector::RightVector);
+
+	float unitRadius;
+	float unitHalfHeight;
+	GetSimpleCollisionCylinder(unitRadius, unitHalfHeight);
+
+	pushDirection *= unitRadius + radius - vec.Size2D();
+
+	actorLocation += pushDirection;
+
+	SetActorLocation(actorLocation);
+}
 
 void ASurvivor::BeginPlay()
 {
@@ -61,7 +81,17 @@ ABuilding* ASurvivor::Build(const TSubclassOf<ABuilding>& buildingClass, FVector
 	UWorld* world = GetWorld();
 	check(world);
 
+	float buildingRadius;
+	float buildingHalfHeight;
+
+	ABuilding* buildingDefaultObject = Cast<ABuilding>(clazz->GetDefaultObject());
+	check(buildingDefaultObject);
+	buildingDefaultObject->GetSimpleCollisionCylinder(buildingRadius, buildingHalfHeight);
+
+	PushFromBuildingRadius(location, buildingRadius * 1.1f);
+
 	FActorSpawnParameters spawnParams;
+	//spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
 	ABuilding* building = world->SpawnActor<ABuilding>(clazz, location, FRotator::ZeroRotator, spawnParams);
 
 	if (building)
