@@ -3,7 +3,7 @@
 
 #include "WeaponManager.h"
 
-TMap<UWorld*, AWeaponManager*> AWeaponManager::weaponManagerInstances;
+ACTOR_SINGLETON_IMPLEMENTATION(AWeaponManager)
 
 // Sets default values
 AWeaponManager::AWeaponManager()
@@ -18,9 +18,7 @@ void AWeaponManager::BeginPlay()
 {
 	Super::BeginPlay();
 
-	check(!weaponManagerInstances.Contains(GetWorld()));
-
-	weaponManagerInstances.Add(GetWorld(), this);
+	InitActorSingleton();
 
 	for (auto weaponClassPair : weaponClasses)
 	{

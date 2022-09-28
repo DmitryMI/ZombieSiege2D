@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "WeaponInfo.h"
 #include "Kismet/GameplayStatics.h"
+#include "ActorSingleton.h"
 #include "WeaponManager.generated.h"
 
 UCLASS()
@@ -13,11 +14,11 @@ class ZOMBIESIEGE_API AWeaponManager : public AActor
 {
 	GENERATED_BODY()
 
+	ACTOR_SINGLETON(AWeaponManager)
+
 private:
 	UPROPERTY(EditAnywhere)
 	TMap<FName, TSubclassOf<UWeaponInfo>> weaponClasses;
-
-	static TMap<UWorld*, AWeaponManager*> weaponManagerInstances;
 
 protected:
 
@@ -30,23 +31,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-
-	static AWeaponManager* GetInstance(UWorld* world)
-	{
-		AWeaponManager* loaded = weaponManagerInstances[world];
-		if (loaded)
-		{
-			return loaded;
-		}
-
-		AActor* weaponManagerActor = UGameplayStatics::GetActorOfClass(world, StaticClass());
-		check(weaponManagerActor);
-
-		AWeaponManager* weaponManager = Cast<AWeaponManager>(weaponManagerActor);
-		check(weaponManager);
-		
-		return weaponManager;
-	}
+	
 
 	UFUNCTION(BlueprintCallable, meta = (DeprecatedFunction, DeprecationMessage = "This method exposes the internal map for read-write."))
 	/// <summary>
