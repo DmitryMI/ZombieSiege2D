@@ -19,13 +19,26 @@ void UUnitGraphicsComponent::BeginPlay()
 
 	AUnitBase* unitOwner = Cast<AUnitBase>(GetOwner());
 
-	unitGraphicsData = AUnitGraphicsManager::GetInstance(GetWorld())->GetUnitGraphicsData(unitOwner->GetUnitGraphicsDataName());
+	AUnitGraphicsManager* graphicsManager = AUnitGraphicsManager::GetInstance(GetWorld());
+	check(graphicsManager);
 
-	if (!unitGraphicsData)
+	if (bAutoSetGraphicsData)
 	{
-		FString ownerName;
-		GetOwner()->GetName(ownerName);
-		UE_LOG(LogTemp, Error, TEXT("Failed to setup graphics for unit %s"), *ownerName);
+		if (bOverrideGraphicsDataName)
+		{
+			unitGraphicsData = graphicsManager->GetUnitGraphicsData(graphicsDataName);
+		}
+		else if(unitOwner)
+		{
+			unitGraphicsData = graphicsManager->GetUnitGraphicsData(unitOwner->GetUnitGraphicsDataName());
+		}
+
+		if (!unitGraphicsData)
+		{
+			FString ownerName;
+			GetOwner()->GetName(ownerName);
+			UE_LOG(LogTemp, Error, TEXT("Failed to setup graphics for %s"), *ownerName);
+		}
 	}
 	
 	TArray<USceneComponent*> children;
@@ -45,12 +58,12 @@ void UUnitGraphicsComponent::BeginPlay()
 
 void UUnitGraphicsComponent::UpdateFlipbook(EUnitState state, EFaceDirection direction)
 {
-	if (!unitGraphicsData)
-	{
-		return;
-	}
+	UPaperFlipbook* flipbook = nullptr;
 
-	UPaperFlipbook* flipbook = unitGraphicsData->GetFlipbook(state, direction);
+	if (unitGraphicsData)
+	{
+		flipbook = unitGraphicsData->GetFlipbook(state, direction);
+	}
 
 	check(flipbookRenderer);
 	flipbookRenderer->SetFlipbook(flipbook);
@@ -61,11 +74,33 @@ void UUnitGraphicsComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	AActor* owner = GetOwner();
-	check(owner);
+	if (bAutoUpdateFlipbook)
+	{
+		AActor* owner = GetOwner();
+		check(owner);
 
-	AUnitBase* unitOwner = Cast<AUnitBase>(owner);
-	check(unitOwner);
+		AUnitBase* unitOwner = Cast<AUnitBase>(owner);
+		
+		if (!unitOwner)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Cannot auto-update flipbook, because the owner is not a Unit"));
+			bAutoUpdateFlipbook = false;
+		}
+		else
+		{
+			UpdateFlipbook(unitOwner->GetUnitState(), unitOwner->GetFacingDirection());
+		}
+	}
+}
 
-	UpdateFlipbook(unitOwner->GetUnitState(), unitOwner->GetFacingDirection());
+void UUnitGraphicsComponent::SetUnitGraphicsData(UUnitGraphicsData* graphicsData)
+{
+	unitGraphicsData = graphicsData;
+
+	// TODO Auto update flipbook
+}
+
+UUnitGraphicsData* UUnitGraphicsComponent::GetUnitGraphicsData()
+{
+	return unitGraphicsData;
 }

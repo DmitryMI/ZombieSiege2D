@@ -33,6 +33,9 @@ protected:
 public:	
 
 	UFUNCTION(BlueprintCallable)
+	const TMap<FName, UUnitGraphicsData*>& GetUnitGraphicsDataMap() const;
+
+	UFUNCTION(BlueprintCallable)
 	UUnitGraphicsData* GetUnitGraphicsData(const FName& name) const;
 
 	UFUNCTION(BlueprintCallable)

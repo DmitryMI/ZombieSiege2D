@@ -17,11 +17,20 @@ class ZOMBIESIEGE_API UUnitGraphicsComponent : public USceneComponent
 	GENERATED_BODY()
 
 private:
+	UPROPERTY(EditAnywhere)
+	bool bAutoSetGraphicsData = true;
+
+	UPROPERTY(EditAnywhere)
+	bool bOverrideGraphicsDataName = false;
+
+	UPROPERTY(EditAnywhere)
+	FName graphicsDataName;
+
+	UPROPERTY(EditAnywhere)
+	bool bAutoUpdateFlipbook = true;
+
 	UPROPERTY(VisibleAnywhere)
 	UUnitGraphicsData* unitGraphicsData;
-
-	UFUNCTION()
-	void UpdateFlipbook(EUnitState state, EFaceDirection direction);
 	
 protected:
 
@@ -34,5 +43,14 @@ public:
 
 	UUnitGraphicsComponent();
 
+	UFUNCTION(BlueprintCallable)
+	void UpdateFlipbook(EUnitState state, EFaceDirection direction);
+
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;		
+
+	UFUNCTION(BlueprintCallable)
+	void SetUnitGraphicsData(UUnitGraphicsData* graphicsData);
+
+	UFUNCTION(BlueprintCallable)
+	UUnitGraphicsData* GetUnitGraphicsData();
 };

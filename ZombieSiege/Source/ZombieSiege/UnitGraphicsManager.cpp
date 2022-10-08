@@ -28,6 +28,11 @@ void AUnitGraphicsManager::BeginPlay()
 	}
 }
 
+const TMap<FName, UUnitGraphicsData*>& AUnitGraphicsManager::GetUnitGraphicsDataMap() const
+{
+	return unitGraphicsDataMap;
+}
+
 UUnitGraphicsData* AUnitGraphicsManager::GetUnitGraphicsData(const FName& name) const
 {
 	if (!HasUnitGraphicsData(name))

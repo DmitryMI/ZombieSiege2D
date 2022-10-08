@@ -91,7 +91,6 @@ ABuilding* ASurvivor::Build(const TSubclassOf<ABuilding>& buildingClass, FVector
 	PushFromBuildingRadius(location, buildingRadius * 1.1f);
 
 	FActorSpawnParameters spawnParams;
-	//spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
 	ABuilding* building = world->SpawnActor<ABuilding>(clazz, location, FRotator::ZeroRotator, spawnParams);
 
 	if (building)

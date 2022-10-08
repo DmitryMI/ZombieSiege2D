@@ -3,6 +3,7 @@
 
 #include "UnitGraphicsData.h"
 #include "ZombieSiegeUtils.h"
+#include "EnumUtils.h"
 
 UPaperFlipbook* UUnitGraphicsData::GetFlipbook(EUnitState state, EFaceDirection direction)
 {
@@ -30,8 +31,27 @@ UPaperFlipbook* UUnitGraphicsData::GetFlipbook(EUnitState state, EFaceDirection 
 		break;
 	}
 
-	check(animationSet);
-	check(animationSet->Num() > directionIndex);
+	if (!animationSet)
+	{
+		FString name;
+		GetName(name);
+		FString stateName = UEnumUtils::GetUnitStateName(state);
+		UE_LOG(LogTemp, Error, TEXT("Animation of %s is not defined for state %s"), *name, *stateName);
+		return nullptr;
+	}
+
+	if (animationSet->Num() <= directionIndex)
+	{
+		FString name;
+		GetName(name);
+		FString stateName = UEnumUtils::GetUnitStateName(state);
+		FString directionName = UEnumUtils::GetFaceDirectionName(direction);
+		UE_LOG(LogTemp, Error, TEXT("Animation of %s is not defined for state %s and direction %s"), *name, *stateName, *directionName);
+		return nullptr;
+	}
+
+	//check(animationSet);
+	//check(animationSet->Num() > directionIndex);
 
 	UPaperFlipbook* flipbook = (*animationSet)[directionIndex];
 	check(flipbook);

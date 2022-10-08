@@ -13,5 +13,6 @@ enum class EUnitState : uint8
 	AttackingRelaxation,
 	Dying,
 	Dead,
-	Birth
+	Birth,
+	UNIT_STATE_MAX
 };
