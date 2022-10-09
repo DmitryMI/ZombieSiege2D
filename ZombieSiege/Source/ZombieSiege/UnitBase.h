@@ -48,7 +48,7 @@ private:
 	UTexture2D* previewTexture;
 
 	UPROPERTY(EditDefaultsOnly)
-	float visionRadius = 500.0f;
+	float visionRadius = 1000.0f;
 
 	UPROPERTY(EditDefaultsOnly)
 	float enterPassengerCarrierRadius = 150.0f;
