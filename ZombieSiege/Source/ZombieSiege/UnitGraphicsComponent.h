@@ -29,9 +29,15 @@ private:
 	UPROPERTY(EditAnywhere)
 	bool bAutoUpdateFlipbook = true;
 
+	UPROPERTY(EditAnywhere)
+	float minimalFlipbookAutoUpdateInterval = 0.1f;
+
 	UPROPERTY(VisibleAnywhere)
 	UUnitGraphicsData* unitGraphicsData;
 	
+	UPROPERTY(VisibleAnywhere)
+	float flipbookAutoUpdateIntervalCounter = 0.0f;
+
 protected:
 
 	UPROPERTY(Transient)

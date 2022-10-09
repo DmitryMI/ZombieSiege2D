@@ -181,10 +181,9 @@ AZombieSiegePlayerController* AUnitBase::GetOwningPlayerController() const
 	}
 	else
 	{
-		FString name;
-		GetName(name);
-
-		UE_LOG(LogTemp, Warning, TEXT("GetOwningPlayerController(): Unit %s is not controlled by a player, returning nullptr"), *name);
+		//FString name;
+		//GetName(name);
+		//UE_LOG(LogTemp, Warning, TEXT("GetOwningPlayerController(): Unit %s is not controlled by a player, returning nullptr"), *name);
 
 		return nullptr;
 	}

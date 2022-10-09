@@ -74,7 +74,7 @@ void UUnitGraphicsComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (bAutoUpdateFlipbook)
+	if (bAutoUpdateFlipbook && minimalFlipbookAutoUpdateInterval <= flipbookAutoUpdateIntervalCounter)
 	{
 		AActor* owner = GetOwner();
 		check(owner);
@@ -88,8 +88,14 @@ void UUnitGraphicsComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 		}
 		else
 		{
+			flipbookAutoUpdateIntervalCounter = 0;
 			UpdateFlipbook(unitOwner->GetUnitState(), unitOwner->GetFacingDirection());
 		}
+	}
+
+	if (minimalFlipbookAutoUpdateInterval > flipbookAutoUpdateIntervalCounter)
+	{
+		flipbookAutoUpdateIntervalCounter += DeltaTime;
 	}
 }
 
