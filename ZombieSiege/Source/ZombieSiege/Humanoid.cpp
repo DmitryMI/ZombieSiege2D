@@ -233,6 +233,10 @@ void AHumanoid::OnCooldownTimerElapsed()
 
 bool AHumanoid::AttackTarget(AUnitBase* target)
 {
+	FVector vec = target->GetActorLocation() - GetActorLocation();
+	EFaceDirection direction = GetDirectionFromVector(vec);
+	SetFacingDirection(direction);
+
 	return AttackTargetWithWeapon(target, weaponDefault);
 }
 
