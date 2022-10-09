@@ -6,6 +6,7 @@
 #include "DamageReceivedEventArgs.generated.h"
 
 class AUnitBase;
+class UWeaponInfo;
 
 USTRUCT(BlueprintType)
 struct ZOMBIESIEGE_API FDamageReceivedEventArgs
@@ -21,8 +22,10 @@ public:
 	AUnitBase* source;
 
 	UPROPERTY(BlueprintReadWrite)
-	float inflictedDamageAmount;
+	UWeaponInfo* weaponInfo;
 
+	UPROPERTY(BlueprintReadWrite)
+	float inflictedDamageAmount;
 
 public:
 
@@ -31,13 +34,15 @@ public:
 		target = nullptr;
 		source = nullptr;
 		inflictedDamageAmount = 0;
+		weaponInfo = nullptr;
 	}
 
-	FDamageReceivedEventArgs(AUnitBase* targetArg, AUnitBase* sourceArg, float amountArg)
+	FDamageReceivedEventArgs(AUnitBase* targetArg, AUnitBase* sourceArg, float amountArg, UWeaponInfo* weaponInfoArg)
 	{
 		target = targetArg;
 		source = sourceArg;
 		inflictedDamageAmount = amountArg;
+		weaponInfo = weaponInfoArg;
 
 		check(inflictedDamageAmount >= 0);
 	}

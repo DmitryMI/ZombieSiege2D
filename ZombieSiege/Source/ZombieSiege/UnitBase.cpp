@@ -388,6 +388,11 @@ float AUnitBase::GetVisionRadius()
 	return visionRadius;
 }
 
+EArmorNature AUnitBase::GetArmorNature()
+{
+	return armorNature;
+}
+
 
 bool AUnitBase::AttackTarget(AUnitBase* target)
 {
@@ -489,7 +494,7 @@ float AUnitBase::ReceiveDamage(const FDamageInstance& damage)
 		SetHealth(currentHealth);
 	}
 
-	FDamageReceivedEventArgs damageEventArgs(this, damage.source, damage.amount);
+	FDamageReceivedEventArgs damageEventArgs(this, damage.source, damage.amount, damage.weaponInfo);
 	onDamageReceivedEvent.Broadcast(damageEventArgs);
 
 	if (FMath::IsNearlyZero(GetHealth()))

@@ -17,6 +17,7 @@
 #include "FaceDirection.h"
 #include "UnitState.h"
 #include "Macros.h"
+#include "ArmorNature.h"
 #include "UnitBase.generated.h"
 
 UCLASS()
@@ -46,6 +47,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	UTexture2D* previewTexture;
+
+	UPROPERTY(EditDefaultsOnly)
+	EArmorNature armorNature;
 
 	UPROPERTY(EditDefaultsOnly)
 	float visionRadius = 1000.0f;
@@ -127,6 +131,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	float GetVisionRadius();
+
+	UFUNCTION(BlueprintCallable)
+	EArmorNature GetArmorNature();
 
 	UFUNCTION(BlueprintCallable)
 	void SetFacingDirection(EFaceDirection direction)

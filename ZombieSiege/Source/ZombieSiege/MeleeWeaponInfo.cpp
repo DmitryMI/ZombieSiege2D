@@ -12,7 +12,7 @@ void UMeleeWeaponInfo::AttackTarget(AUnitBase* attacker, AUnitBase* target)
 
 	float damageAmount = FMath::RandRange(damageMinMax.X, damageMinMax.Y);
 
-	FDamageInstance damageInstance(attacker, damageAmount);
+	FDamageInstance damageInstance(attacker, damageAmount, this);
 
 	target->ReceiveDamage(damageInstance);
 }

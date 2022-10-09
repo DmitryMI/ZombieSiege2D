@@ -6,6 +6,7 @@
 #include "UnitClassification.h"
 #include "UnitBase.h"
 #include "ZombieSiegeUtils.h"
+#include "WeaponNature.h"
 #include "WeaponInfo.generated.h"
 
 UCLASS(Blueprintable)
@@ -37,9 +38,18 @@ protected:
 	float range;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EWeaponNature weaponNature;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector2D damageMinMax;
 
 public:
+
+	UFUNCTION(BlueprintCallable)
+	EWeaponNature GetWeaponNature()
+	{
+		return weaponNature;
+	}
 
 	UFUNCTION(BlueprintCallable)
 	/// <summary>

@@ -3,8 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
 #include "DamageInstance.generated.h"
 
+class UWeaponInfo;
 class AUnitBase;
 
 USTRUCT(BlueprintType)
@@ -20,6 +22,8 @@ public:
 	/// </summary>
 	AUnitBase* source;
 
+	UPROPERTY(BlueprintReadWrite)	
+	UWeaponInfo* weaponInfo;
 
 	UPROPERTY(BlueprintReadWrite)
 	/// <summary>
@@ -27,14 +31,12 @@ public:
 	/// </summary>
 	float amount;
 
-
-
 public:
 	/// <summary>
 	/// Default constructor for an empty Damage Instance
 	/// </summary>
 	FDamageInstance();
 
-	FDamageInstance(AUnitBase* sourceArg, float amountArg);
+	FDamageInstance(AUnitBase* sourceArg, float amountArg, UWeaponInfo* weaponInfoArg);
 	~FDamageInstance();
 };

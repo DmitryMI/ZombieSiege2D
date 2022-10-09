@@ -317,6 +317,7 @@ bool UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(
 	}
 	else
 	{
+		OutLocation = navPath->PathPoints.Last();
 		return true;
 	}
 
