@@ -3,6 +3,7 @@
 
 #include "Survivor.h"
 #include "Building.h"
+#include "Doodad.h"
 #include "ZombieSiegeUtils.h"
 
 void ASurvivor::PushFromBuildingRadius(FVector buildingLocation, float radius)
@@ -29,6 +30,7 @@ void ASurvivor::BeginPlay()
 	Super::BeginPlay();
 
 	repairWeapon = GetWeaponManager()->GetWeaponInfo(repairWeaponName);
+	gatheringWeapon = GetWeaponManager()->GetWeaponInfo(gatheringWeaponName);
 }
 
 ASurvivor::ASurvivor()
@@ -131,4 +133,14 @@ bool ASurvivor::CanRepairTarget(ABuilding* target)
 float ASurvivor::RepairTarget(ABuilding* target)
 {
 	return AttackTargetWithWeapon(target, repairWeapon);
+}
+
+bool ASurvivor::CanGatherTarget(ADoodad* gatherTarget)
+{
+	return CanAttackTargetWithWeapon(gatherTarget, gatheringWeapon);
+}
+
+float ASurvivor::GatherTarget(ADoodad* gatherTarget)
+{
+	return AttackTargetWithWeapon(gatherTarget, gatheringWeapon);
 }

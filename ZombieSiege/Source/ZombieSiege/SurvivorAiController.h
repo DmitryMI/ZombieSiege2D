@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AIController.h"
+#include "UnitAiController.h"
 #include "SurvivorAiController.generated.h"
 
 class AJobBase;
@@ -14,7 +14,7 @@ class ABuilding;
  * 
  */
 UCLASS()
-class ZOMBIESIEGE_API ASurvivorAiController : public AAIController
+class ZOMBIESIEGE_API ASurvivorAiController : public AUnitAiController
 {
 	GENERATED_BODY()
 
@@ -24,15 +24,6 @@ private:
 	AJobBase* assignedToJob;
 
 	UPROPERTY(EditDefaultsOnly)
-	UBehaviorTree* holdPositionBehaviorTree;	
-
-	UPROPERTY(EditDefaultsOnly)
-	UBehaviorTree* wandererBehaviorTree;
-
-	UPROPERTY(EditDefaultsOnly)
-	UBehaviorTree* attackUnitBehaviorTree;
-
-	UPROPERTY(EditDefaultsOnly)
 	UBehaviorTree* gathererBehaviorTree;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -40,9 +31,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	UBehaviorTree* repairBehaviorTree;
-
-	AUnitBase* attackTarget;
-	AUnitBase* gatheringTarget;
 	
 protected:
 	virtual void BeginPlay() override;
@@ -57,13 +45,7 @@ public:
 	virtual void SetAssignedToJob(AJobBase* job);
 
 	UFUNCTION(BlueprintCallable)
-	virtual void IssueAttackUnitOrder(AUnitBase* target);
-
-	UFUNCTION(BlueprintCallable)
 	virtual void IssueGatherOrder(AUnitBase* gatherableUnit);
-
-	UFUNCTION(BlueprintCallable)
-	virtual void IssueWanderingOrder(FVector aroundLocation, float radius = 500.0f, float standingDuration = 2.0f);
 
 	UFUNCTION(BlueprintCallable)
 	virtual void IssueBuildOrder(TSubclassOf<ABuilding> buildingClass, const FVector& location);
@@ -71,5 +53,5 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void IssueRepairOrder(ABuilding* building);
 
-	virtual void CancelOrder();
+	
 };

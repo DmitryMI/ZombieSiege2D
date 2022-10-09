@@ -7,6 +7,8 @@
 #include "UnitStartedBuildingEventArgs.h"
 #include "Survivor.generated.h"
 
+class ADoodad;
+
 /**
  * 
  */
@@ -18,10 +20,16 @@ class ZOMBIESIEGE_API ASurvivor : public AHumanoid
 private:
 
 	UPROPERTY(EditDefaultsOnly)
-	FName repairWeaponName = "SurvivorRepair";
+	FName repairWeaponName = "SurvivorFistsRepairing";
+
+	UPROPERTY(EditDefaultsOnly)
+	FName gatheringWeaponName = "SurvivorFistsGathering";
 
 	UPROPERTY(VisibleAnywhere)
 	UWeaponInfo* repairWeapon;
+
+	UPROPERTY(VisibleAnywhere)
+	UWeaponInfo* gatheringWeapon;
 
 	void PushFromBuildingRadius(FVector buildingLocation, float radius);
 
@@ -43,6 +51,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual float RepairTarget(ABuilding* target);
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool CanGatherTarget(ADoodad* gatherTarget);
+
+	UFUNCTION(BlueprintCallable)
+	virtual float GatherTarget(ADoodad* gatherTarget);
 
 public:
 	DECLARE_EVENT_OneParam(ASurvivor, FOnUnitStartedBuildingEvent, const FUnitStartedBuildingEventArgs&);

@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "WeaponInfo.h"
+#include "MeleeWeaponInfo.h"
 #include "BlueprintedWeaponInfo.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ZOMBIESIEGE_API UBlueprintedWeaponInfo : public UWeaponInfo
+class ZOMBIESIEGE_API UBlueprintedWeaponInfo : public UMeleeWeaponInfo
 {
 	GENERATED_BODY()
 
