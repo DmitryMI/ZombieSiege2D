@@ -131,14 +131,82 @@ public:
 		return obj;
 	}
 
-	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils", meta = (WorldContext = "WorldContextObject", AutoCreateRefTerm = "ignoredActors"))
-	static AUnitBase* FindClosestAliveUnitInRadius(
-		const UObject* WorldContextObject,
+	template<typename T>
+	static T* GetClosestActor(const TArray<T*>& actors, FVector location)
+	{
+		if (actors.Num() == 0)
+		{
+			return nullptr;
+		}
+
+		T* closest = actors[0];
+		float closestDistanceSqr = FVector::DistSquared(closest->GetActorLocation(), location);
+
+		for (int i = 1; i < actors.Num(); i++)
+		{
+			float distanceSqr = FVector::DistSquared(actors[i]->GetActorLocation(), location);
+			if (distanceSqr < closestDistanceSqr)
+			{
+				closest = actors[i];
+				closestDistanceSqr = distanceSqr;
+			}
+		}
+
+		return closest;
+	}
+
+	template<typename T, typename TFilter>
+	static TArray<T*> FindUnitsInRadius(
+		const UWorld* world,
 		const FVector& center,
 		float searchRadius,
-		ECollisionChannel collisionChannel,
-		TSubclassOf<AUnitBase> unitClass,
-		const TArray<AActor*>& ignoredActors);
+		const TArray<AActor*>& ignoredActors,
+		const TSubclassOf<AUnitBase> unitClass,
+		const TFilter& filter
+	)
+	{
+		TArray<T*> units;
+		TArray<AActor*> actorsInRadius;
+
+		EObjectTypeQuery pawnObjectType = UEngineTypes::ConvertToObjectType(ECC_Pawn);
+		EObjectTypeQuery destructibleObjectType = UEngineTypes::ConvertToObjectType(ECC_Destructible);
+
+		TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes{ pawnObjectType, destructibleObjectType };
+
+		bool foundAny = UKismetSystemLibrary::SphereOverlapActors(world, center, searchRadius, objectTypes, unitClass, ignoredActors, actorsInRadius);
+
+		if (foundAny)
+		{
+			for (AActor* actor : actorsInRadius)
+			{
+				AUnitBase* unit = Cast<T>(actor);
+				check(unit);
+
+				if (filter(unit))
+				{
+					units.Add(unit);
+				}
+			}
+		}
+
+		return units;
+	}
+
+	template<typename T, typename TFilter>
+	static TArray<T*> FindUnitsInRadius(
+		const UWorld* world,
+		const FVector& center,
+		float searchRadius,
+		const TArray<AActor*>& ignoredActors,
+		const TFilter& filter
+	)
+	{
+		TArray<T*> units = FindUnitsInRadius<T>(world, center, searchRadius, ignoredActors, T::StaticClass(), filter);
+		return units;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
+	static AUnitBase* GetClosestUnit(const TArray<AUnitBase*>& actors, FVector location);
 	
 	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils", meta = (WorldContext = "WorldContextObject", AutoCreateRefTerm = "ignoredActors"))
 	static TArray<AUnitBase*> FindAliveUnitsInRadius(
@@ -205,4 +273,14 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
 	static bool IsFree(const TMap<EResourceType, float> requiredResources);	
+
+	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
+	static FVector GetTerrainIntersection(const FVector& location, const FVector& direction, float terrainHeight = 0.0f);
+
+	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils", meta = (WorldContext = "WorldContextObject"))
+	static bool GetRandomReachableLocation(const UObject* WorldContextObject, const FVector& center, float radius, FVector& outRandomLocation);
+
+	static bool GetRandomReachableLocation(const UWorld* world, const FVector& center, float radius, FVector& outRandomLocation);
 };
+
+

@@ -13,5 +13,16 @@ UCLASS()
 class ZOMBIESIEGE_API AZombieSiegeGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
+
+private:
+
+	// TODO Move to some other actor! PlayerController also relies on this parameter!
+	UPROPERTY(EditDefaultsOnly)
+	float terrainHeight = 0.0f;
+
+public:
+
+	UFUNCTION(BlueprintCallable, Exec)
+	void SpawnDebugHorde(int count);	
 	
 };

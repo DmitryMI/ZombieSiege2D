@@ -7,6 +7,7 @@
 #include "GatherDoodadJob.h"
 #include "BuildingJob.h"
 #include "BuildingPlacementMarker.h"
+#include "ZombieSiegeUtils.h"
 #include "Camera/CameraComponent.h"
 
 DEFINE_LOG_CATEGORY(LogZombieSiegePlayerController);
@@ -296,12 +297,7 @@ bool AZombieSiegePlayerController::DeprojectMouseOnTerrain(FVector& deprojectedL
 		return false;
 	}
 
-	FVector secondWorldPoint = worldLocation + worldDirection * cameraDefaultHeight * 2;
-
-	FPlane plane(FVector(0, 0, terrainHeight), FVector::UpVector);
-	FVector intersection = FMath::LinePlaneIntersection(worldLocation, secondWorldPoint, plane);
-
-	deprojectedLocation = intersection;
+	deprojectedLocation = UZombieSiegeUtils::GetTerrainIntersection(worldLocation, worldDirection);
 
 	return true;
 }

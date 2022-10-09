@@ -25,8 +25,7 @@ class ZOMBIESIEGE_API AZombieSiegePlayerController : public APlayerController
 	GENERATED_BODY()
 
 private:
-	UPROPERTY(EditDefaultsOnly)
-	float terrainHeight = 0.0f;
+	
 
 	UPROPERTY(EditDefaultsOnly)
 	float cameraDefaultHeight = 1000;

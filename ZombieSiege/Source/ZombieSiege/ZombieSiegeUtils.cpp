@@ -28,41 +28,9 @@ int UZombieSiegeUtils::CompareDistances2D(AActor* actorA, AActor* actorB, AActor
 	}
 }
 
-AUnitBase* UZombieSiegeUtils::FindClosestAliveUnitInRadius(
-	const UObject* WorldContextObject,
-	const FVector& center,
-	float searchRadius,
-	ECollisionChannel collisionChannel,
-	TSubclassOf<AUnitBase> unitClass,
-	const TArray<AActor*>& ignoredActors
-)
+AUnitBase* UZombieSiegeUtils::GetClosestUnit(const TArray<AUnitBase*>& actors, FVector location)
 {
-	UWorld* world = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
-	check(world);
-
-	AUnitBase* closest = nullptr;
-	float closestDistance = 999999999.0f;
-
-	TArray<AUnitBase*> aliveUnits = FindAliveUnitsInRadius(world, center, searchRadius, collisionChannel, unitClass, ignoredActors);
-
-	for (AUnitBase* unit : aliveUnits)
-	{
-		if (closest == nullptr)
-		{
-			closest = unit;
-			closestDistance = FVector::DistSquared2D(unit->GetActorLocation(), center);
-			continue;
-		}
-
-		float distanceSqr = FVector::DistSquared2D(unit->GetActorLocation(), center);
-		if (distanceSqr < closestDistance)
-		{
-			closest = unit;
-			closestDistance = distanceSqr;
-		}
-	}
-
-	return closest;
+	return GetClosestActor(actors, location);
 }
 
 TArray<AUnitBase*> UZombieSiegeUtils::FindAliveUnitsInRadius(
@@ -113,49 +81,35 @@ TArray<AUnitBase*> UZombieSiegeUtils::FindAttackableEnemiesInRadius(const UObjec
 		ignoredActorsClone.Add(instigator);
 	}
 
-	TArray<AUnitBase*> units;
-
 	UWorld* world = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
 	check(world);
 
-	TArray<AActor*> actorsInRadius;
-
-	EObjectTypeQuery objectType = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
-
-	TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes{ objectType };
-
-	bool foundAny = UKismetSystemLibrary::SphereOverlapActors(world, center, searchRadius, objectTypes, AUnitBase::StaticClass(), ignoredActorsClone, actorsInRadius);
-
-	if (foundAny)
+	auto filter = [instigator, world](AUnitBase* unit)
 	{
-		for (AActor* actor : actorsInRadius)
+		if (!UZombieSiegeUtils::AreEnemies(instigator, unit))
 		{
-			AUnitBase* unit = Cast<AUnitBase>(actor);
-			check(unit);
-
-			if (!UZombieSiegeUtils::AreEnemies(instigator, unit))
-			{
-				continue;
-			}
-
-			if (!unit->IsAlive())
-			{
-				continue;
-			}
-
-			if (!instigator->CanEverAttackTarget(unit))
-			{
-				continue;
-			}
-
-			if (!UZombieSiegeUtils::IsUnitReachable(world, instigator, unit, instigator->GetAttackRange()))
-			{
-				continue;
-			}
-
-			units.Add(unit);
+			return false;
 		}
-	}
+
+		if (!unit->IsAlive())
+		{
+			return false;
+		}
+
+		if (!instigator->CanEverAttackTarget(unit))
+		{
+			return false;
+		}
+
+		if (!UZombieSiegeUtils::IsUnitReachable(world, instigator, unit, instigator->GetAttackRange()))
+		{
+			return false;
+		}
+
+		return true;
+	};
+
+	TArray<AUnitBase*> units = FindUnitsInRadius<AUnitBase>(world, center, searchRadius, ignoredActors, filter);
 
 	return units;
 }
@@ -408,4 +362,35 @@ bool UZombieSiegeUtils::IsFree(const TMap<EResourceType, float> requiredResource
 	}
 
 	return FMath::IsNearlyZero(summ);
+}
+
+FVector UZombieSiegeUtils::GetTerrainIntersection(const FVector& location, const FVector& direction, float terrainHeight)
+{
+	float rayLength = UE_LARGE_WORLD_MAX;
+
+	FVector secondWorldPoint = location + direction * rayLength;
+
+	FPlane plane(FVector(0, 0, terrainHeight), FVector::UpVector);
+	FVector intersection = FMath::LinePlaneIntersection(location, secondWorldPoint, plane);
+
+	return intersection;
+}
+
+bool UZombieSiegeUtils::GetRandomReachableLocation(const UObject* WorldContextObject, const FVector& center, float radius, FVector& outRandomLocation)
+{
+	UWorld* world = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+
+	return GetRandomReachableLocation(world, center, radius, outRandomLocation);
+}
+
+bool UZombieSiegeUtils::GetRandomReachableLocation(const UWorld* world, const FVector& location, float radius, FVector& outRandomLocation)
+{
+	const UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(world);
+
+	FNavLocation randomPoint;
+	bool foundPoint = NavSys->GetRandomPointInNavigableRadius(location, radius, randomPoint);
+
+	outRandomLocation = randomPoint.Location;
+
+	return foundPoint;
 }

@@ -353,12 +353,12 @@ float AUnitBase::GetMaxHealth() const
 	return maxHealth;
 }
 
-bool AUnitBase::CanAttackTarget(AUnitBase* target)
+bool AUnitBase::CanAttackTarget(AUnitBase* targetUnit)
 {
 	return false;
 }
 
-bool AUnitBase::CanEverAttackTarget(AUnitBase* target)
+bool AUnitBase::CanEverAttackTarget(AUnitBase* targetUnit)
 {
 	return false;
 }
@@ -382,6 +382,11 @@ void AUnitBase::SetMovementComponentSpeedCap(float speedCap)
 	{
 		movementComponent->MaxSpeed = speedCap;
 	}
+}
+
+float AUnitBase::GetVisionRadius()
+{
+	return visionRadius;
 }
 
 

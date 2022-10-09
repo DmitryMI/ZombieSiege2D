@@ -48,6 +48,9 @@ private:
 	UTexture2D* previewTexture;
 
 	UPROPERTY(EditDefaultsOnly)
+	float visionRadius = 500.0f;
+
+	UPROPERTY(EditDefaultsOnly)
 	float enterPassengerCarrierRadius = 150.0f;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -121,6 +124,9 @@ protected:
 	void SetMovementComponentSpeedCap(float speedCap);
 
 public:
+
+	UFUNCTION(BlueprintCallable)
+	float GetVisionRadius();
 
 	UFUNCTION(BlueprintCallable)
 	void SetFacingDirection(EFaceDirection direction)
@@ -288,10 +294,10 @@ public:
 	float GetMaxHealth() const;
 
 	UFUNCTION(BlueprintCallable)
-	virtual bool CanAttackTarget(AUnitBase* target);
+	virtual bool CanAttackTarget(AUnitBase* targetUnit);
 
 	UFUNCTION(BlueprintCallable)
-	virtual bool CanEverAttackTarget(AUnitBase* target);
+	virtual bool CanEverAttackTarget(AUnitBase* targetUnit);
 
 	UFUNCTION(BlueprintCallable)
 	virtual float GetAttackRange();
@@ -302,7 +308,7 @@ public:
 	/// </summary>
 	/// <param name="target">Target to be damaged by this Unit</param>
 	/// <returns>True if attack was successful (regardless of actual damage amount)</returns>
-	virtual bool AttackTarget(AUnitBase* target);
+	virtual bool AttackTarget(AUnitBase* targetUnit);
 
 	UFUNCTION(BlueprintCallable)
 	/// <summary>
