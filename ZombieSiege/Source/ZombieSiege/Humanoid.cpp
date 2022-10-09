@@ -30,13 +30,8 @@ void AHumanoid::BeginPlay()
 	weaponManager = AWeaponManager::GetInstance(GetWorld());
 	check(weaponManager);	
 
-	weaponDefault = GetDefaultWeapon();
+	weaponDefault = weaponManager->GetWeaponInfo(weaponDefaultName);
 	check(weaponDefault);
-}
-
-UWeaponInfo* AHumanoid::GetDefaultWeapon()
-{
-	return weaponManager->GetWeaponInfo(weaponDefaultName);
 }
 
 bool AHumanoid::IsOnCooldown()
@@ -122,7 +117,7 @@ bool AHumanoid::CanMove() const
 
 float AHumanoid::GetAttackRange()
 {
-	return activeWeapon->GetRange();
+	return weaponDefault->GetRange();
 }
 
 bool AHumanoid::CanEverAttackTarget(AUnitBase* target)

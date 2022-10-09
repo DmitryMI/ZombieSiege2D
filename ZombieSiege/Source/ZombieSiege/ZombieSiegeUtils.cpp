@@ -101,7 +101,7 @@ TArray<AUnitBase*> UZombieSiegeUtils::FindAttackableEnemiesInRadius(const UObjec
 			return false;
 		}
 
-		if (!UZombieSiegeUtils::IsUnitReachable(world, instigator, unit, instigator->GetAttackRange()))
+		if (!UZombieSiegeUtils::IsUnitReachable(world, instigator, unit, 250.0f))
 		{
 			return false;
 		}
@@ -309,11 +309,15 @@ bool UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(
 
 		return hasPoint;
 	}
-	else
+	else if (navPath->IsPartial())
 	{
 		bool hasPoint = GetFirstPointCloseToGoal(targetActorLocation, useReachabilityRadius, navPath, OutLocation);
 
 		return hasPoint;
+	}
+	else
+	{
+		return true;
 	}
 
 }

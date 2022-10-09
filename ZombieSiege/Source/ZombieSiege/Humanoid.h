@@ -64,8 +64,6 @@ protected:
 	
 	virtual void BeginPlay() override;
 
-	virtual UWeaponInfo* GetDefaultWeapon();
-
 	virtual bool CanCommitAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon);
 	virtual bool CanAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon);
 

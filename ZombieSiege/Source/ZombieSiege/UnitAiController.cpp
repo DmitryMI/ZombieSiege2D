@@ -22,7 +22,7 @@ void AUnitAiController::IssueAttackUnitOrder(AUnitBase* attackTarget)
 
 void AUnitAiController::IssueAttackOnMoveOrder(const FVector& location)
 {
-    bool ok = RunBehaviorTree(wandererBehaviorTree);
+    bool ok = RunBehaviorTree(attackOnMoveBehaviorTree);
     check(ok);
 
     UBlackboardComponent* blackboard = GetBlackboardComponent();
