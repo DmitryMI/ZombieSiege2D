@@ -127,7 +127,7 @@ float AHumanoid::GetAttackRange()
 
 bool AHumanoid::CanEverAttackTarget(AUnitBase* target)
 {
-	return false;
+	return weaponDefault->CanThisWeaponEverAttackTarget(target);
 }
 
 bool AHumanoid::CanAttackTarget(AUnitBase* target)
