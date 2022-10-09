@@ -177,6 +177,9 @@ public:
 	bool HasClassifications(EUnitClassification flags) const;
 
 	UFUNCTION(BlueprintCallable)
+	bool HasAnyClassification(EUnitClassification flags) const;
+
+	UFUNCTION(BlueprintCallable)
 	void AddClassifications(EUnitClassification flags);
 	
 	UFUNCTION(BlueprintCallable)
@@ -286,6 +289,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual bool CanAttackTarget(AUnitBase* target);
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool CanEverAttackTarget(AUnitBase* target);
+
+	UFUNCTION(BlueprintCallable)
+	virtual float GetAttackRange();
 	
 	UFUNCTION(BlueprintCallable)
 	/// <summary>

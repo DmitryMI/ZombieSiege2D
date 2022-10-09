@@ -15,10 +15,10 @@ void UBlueprintedWeaponInfo::BlueprintedAttackTarget_Implementation(AUnitBase* a
 
 void UBlueprintedWeaponInfo::BlueprintedCanAttackTarget_Implementation(AUnitBase* attacker, AUnitBase* target)
 {
-	canAttackTargetReturn = false;
+	canAttackTargetReturn = Super::CanAttackTarget(attacker, target);
 }
 
 void UBlueprintedWeaponInfo::BlueprintedCanAttackPoint_Implementation(AUnitBase* attacker, const FVector& targetPoint)
 {
-	canAttackPointReturn = false;
+	canAttackPointReturn = Super::CanAttackPoint(attacker, targetPoint);
 }

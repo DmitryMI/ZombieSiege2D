@@ -49,9 +49,9 @@ public:
 		return Super::GetRange();
 	}
 
-	virtual bool CanThisWeaponEverAttackTarget() const override
+	virtual bool CanThisWeaponEverAttackTarget(AUnitBase* unit) const override
 	{
-		return Super::CanThisWeaponEverAttackTarget();
+		return Super::CanThisWeaponEverAttackTarget(unit);
 	}
 
 	virtual bool CanThisWeaponEverAttackPoint() const override

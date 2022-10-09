@@ -105,6 +105,62 @@ TArray<AUnitBase*> UZombieSiegeUtils::FindAliveUnitsInRadius(
 	return units;
 }
 
+TArray<AUnitBase*> UZombieSiegeUtils::FindAttackableEnemiesInRadius(const UObject* WorldContextObject, AUnitBase* instigator, const FVector& center, float searchRadius, const TArray<AActor*>& ignoredActors)
+{
+	auto ignoredActorsClone = ignoredActors;
+	if (!ignoredActorsClone.Contains(instigator))
+	{
+		ignoredActorsClone.Add(instigator);
+	}
+
+	TArray<AUnitBase*> units;
+
+	UWorld* world = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+	check(world);
+
+	TArray<AActor*> actorsInRadius;
+
+	EObjectTypeQuery objectType = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
+
+	TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes{ objectType };
+
+	bool foundAny = UKismetSystemLibrary::SphereOverlapActors(world, center, searchRadius, objectTypes, AUnitBase::StaticClass(), ignoredActorsClone, actorsInRadius);
+
+	if (foundAny)
+	{
+		for (AActor* actor : actorsInRadius)
+		{
+			AUnitBase* unit = Cast<AUnitBase>(actor);
+			check(unit);
+
+			if (!UZombieSiegeUtils::AreEnemies(instigator, unit))
+			{
+				continue;
+			}
+
+			if (!unit->IsAlive())
+			{
+				continue;
+			}
+
+			if (!instigator->CanEverAttackTarget(unit))
+			{
+				continue;
+			}
+
+			if (!UZombieSiegeUtils::IsUnitReachable(world, instigator, unit, instigator->GetAttackRange()))
+			{
+				continue;
+			}
+
+			units.Add(unit);
+		}
+	}
+
+	return units;
+}
+
+
 float UZombieSiegeUtils::GetDistance2DBetweenSimpleCollisions(AActor* actor1, AActor* actor2)
 {
 	check(actor1);
@@ -162,6 +218,20 @@ bool UZombieSiegeUtils::IsLocationReachableWorld(UWorld* world, AUnitBase* unit,
 	}
 
 	return true;
+}
+
+bool UZombieSiegeUtils::IsUnitReachable(const UObject* WorldContextObject, AUnitBase* agent, AUnitBase* targetUnit, float tolerance)
+{
+	FVector unused;
+	bool reachable = GetBestLocationNearUnitToArrive(WorldContextObject, agent, targetUnit, tolerance, unused);
+	return reachable;
+}
+
+bool UZombieSiegeUtils::IsUnitReachable(UWorld* world, AUnitBase* agent, AUnitBase* targetUnit, float tolerance)
+{
+	FVector unused;
+	bool reachable = GetBestLocationNearUnitToArriveWorld(world, agent, targetUnit, tolerance, unused);
+	return reachable;
 }
 
 UNavigationPath* UZombieSiegeUtils::FindPathBetweenLocations(const UObject* WorldContextObject, FVector from, FVector to, AActor* pathFindingContext)

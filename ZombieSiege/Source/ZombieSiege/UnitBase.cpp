@@ -128,6 +128,11 @@ bool AUnitBase::HasClassifications(EUnitClassification flags) const
 	return (classificationFlags & static_cast<int>(flags)) == static_cast<int>(flags);
 }
 
+bool AUnitBase::HasAnyClassification(EUnitClassification flags) const
+{
+	return (classificationFlags & static_cast<int>(flags));
+}
+
 void AUnitBase::AddClassifications(EUnitClassification flags)
 {
 	classificationFlags |= static_cast<int>(flags);
@@ -351,6 +356,16 @@ float AUnitBase::GetMaxHealth() const
 bool AUnitBase::CanAttackTarget(AUnitBase* target)
 {
 	return false;
+}
+
+bool AUnitBase::CanEverAttackTarget(AUnitBase* target)
+{
+	return false;
+}
+
+float AUnitBase::GetAttackRange()
+{
+	return 200.0f;
 }
 
 void AUnitBase::FinishDying(const FDamageInstance& killingDamageInstance)

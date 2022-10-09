@@ -95,9 +95,11 @@ public:
 
 	virtual bool CanMove() const override;
 
-	virtual bool CanAttackTarget(AUnitBase* target);
+	virtual float GetAttackRange() override;
 
-	virtual bool AttackTarget(AUnitBase* target);
+	virtual bool CanEverAttackTarget(AUnitBase* target) override;
 
-	
+	virtual bool CanAttackTarget(AUnitBase* target) override;
+
+	virtual bool AttackTarget(AUnitBase* target) override;
 };

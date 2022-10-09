@@ -149,6 +149,14 @@ public:
 		TSubclassOf<AUnitBase> unitClass,
 		const TArray<AActor*>& ignoredActors);
 
+	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils", meta = (WorldContext = "WorldContextObject", AutoCreateRefTerm = "ignoredActors"))
+	static TArray<AUnitBase*> FindAttackableEnemiesInRadius(
+		const UObject* WorldContextObject,
+		AUnitBase* instigator,
+		const FVector& center,
+		float searchRadius,
+		const TArray<AActor*>& ignoredActors);
+
 	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
 	static float GetDistance2DBetweenSimpleCollisions(AActor* actor1, AActor* actor2);
 
@@ -156,6 +164,11 @@ public:
 	static bool IsLocationReachable(const UObject* WorldContextObject, AUnitBase* unit, FVector Position, float tolerance);
 	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
 	static bool IsLocationReachableWorld(UWorld* world, AUnitBase* unit, FVector Position, float tolerance);
+
+	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils", meta = (WorldContext = "WorldContextObject"))
+	static bool IsUnitReachable(const UObject* WorldContextObject, AUnitBase* agent, AUnitBase* targetUnit, float tolerance);
+
+	static bool IsUnitReachable(UWorld* world, AUnitBase* agent, AUnitBase* targetUnit, float tolerance);
 
 	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils", meta = (WorldContext = "WorldContextObject"))
 	static UNavigationPath* FindPathBetweenLocations(const UObject* WorldContextObject, FVector from, FVector to, AActor* pathFindingContext = nullptr);
@@ -191,7 +204,5 @@ public:
 	static int GetDirectionSpriteIndex(EFaceDirection faceDirectionEnum);
 
 	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
-	static bool IsFree(const TMap<EResourceType, float> requiredResources);
-
-	
+	static bool IsFree(const TMap<EResourceType, float> requiredResources);	
 };

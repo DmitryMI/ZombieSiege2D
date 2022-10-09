@@ -3,8 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "UnitClassification.h"
+#include "UnitBase.h"
+#include "ZombieSiegeUtils.h"
 #include "WeaponInfo.generated.h"
-
 
 UCLASS(Blueprintable)
 /// <summary>
@@ -19,8 +21,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool canEverAttackPoint;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	bool canEverAttackTarget;
+	UPROPERTY(EditDefaultsOnly, meta = (Bitmask, BitmaskEnum = EUnitClassification))
+	uint8 targetClassifications;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float backswingDuration;
@@ -107,9 +109,11 @@ public:
 	/// Determines if this weapon can ever target a unit.
 	/// </summary>
 	/// <returns>True if weapon can target a unit</returns>
-	virtual bool CanThisWeaponEverAttackTarget() const
+	virtual bool CanThisWeaponEverAttackTarget(AUnitBase* unit) const
 	{
-		return canEverAttackTarget;
+		check(unit);
+
+		return unit->HasAnyClassification(static_cast<EUnitClassification>(targetClassifications));
 	}
 
 	UFUNCTION(BlueprintCallable)
@@ -132,7 +136,19 @@ public:
 	/// <returns>True if an attack is possible. Always false if CanThisWeaponEverAttackTarget() is false</returns>
 	virtual bool CanAttackTarget(AUnitBase* attacker, AUnitBase* target)
 	{
-		return false;
+		if (!CanThisWeaponEverAttackTarget(target))
+		{
+			return false;
+		}
+
+		float distance = UZombieSiegeUtils::GetDistance2DBetweenSimpleCollisions(attacker, target);
+
+		if (distance > range)
+		{
+			return false;
+		}
+
+		return true;
 	}
 
 	UFUNCTION(BlueprintCallable)

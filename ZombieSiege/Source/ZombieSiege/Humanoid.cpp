@@ -120,6 +120,16 @@ bool AHumanoid::CanMove() const
 		GetUnitState() == EUnitState::None;
 }
 
+float AHumanoid::GetAttackRange()
+{
+	return activeWeapon->GetRange();
+}
+
+bool AHumanoid::CanEverAttackTarget(AUnitBase* target)
+{
+	return false;
+}
+
 bool AHumanoid::CanAttackTarget(AUnitBase* target)
 {
 	return CanAttackTargetWithWeapon(target, weaponDefault);
@@ -152,7 +162,7 @@ bool AHumanoid::CanCommitAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* 
 		return false;
 	}
 
-	if (!weapon->CanThisWeaponEverAttackTarget())
+	if (!weapon->CanThisWeaponEverAttackTarget(target))
 	{
 		return false;
 	}
