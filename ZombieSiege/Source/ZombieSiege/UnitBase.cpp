@@ -2,6 +2,7 @@
 
 
 #include "UnitBase.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 void AUnitBase::SetUnitState(EUnitState nextState)
 {
@@ -379,7 +380,9 @@ void AUnitBase::SetMovementComponentSpeedCap(float speedCap)
 {
 	if (movementComponent)
 	{
-		movementComponent->MaxSpeed = speedCap;
+		//movementComponent->MaxSpeed = speedCap;
+		movementComponent->MaxWalkSpeed = speedCap;
+		movementComponent->MaxFlySpeed = speedCap;
 	}
 }
 
@@ -417,7 +420,7 @@ void AUnitBase::BeginPlay()
 		SetOwningPlayer(zsController);
 	}
 
-	movementComponent = Cast<UFloatingPawnMovement>(GetComponentByClass(UFloatingPawnMovement::StaticClass()));
+	movementComponent = Cast<UCharacterMovementComponent>(GetComponentByClass(UCharacterMovementComponent::StaticClass()));
 
 	SetMovementComponentSpeedCap(GetMaxSpeed());
 }

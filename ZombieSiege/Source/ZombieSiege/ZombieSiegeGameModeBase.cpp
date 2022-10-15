@@ -53,6 +53,8 @@ void AZombieSiegeGameModeBase::SpawnDebugHorde(int count)
 			continue;
 		}
 
+		randomPoint.Z = 250;
+
 		AZombie* zombie = world->SpawnActor<AZombie>(unitClass, randomPoint, FRotator::ZeroRotator);
 		if (zombie)
 		{

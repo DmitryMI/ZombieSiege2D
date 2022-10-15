@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Pawn.h"
+#include "GameFramework/Character.h"
 #include "DamageInstance.h"
 #include "HealingInstance.h"
 #include "DamageReceivedEventArgs.h"
@@ -21,7 +21,7 @@
 #include "UnitBase.generated.h"
 
 UCLASS()
-class ZOMBIESIEGE_API AUnitBase : public APawn
+class ZOMBIESIEGE_API AUnitBase : public ACharacter
 {
 	GENERATED_BODY()
 
@@ -99,7 +99,7 @@ private:
 protected:
 
 	UPROPERTY(Transient)
-	UFloatingPawnMovement* movementComponent;
+	UCharacterMovementComponent* movementComponent;
 
 	virtual void BeginPlay() override;
 
