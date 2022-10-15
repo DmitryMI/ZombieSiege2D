@@ -18,7 +18,10 @@ void AGatherDoodadJob::FindExecutors()
 
 	for (AUnitBase* unit : controlledUnits)
 	{
-		check(unit);		
+		if (!unit)
+		{
+			continue;
+		}
 
 		bool bAssign = false;
 
