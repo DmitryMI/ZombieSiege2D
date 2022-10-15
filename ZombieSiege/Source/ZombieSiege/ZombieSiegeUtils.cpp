@@ -283,12 +283,16 @@ bool UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(
 	FVector movingActorLocation = movingAgent->GetActorLocation();
 	FVector targetActorLocation = goalAgent->GetActorLocation();
 
-	UNavigationPath* navPath = FindPathBetweenLocationsWorld(world, movingActorLocation, targetActorLocation, movingAgent);
-	if (navPath == nullptr || !navPath->IsValid())
+	UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(world);
+
+	//UNavigationPath* navPath = FindPathBetweenLocationsWorld(world, movingActorLocation, targetActorLocation, movingAgent);
+	UNavigationPath* pathToActor = NavSys->FindPathToActorSynchronously(world, movingActorLocation, goalAgent, tolerance, movingAgent);
+	pathToActor->EnableDebugDrawing(true, FLinearColor::Red);
+
+	bool bPathToActorInvalid = !pathToActor->IsValid();
+	if (pathToActor == nullptr || bPathToActorInvalid)
 	{
 		// Try to find path to a random point near the target instead
-
-		UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(world);
 
 		FNavLocation randomPoint;
 		bool foundPoint = NavSys->GetRandomPointInNavigableRadius(targetActorLocation, useReachabilityRadius, randomPoint);
@@ -298,26 +302,27 @@ bool UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(
 			return false;
 		}
 
-		navPath = FindPathBetweenLocationsWorld(world, movingActorLocation, randomPoint.Location, movingAgent);
-
-		if (navPath == nullptr || !navPath->IsValid())
+		UNavigationPath* pathToRandomPoint = FindPathBetweenLocationsWorld(world, movingActorLocation, randomPoint.Location, movingAgent);
+		pathToRandomPoint->EnableDebugDrawing(true, FLinearColor::Green);
+		bool pathToRandomPointInvalid = !pathToRandomPoint->IsValid();
+		if (pathToRandomPoint == nullptr || pathToRandomPointInvalid)
 		{
 			return false;
 		}		
 
-		bool hasPoint = GetFirstPointCloseToGoal(targetActorLocation, useReachabilityRadius, navPath, OutLocation);
+		bool hasPoint = GetFirstPointCloseToGoal(targetActorLocation, useReachabilityRadius, pathToRandomPoint, OutLocation);
 
 		return hasPoint;
 	}
-	else if (navPath->IsPartial())
+	else if (pathToActor->IsPartial())
 	{
-		bool hasPoint = GetFirstPointCloseToGoal(targetActorLocation, useReachabilityRadius, navPath, OutLocation);
+		bool hasPoint = GetFirstPointCloseToGoal(targetActorLocation, useReachabilityRadius, pathToActor, OutLocation);
 
 		return hasPoint;
 	}
-	else
+	else // Path is valid and is not partial
 	{
-		OutLocation = navPath->PathPoints.Last();
+		OutLocation = pathToActor->PathPoints.Last();
 		return true;
 	}
 
