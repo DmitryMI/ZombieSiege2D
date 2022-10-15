@@ -83,6 +83,8 @@ protected:
 
 	bool DeprojectMouseOnTerrain(FVector& deprojectedLocation);
 
+	virtual void OnControlledUnitDiedHandler(const FUnitDiedEventArgs& args);
+
 public:
 
 	virtual void Tick(float deltaSeconds) override;

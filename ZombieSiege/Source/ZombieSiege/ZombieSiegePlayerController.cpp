@@ -223,6 +223,8 @@ void AZombieSiegePlayerController::AddToControlledUnits(AUnitBase* unit)
 
 	check(!controlledUnits.Contains(unit));
 
+	unit->OnUnitDied().AddUObject(this, &AZombieSiegePlayerController::OnControlledUnitDiedHandler);
+
 	controlledUnits.Add(unit);
 }
 
@@ -300,6 +302,14 @@ bool AZombieSiegePlayerController::DeprojectMouseOnTerrain(FVector& deprojectedL
 	deprojectedLocation = UZombieSiegeUtils::GetTerrainIntersection(worldLocation, worldDirection);
 
 	return true;
+}
+
+void AZombieSiegePlayerController::OnControlledUnitDiedHandler(const FUnitDiedEventArgs& args)
+{
+	AUnitBase* unit = args.deadUnit;
+	check(unit);
+
+	RemoveFromControlledUnits(unit);
 }
 
 void AZombieSiegePlayerController::Tick(float deltaSeconds)
