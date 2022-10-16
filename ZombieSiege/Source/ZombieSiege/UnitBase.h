@@ -128,6 +128,7 @@ protected:
 	void SetMovementComponentSpeedCap(float speedCap);
 
 public:
+	AUnitBase();
 
 	UFUNCTION(BlueprintCallable)
 	float GetVisionRadius();
@@ -136,16 +137,10 @@ public:
 	EArmorNature GetArmorNature();
 
 	UFUNCTION(BlueprintCallable)
-	void SetFacingDirection(EFaceDirection direction)
-	{
-		facingDirection = direction;
-	}
+	void SetFacingDirection(EFaceDirection direction);
 
 	UFUNCTION(BlueprintCallable)
-	EFaceDirection GetFacingDirection()
-	{
-		return facingDirection;
-	}
+	EFaceDirection GetFacingDirection();
 
 	UFUNCTION(BlueprintCallable)
 	virtual FName GetUnitTypeName() const;

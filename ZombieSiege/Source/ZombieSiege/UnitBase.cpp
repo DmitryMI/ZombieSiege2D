@@ -3,6 +3,7 @@
 
 #include "UnitBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/CapsuleComponent.h"
 
 void AUnitBase::SetUnitState(EUnitState nextState)
 {
@@ -386,6 +387,11 @@ void AUnitBase::SetMovementComponentSpeedCap(float speedCap)
 	}
 }
 
+AUnitBase::AUnitBase() : Super()
+{
+	
+}
+
 float AUnitBase::GetVisionRadius()
 {
 	return visionRadius;
@@ -394,6 +400,16 @@ float AUnitBase::GetVisionRadius()
 EArmorNature AUnitBase::GetArmorNature()
 {
 	return armorNature;
+}
+
+void AUnitBase::SetFacingDirection(EFaceDirection direction)
+{
+	facingDirection = direction;
+}
+
+EFaceDirection AUnitBase::GetFacingDirection()
+{
+	return facingDirection;
 }
 
 
@@ -420,7 +436,13 @@ void AUnitBase::BeginPlay()
 		SetOwningPlayer(zsController);
 	}
 
-	movementComponent = Cast<UCharacterMovementComponent>(GetComponentByClass(UCharacterMovementComponent::StaticClass()));
+	UCapsuleComponent* capsule = GetCapsuleComponent();
+	check(capsule);
+	capsule->SetCapsuleRadius(collisionRadius);
+	capsule->SetCapsuleHalfHeight(collisionHeight / 2);
+
+	movementComponent = Cast<UCharacterMovementComponent>(GetMovementComponent());
+	check(movementComponent);
 
 	SetMovementComponentSpeedCap(GetMaxSpeed());
 }
