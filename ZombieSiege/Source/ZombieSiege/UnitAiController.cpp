@@ -44,6 +44,12 @@ void AUnitAiController::IssueWanderingOrder(FVector aroundLocation, float radius
     blackboard->SetValueAsFloat("StandingDuration", standingDuration);
 }
 
+void AUnitAiController::IssueHoldPositionOrder()
+{
+    bool ok = RunBehaviorTree(holdPositionBehaviorTree);
+    check(ok);
+}
+
 void AUnitAiController::CancelOrder()
 {
     bool ok = RunBehaviorTree(holdPositionBehaviorTree);

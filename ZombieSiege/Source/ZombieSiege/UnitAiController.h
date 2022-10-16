@@ -43,5 +43,8 @@ public:
 	virtual void IssueWanderingOrder(FVector aroundLocation, float radius = 500.0f, float standingDuration = 2.0f);
 
 	UFUNCTION(BlueprintCallable)
+	virtual void IssueHoldPositionOrder();
+
+	UFUNCTION(BlueprintCallable)
 	virtual void CancelOrder();
 };

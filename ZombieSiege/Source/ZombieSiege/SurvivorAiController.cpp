@@ -16,7 +16,8 @@ void ASurvivorAiController::BeginPlay()
 
     if (GetPawn() != nullptr)
     {
-        IssueWanderingOrder(GetPawn()->GetActorLocation());
+        //IssueWanderingOrder(GetPawn()->GetActorLocation());
+        IssueHoldPositionOrder();
     }
 }
 
