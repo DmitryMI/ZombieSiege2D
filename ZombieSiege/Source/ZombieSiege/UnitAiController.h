@@ -28,6 +28,11 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	UBehaviorTree* wandererBehaviorTree;
+
+	UPROPERTY(EditDefaultsOnly)
+	UBehaviorTree* enterPassengerCarrierBehaviorTree;
+
+	virtual void UnitEnteredPassengerCarrierEventHandler(const FUnitEnteredPassengerCarrierEventArgs& args);
 	
 public:
 	UFUNCTION(BlueprintCallable)
@@ -44,6 +49,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void IssueHoldPositionOrder();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void IssueEnterPassengerCarrierOrder(AUnitBase* carrier);
 
 	UFUNCTION(BlueprintCallable)
 	virtual void CancelOrder();

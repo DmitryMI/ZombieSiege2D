@@ -120,6 +120,14 @@ void AUnitBase::RemovePassenger(AUnitBase* passenger)
 	passengers.Remove(passenger);
 }
 
+void AUnitBase::MakeAllPassengersLeave()
+{
+	for (AUnitBase* passenger : passengers)
+	{
+		passenger->LeavePassengerCarrier();
+	}
+}
+
 EUnitClassification AUnitBase::GetClassifications() const
 {
 	return static_cast<EUnitClassification>(classificationFlags);
@@ -447,6 +455,16 @@ void AUnitBase::BeginPlay()
 	SetMovementComponentSpeedCap(GetMaxSpeed());
 }
 
+void AUnitBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (passengerCarrier)
+	{
+		LeavePassengerCarrier();
+	}
+
+	MakeAllPassengersLeave();
+}
+
 bool AUnitBase::ShouldBeHidden()
 {
 	bool isInCarrier = GetPassengerCarrier() != nullptr;
@@ -481,6 +499,8 @@ void AUnitBase::BeginDying(const FDamageInstance& killingDamageInstance)
 		}
 		
 		UE_LOG(LogTemp, Display, TEXT("Unit %s was killed by %s"), *name, *killerName);
+
+		MakeAllPassengersLeave();
 		FinishDying(killingDamageInstance);
 	}
 	else

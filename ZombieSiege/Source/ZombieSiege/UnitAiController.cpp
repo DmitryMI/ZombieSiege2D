@@ -3,6 +3,14 @@
 
 #include "UnitAiController.h"
 
+void AUnitAiController::UnitEnteredPassengerCarrierEventHandler(const FUnitEnteredPassengerCarrierEventArgs& args)
+{
+    if (args.enteringUnit == GetPawn())
+    {
+        CancelOrder();
+    }
+}
+
 void AUnitAiController::IssueMoveOrder(const FVector& moveToLocation)
 {
 }
@@ -47,6 +55,22 @@ void AUnitAiController::IssueWanderingOrder(FVector aroundLocation, float radius
 void AUnitAiController::IssueHoldPositionOrder()
 {
     bool ok = RunBehaviorTree(holdPositionBehaviorTree);
+    check(ok);
+}
+
+void AUnitAiController::IssueEnterPassengerCarrierOrder(AUnitBase* carrier)
+{
+    if (!carrier->HasClassifications(EUnitClassification::PassengerCarrier))
+    {
+        return;
+    }
+
+    if (carrier->GetFreePassengerSeats() == 0)
+    {
+        return;
+    }
+
+    bool ok = RunBehaviorTree(enterPassengerCarrierBehaviorTree);
     check(ok);
 }
 

@@ -9,6 +9,7 @@
 #include "DamageReceivedEventArgs.h"
 #include "HealthChangedEventArgs.h"
 #include "UnitIsDyingEventArgs.h"
+#include "UnitEnteredPassengerCarrierEventArgs.h"
 #include "UnitDiedEventArgs.h"
 #include "ZombieSiegePlayerState.h"
 #include "ZombieSiegePlayerController.h"
@@ -103,12 +104,12 @@ protected:
 
 	virtual void BeginPlay() override;
 
-	virtual bool ShouldBeHidden();
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason);
 
+	virtual bool ShouldBeHidden();
 
 	UFUNCTION(BlueprintCallable)
 	void SetUnitState(EUnitState nextState);
-
 
 	UFUNCTION(BlueprintCallable)
 	/// <summary>
@@ -177,6 +178,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void RemovePassenger(AUnitBase* passenger);
+
+	UFUNCTION(BlueprintCallable)
+	void MakeAllPassengersLeave();
 
 	UFUNCTION(BlueprintCallable)
 	EUnitClassification GetClassifications() const;
@@ -357,10 +361,14 @@ public:
 	
 	DECLARE_EVENT_OneParam(AUnitBase, FOnHealthChangedEvent, const FHealthChangedEventArgs&);
 	FOnHealthChangedEvent& OnHealthChanged() { return onHealthChangedEvent; }
+
+	DECLARE_EVENT_OneParam(AUnitBase, FOnUnitEnteredPassengerCarrierEvent, const FUnitEnteredPassengerCarrierEventArgs&);
+	FOnUnitEnteredPassengerCarrierEvent& OnUnitEnteredPassengerCarrier() { return onUnitEnteredPassengerCarrierEvent; }
 private:
 	FOnHealthChangedEvent onHealthChangedEvent;
 	FOnUnitStateChangedEvent onUnitStateChangedEvent;
 	FOnDamagedReceivedEvent onDamageReceivedEvent;
 	FOnUnitIsDyingEvent onUnitIsDyingEvent;
 	FOnUnitDiedEvent onUnitDiedEvent;
+	FOnUnitEnteredPassengerCarrierEvent onUnitEnteredPassengerCarrierEvent;
 };
