@@ -14,6 +14,7 @@ void UUnitHudComponent::BeginPlay()
 	Super::BeginPlay();
 
 	AUnitBase* owner = GetOwnerUnit();
+	check(owner);
 
 	owner->OnHealthChanged().AddUObject(this, &UUnitHudComponent::OnOwnerHealthChangedHandler);
 
@@ -22,6 +23,11 @@ void UUnitHudComponent::BeginPlay()
 	{
 		building->OnBuildingProgressChanged().AddUObject(this, &UUnitHudComponent::OnOwnerBuildingProgressChangedHandler);
 	}
+
+	unitHudWidgetInstance = Cast<UUnitHudWidget>(GetWidget());
+	check(unitHudWidgetInstance);
+	unitHudWidgetInstance->SetUnit(owner);
+	UpdateUnitHudWidget();
 }
 
 void UUnitHudComponent::OnOwnerHealthChangedHandler(const FHealthChangedEventArgs& args)
@@ -52,32 +58,12 @@ void UUnitHudComponent::UpdateUnitHudWidget()
 		}
 	}
 
-	if (IsWidgetVisible())
-	{
-		unitHudWidgetInstance->UpdateUnitHud();
-	}
+	unitHudWidgetInstance->UpdateUnitHud();
 }
 
-// Called every frame
 void UUnitHudComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	AUnitBase* owner = GetOwnerUnit();
-
-	if (!unitHudWidgetInstance)
-	{
-		unitHudWidgetInstance = Cast<UUnitHudWidget>(GetWidget());
-		if (unitHudWidgetInstance)
-		{
-			unitHudWidgetInstance->SetUnit(owner);
-			UpdateUnitHudWidget();
-		}
-	}
-	else
-	{
-		
-	}
 }
 
 AUnitBase* UUnitHudComponent::GetOwnerUnit()
