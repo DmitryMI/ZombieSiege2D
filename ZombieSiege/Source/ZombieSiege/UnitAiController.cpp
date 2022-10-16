@@ -72,6 +72,11 @@ void AUnitAiController::IssueEnterPassengerCarrierOrder(AUnitBase* carrier)
 
     bool ok = RunBehaviorTree(enterPassengerCarrierBehaviorTree);
     check(ok);
+
+    UBlackboardComponent* blackboard = GetBlackboardComponent();
+    check(blackboard);
+
+    blackboard->SetValueAsObject("PassengerCarrier", carrier);
 }
 
 void AUnitAiController::CancelOrder()
