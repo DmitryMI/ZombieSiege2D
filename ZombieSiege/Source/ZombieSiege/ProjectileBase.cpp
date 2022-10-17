@@ -6,19 +6,6 @@
 #include "UnitBase.h"
 #include "ZombieSiegeUtils.h"
 
-void AProjectileBase::AlignWithVelocity()
-{
-	FVector velocity = GetVelocity();
-
-	if (velocity.IsNearlyZero())
-	{
-		return;
-	}
-
-	FRotator rotator = velocity.Rotation();
-	SetActorRotation(rotator);
-}
-
 // Sets default values
 AProjectileBase::AProjectileBase()
 {
@@ -33,14 +20,6 @@ AProjectileBase::AProjectileBase()
 
 	RootComponent = collisionComponent;
 
-	movementComponent = CreateDefaultSubobject<UFloatingPawnMovement>("Movement");
-	movementComponent->MaxSpeed = maxSpeed;
-
-	movementComponent->bConstrainToPlane = true;
-	movementComponent->bSnapToPlaneAtStart = true;
-	movementComponent->SetPlaneConstraintOrigin(FVector(0, 0, 300));
-	movementComponent->SetPlaneConstraintNormal(FVector(0, 0, 1));
-
 	flipbookRenderer = CreateDefaultSubobject<UPaperFlipbookComponent>("FlipbookRenderer");
 	flipbookRenderer->SetWorldRotation(FRotator(-90, 0, 0));
 	flipbookRenderer->SetFlipbook(movingFlipbook);
@@ -52,7 +31,14 @@ void AProjectileBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	
+	movementComponent = Cast<UProjectileMovementComponent>(GetComponentByClass(UProjectileMovementComponent::StaticClass()));
+	check(movementComponent);
+
+	movementComponent->MaxSpeed = maxSpeed;
+	movementComponent->bConstrainToPlane = true;
+	movementComponent->bSnapToPlaneAtStart = true;
+	movementComponent->SetPlaneConstraintOrigin(FVector(0, 0, 300));
+	movementComponent->SetPlaneConstraintNormal(FVector(0, 0, 1));
 }
 
 bool AProjectileBase::IsTargetLocationReached()
@@ -112,13 +98,6 @@ void AProjectileBase::Tick(float DeltaTime)
 
 	if (bIsProjectileAlive)
 	{
-		AlignWithVelocity();
-
-		FVector direction = targetPoint - GetActorLocation();
-		direction.Z = 0;
-		ensure(direction.Normalize());
-		AddMovementInput(direction);
-
 		if (IsTargetLocationReached())
 		{
 			KillProjectile();
@@ -129,6 +108,12 @@ void AProjectileBase::Tick(float DeltaTime)
 void AProjectileBase::MoveTowards(const FVector& targetPointArg)
 {
 	targetPoint = targetPointArg;
+
+	FVector direction = targetPoint - GetActorLocation();
+	direction.Z = 0;
+	ensure(direction.Normalize());
+
+	movementComponent->Velocity = direction * maxSpeed;
 }
 
 UWeaponInfo* AProjectileBase::GetWeaponInfo()

@@ -6,7 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "PaperFlipbook.h"
 #include "Components/SphereComponent.h"
-#include "GameFramework/FloatingPawnMovement.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 #include "PaperFlipbookComponent.h"
 #include "ProjectileBase.generated.h"
 
@@ -46,15 +46,13 @@ protected:
 	UPROPERTY(EditAnywhere)
 	FVector targetPoint;
 
-	void AlignWithVelocity();
-
 public:	
 	// Sets default values for this actor's properties
 	AProjectileBase();
 
 protected:
-	UPROPERTY(VisibleAnywhere)
-	UFloatingPawnMovement* movementComponent;
+	UPROPERTY(EditAnywhere)
+	UProjectileMovementComponent* movementComponent;
 
 	UPROPERTY(VisibleAnywhere)
 	USphereComponent* collisionComponent;
