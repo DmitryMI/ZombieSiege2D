@@ -20,7 +20,7 @@ class ZOMBIESIEGE_API UWeaponInfo : public UObject
 protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	bool canEverAttackPoint;
+	bool bCanEverAttackPoint;
 
 	UPROPERTY(EditDefaultsOnly, meta = (Bitmask, BitmaskEnum = EUnitClassification))
 	uint8 targetClassifications;
@@ -133,7 +133,7 @@ public:
 	/// <returns>True if weapon can target a point</returns>
 	virtual bool CanThisWeaponEverAttackPoint() const
 	{
-		return canEverAttackPoint;
+		return bCanEverAttackPoint;
 	}
 
 	UFUNCTION(BlueprintCallable)

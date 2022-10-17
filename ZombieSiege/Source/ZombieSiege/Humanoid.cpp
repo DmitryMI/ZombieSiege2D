@@ -137,7 +137,7 @@ bool AHumanoid::CanAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon
 		return false;
 	}
 
-	if (GetUnitState() != EUnitState::None)
+	if (GetUnitState() != EUnitState::None && GetUnitState() != EUnitState::Moving)
 	{
 		return false;
 	}
