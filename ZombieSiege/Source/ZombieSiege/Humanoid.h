@@ -27,52 +27,20 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	UWeaponInfo* weaponDefault;
 
-	UPROPERTY(VisibleAnywhere)
-	bool bIsOnCooldown;
-
-	FTimerHandle attackBackswingTimerHandle;
-	FTimerDelegate attackBackswingTimerDelegate;	
-
-	FTimerHandle attackRelaxationTimerHandle;
-	FTimerDelegate attackRelaxationTimerDelegate;
-
-	FTimerHandle attackCooldownTimerHandle;
-	FTimerDelegate attackCooldownTimerDelegate;	
-
-	UFUNCTION()
-	void OnBackswingTimerElapsed(AUnitBase* target);
-
-	UFUNCTION()
-	void OnRelaxationTimerElapsed();
-
-	UFUNCTION()
-	void OnCooldownTimerElapsed();
-
 public:
 	AHumanoid();	
 
 protected:
 
 	UPROPERTY(Transient)
-	UUnitGraphicsComponent* graphicsComponent;	
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	UWeaponInfo* activeWeapon;
+	UUnitGraphicsComponent* graphicsComponent;		
 
 	UFUNCTION(BlueprintCallable)
 	AWeaponManager* GetWeaponManager();
 	
-	virtual void BeginPlay() override;
-
-	virtual bool CanCommitAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon);
-	virtual bool CanAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon);
-
-	virtual bool AttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon);
+	virtual void BeginPlay() override;	
 
 public:		
-
-	UFUNCTION(BlueprintCallable)
-	bool IsOnCooldown();
 
 	UFUNCTION(BlueprintCallable)
 	UWeaponInfo* GetWeaponInfo() 

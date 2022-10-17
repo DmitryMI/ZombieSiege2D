@@ -97,7 +97,38 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	TArray<AUnitBase*> passengers;
 
+	UPROPERTY(VisibleAnywhere)
+	bool bIsOnCooldown;
+
+	FTimerHandle attackBackswingTimerHandle;
+	FTimerDelegate attackBackswingTimerDelegate;
+
+	FTimerHandle attackRelaxationTimerHandle;
+	FTimerDelegate attackRelaxationTimerDelegate;
+
+	FTimerHandle attackCooldownTimerHandle;
+	FTimerDelegate attackCooldownTimerDelegate;
+
+	UFUNCTION()
+	void OnBackswingTimerElapsed(AUnitBase* target);
+
+	UFUNCTION()
+	void OnRelaxationTimerElapsed();
+
+	UFUNCTION()
+	void OnCooldownTimerElapsed();
+
 protected:
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UWeaponInfo* activeWeapon;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsOnCooldown();
+
+	virtual bool CanCommitAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon);
+	virtual bool CanAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon);
+	virtual bool AttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon);
 
 	UPROPERTY(Transient)
 	UCharacterMovementComponent* movementComponent;

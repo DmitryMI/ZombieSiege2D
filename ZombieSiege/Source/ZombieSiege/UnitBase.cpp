@@ -3,7 +3,140 @@
 
 #include "UnitBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "WeaponInfo.h"
 #include "Components/CapsuleComponent.h"
+
+
+bool AUnitBase::IsOnCooldown()
+{
+	return bIsOnCooldown;
+}
+
+bool AUnitBase::CanAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon)
+{
+	if (bIsOnCooldown)
+	{
+		return false;
+	}
+
+	if (GetUnitState() != EUnitState::None && GetUnitState() != EUnitState::Moving)
+	{
+		return false;
+	}
+
+	if (!CanCommitAttackTargetWithWeapon(target, weapon))
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool AUnitBase::CanCommitAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon)
+{
+	if (!weapon)
+	{
+		return false;
+	}
+
+	if (!weapon->CanThisWeaponEverAttackTarget(target))
+	{
+		return false;
+	}
+
+	if (!weapon->CanAttackTarget(this, target))
+	{
+		return false;
+	}
+
+	return true;
+}
+
+void AUnitBase::OnBackswingTimerElapsed(AUnitBase* target)
+{
+	attackBackswingTimerDelegate.Unbind();
+
+	if (CanCommitAttackTargetWithWeapon(target, activeWeapon))
+	{
+		//Commit the attack
+		activeWeapon->AttackTarget(this, target);
+	}
+
+	SetUnitState(EUnitState::AttackingRelaxation);
+
+	check(activeWeapon);
+
+	FTimerManager& timerManager = GetWorld()->GetTimerManager();
+
+	float relaxationDuration = activeWeapon->GetRelaxationDuration();
+	attackRelaxationTimerDelegate.BindUObject(this, &AUnitBase::OnRelaxationTimerElapsed);
+	timerManager.SetTimer(attackRelaxationTimerHandle, attackRelaxationTimerDelegate, relaxationDuration, false, relaxationDuration);
+}
+
+void AUnitBase::OnRelaxationTimerElapsed()
+{
+	attackRelaxationTimerDelegate.Unbind();
+
+	SetUnitState(EUnitState::None);
+
+	if (activeWeapon == nullptr)
+	{
+		// If weaponInfo is suddenly nullptr, we don't have any option than to reset cooldown right away
+		OnCooldownTimerElapsed();
+		return;
+	}
+
+	float cooldownDuration = activeWeapon->GetCooldownDuration();
+
+	if (!FMath::IsNearlyZero(cooldownDuration))
+	{
+
+		FTimerManager& timerManager = GetWorld()->GetTimerManager();
+
+		attackCooldownTimerDelegate.BindUObject(this, &AUnitBase::OnCooldownTimerElapsed);
+
+		timerManager.SetTimer(
+			attackCooldownTimerHandle,
+			attackCooldownTimerDelegate,
+			cooldownDuration,
+			false,
+			cooldownDuration);
+	}
+	else
+	{
+		OnCooldownTimerElapsed();
+	}
+}
+
+void AUnitBase::OnCooldownTimerElapsed()
+{
+	bIsOnCooldown = false;
+}
+
+bool AUnitBase::AttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon)
+{
+	activeWeapon = weapon;
+
+	if (!CanAttackTargetWithWeapon(target, activeWeapon))
+	{
+		return false;
+	}
+
+	check(activeWeapon);
+
+	SetUnitState(EUnitState::AttackingBackswing);
+
+	bIsOnCooldown = true;
+
+	FTimerManager& timerManager = GetWorld()->GetTimerManager();
+
+	float backswingDuration = activeWeapon->GetBackswingDuration();
+	attackBackswingTimerDelegate.BindUObject(this, &AUnitBase::OnBackswingTimerElapsed, target);
+	timerManager.SetTimer(attackBackswingTimerHandle, attackBackswingTimerDelegate, backswingDuration, false, backswingDuration);
+
+	return true;
+}
+
 
 void AUnitBase::SetUnitState(EUnitState nextState)
 {
@@ -501,6 +634,8 @@ void AUnitBase::BeginDying(const FDamageInstance& killingDamageInstance)
 		UE_LOG(LogTemp, Display, TEXT("Unit %s was killed by %s"), *name, *killerName);
 
 		MakeAllPassengersLeave();
+		FUnitDiedEventArgs diedArgs(this, killingDamageInstance.source);
+		onUnitDiedEvent.Broadcast(diedArgs);
 		FinishDying(killingDamageInstance);
 	}
 	else

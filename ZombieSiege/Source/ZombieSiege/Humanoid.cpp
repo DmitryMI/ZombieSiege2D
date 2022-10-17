@@ -34,11 +34,6 @@ void AHumanoid::BeginPlay()
 	check(weaponDefault);
 }
 
-bool AHumanoid::IsOnCooldown()
-{
-	return bIsOnCooldown;
-}
-
 EFaceDirection AHumanoid::GetDirectionFromVector(const FVector& vec)
 {
 	if (vec.IsNearlyZero())
@@ -130,107 +125,6 @@ bool AHumanoid::CanAttackTarget(AUnitBase* target)
 	return CanAttackTargetWithWeapon(target, weaponDefault);
 }
 
-bool AHumanoid::CanAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon)
-{
-	if (bIsOnCooldown)
-	{
-		return false;
-	}
-
-	if (GetUnitState() != EUnitState::None && GetUnitState() != EUnitState::Moving)
-	{
-		return false;
-	}
-
-	if (!CanCommitAttackTargetWithWeapon(target, weapon))
-	{
-		return false;
-	}
-
-	return true;
-}
-
-bool AHumanoid::CanCommitAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon)
-{
-	if (!weapon)
-	{
-		return false;
-	}
-
-	if (!weapon->CanThisWeaponEverAttackTarget(target))
-	{
-		return false;
-	}
-
-	if (!weapon->CanAttackTarget(this, target))
-	{
-		return false;
-	}
-
-	return true;
-}
-
-void AHumanoid::OnBackswingTimerElapsed(AUnitBase* target)
-{
-	attackBackswingTimerDelegate.Unbind();
-
-	if (CanCommitAttackTargetWithWeapon(target, activeWeapon))
-	{
-		//Commit the attack
-		activeWeapon->AttackTarget(this, target);
-	}
-
-	SetUnitState(EUnitState::AttackingRelaxation);
-
-	check(activeWeapon);
-
-	FTimerManager& timerManager = GetWorld()->GetTimerManager();
-
-	float relaxationDuration = activeWeapon->GetRelaxationDuration();
-	attackRelaxationTimerDelegate.BindUObject(this, &AHumanoid::OnRelaxationTimerElapsed);
-	timerManager.SetTimer(attackRelaxationTimerHandle, attackRelaxationTimerDelegate, relaxationDuration, false, relaxationDuration);
-}
-
-void AHumanoid::OnRelaxationTimerElapsed()
-{
-	attackRelaxationTimerDelegate.Unbind();
-
-	SetUnitState(EUnitState::None);
-
-	if (activeWeapon == nullptr)
-	{
-		// If weaponInfo is suddenly nullptr, we don't have any option than to reset cooldown right away
-		OnCooldownTimerElapsed();
-		return;
-	}
-
-	float cooldownDuration = activeWeapon->GetCooldownDuration();
-
-	if (!FMath::IsNearlyZero(cooldownDuration))
-	{
-
-		FTimerManager& timerManager = GetWorld()->GetTimerManager();
-
-		attackCooldownTimerDelegate.BindUObject(this, &AHumanoid::OnCooldownTimerElapsed);
-
-		timerManager.SetTimer(
-			attackCooldownTimerHandle,
-			attackCooldownTimerDelegate,
-			cooldownDuration,
-			false,
-			cooldownDuration);
-	}
-	else
-	{
-		OnCooldownTimerElapsed();
-	}
-}
-
-void AHumanoid::OnCooldownTimerElapsed()
-{
-	bIsOnCooldown = false;
-}
-
 bool AHumanoid::AttackTarget(AUnitBase* target)
 {
 	FVector vec = target->GetActorLocation() - GetActorLocation();
@@ -240,29 +134,7 @@ bool AHumanoid::AttackTarget(AUnitBase* target)
 	return AttackTargetWithWeapon(target, weaponDefault);
 }
 
-bool AHumanoid::AttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon)
-{
-	activeWeapon = weapon;
 
-	if (!CanAttackTargetWithWeapon(target, activeWeapon))
-	{
-		return false;
-	}
-
-	check(activeWeapon);
-
-	SetUnitState(EUnitState::AttackingBackswing);
-
-	bIsOnCooldown = true;
-
-	FTimerManager& timerManager = GetWorld()->GetTimerManager();
-
-	float backswingDuration = activeWeapon->GetBackswingDuration();
-	attackBackswingTimerDelegate.BindUObject(this, &AHumanoid::OnBackswingTimerElapsed, target);
-	timerManager.SetTimer(attackBackswingTimerHandle, attackBackswingTimerDelegate, backswingDuration, false, backswingDuration);
-
-	return true;
-}
 
 
 
