@@ -21,6 +21,18 @@
 #include "ArmorNature.h"
 #include "UnitBase.generated.h"
 
+class AUnitBase;
+
+USTRUCT()
+struct FBackswingTimerElapsedArgs
+{
+	GENERATED_BODY();
+
+	bool bIsTargetOrder;
+	AUnitBase* targetUnit;
+	FVector targetPoint;
+};
+
 UCLASS()
 class ZOMBIESIEGE_API AUnitBase : public ACharacter
 {
@@ -110,7 +122,7 @@ private:
 	FTimerDelegate attackCooldownTimerDelegate;
 
 	UFUNCTION()
-	void OnBackswingTimerElapsed(AUnitBase* target);
+	void OnBackswingTimerElapsed(FBackswingTimerElapsedArgs args);
 
 	UFUNCTION()
 	void OnRelaxationTimerElapsed();
@@ -127,8 +139,11 @@ protected:
 	bool IsOnCooldown();
 
 	virtual bool CanCommitAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon);
+	virtual bool CanCommitAttackPointWithWeapon(const FVector targetPoint, UWeaponInfo* weapon);
 	virtual bool CanAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon);
+	virtual bool CanAttackPointWithWeapon(const FVector targetPoint, UWeaponInfo* weapon);
 	virtual bool AttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon);
+	virtual bool AttackPointWithWeapon(const FVector targetPoint, UWeaponInfo* weapon);
 
 	UPROPERTY(Transient)
 	UCharacterMovementComponent* movementComponent;
@@ -200,6 +215,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void LeavePassengerCarrier();
+
+	UFUNCTION(BlueprintCallable)
+	int GetTotalPassengerSeats() const;
+
+	UFUNCTION(BlueprintCallable)
+	int GetOccupiedPassengerSeats() const;
 
 	UFUNCTION(BlueprintCallable)
 	int GetFreePassengerSeats() const;
@@ -335,6 +356,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual bool CanEverAttackTarget(AUnitBase* targetUnit);
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool CanAttackPoint(const FVector& targetPoint);
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool CanEverAttackPoint();
 
 	UFUNCTION(BlueprintCallable)
 	virtual float GetAttackRange();

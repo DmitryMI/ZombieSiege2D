@@ -32,6 +32,26 @@ bool AUnitBase::CanAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon
 	return true;
 }
 
+bool AUnitBase::CanAttackPointWithWeapon(const FVector targetPoint, UWeaponInfo* weapon)
+{
+	if (bIsOnCooldown)
+	{
+		return false;
+	}
+
+	if (GetUnitState() != EUnitState::None && GetUnitState() != EUnitState::Moving)
+	{
+		return false;
+	}
+
+	if (!CanCommitAttackPointWithWeapon(targetPoint, weapon))
+	{
+		return false;
+	}
+
+	return true;
+}
+
 bool AUnitBase::CanCommitAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon)
 {
 	if (!weapon)
@@ -52,14 +72,45 @@ bool AUnitBase::CanCommitAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* 
 	return true;
 }
 
-void AUnitBase::OnBackswingTimerElapsed(AUnitBase* target)
+bool AUnitBase::CanCommitAttackPointWithWeapon(const FVector targetPoint, UWeaponInfo* weapon)
+{
+	if (!weapon)
+	{
+		return false;
+	}
+
+	if (!weapon->CanThisWeaponEverAttackPoint())
+	{
+		return false;
+	}
+
+	if (!weapon->CanAttackPoint(this, targetPoint))
+	{
+		return false;
+	}
+
+	return true;
+}
+
+void AUnitBase::OnBackswingTimerElapsed(FBackswingTimerElapsedArgs args)
 {
 	attackBackswingTimerDelegate.Unbind();
-
-	if (CanCommitAttackTargetWithWeapon(target, activeWeapon))
+	FVector targetPoint = args.targetPoint;
+	if (args.bIsTargetOrder)
 	{
-		//Commit the attack
-		activeWeapon->AttackTarget(this, target);
+		if (CanCommitAttackTargetWithWeapon(args.targetUnit, activeWeapon))
+		{
+			//Commit the attack target
+			activeWeapon->AttackTarget(this, args.targetUnit);
+		}
+	}
+	else
+	{
+		if (CanCommitAttackPointWithWeapon(targetPoint, activeWeapon))
+		{
+			//Commit the attack point
+			activeWeapon->AttackPoint(this, targetPoint);
+		}
 	}
 
 	SetUnitState(EUnitState::AttackingRelaxation);
@@ -115,12 +166,12 @@ void AUnitBase::OnCooldownTimerElapsed()
 
 bool AUnitBase::AttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon)
 {
-	activeWeapon = weapon;
-
-	if (!CanAttackTargetWithWeapon(target, activeWeapon))
+	if (!CanAttackTargetWithWeapon(target, weapon))
 	{
 		return false;
 	}
+
+	activeWeapon = weapon;
 
 	check(activeWeapon);
 
@@ -131,7 +182,42 @@ bool AUnitBase::AttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon)
 	FTimerManager& timerManager = GetWorld()->GetTimerManager();
 
 	float backswingDuration = activeWeapon->GetBackswingDuration();
-	attackBackswingTimerDelegate.BindUObject(this, &AUnitBase::OnBackswingTimerElapsed, target);
+	FBackswingTimerElapsedArgs timerArgs;
+	timerArgs.bIsTargetOrder = true;
+	timerArgs.targetUnit = target;
+	timerArgs.targetPoint = FVector::Zero();
+
+	attackBackswingTimerDelegate.BindUObject(this, &AUnitBase::OnBackswingTimerElapsed, timerArgs);
+	timerManager.SetTimer(attackBackswingTimerHandle, attackBackswingTimerDelegate, backswingDuration, false, backswingDuration);
+
+	return true;
+}
+
+bool AUnitBase::AttackPointWithWeapon(const FVector targetPoint, UWeaponInfo* weapon)
+{
+	if (!CanAttackPointWithWeapon(targetPoint, weapon))
+	{
+		return false;
+	}
+
+	activeWeapon = weapon;
+
+	check(activeWeapon);
+
+	SetUnitState(EUnitState::AttackingBackswing);
+
+	bIsOnCooldown = true;
+
+	FTimerManager& timerManager = GetWorld()->GetTimerManager();
+
+	float backswingDuration = activeWeapon->GetBackswingDuration();
+
+	FBackswingTimerElapsedArgs timerArgs;
+	timerArgs.bIsTargetOrder = false;
+	timerArgs.targetUnit = nullptr;
+	timerArgs.targetPoint = targetPoint;
+
+	attackBackswingTimerDelegate.BindUObject(this, &AUnitBase::OnBackswingTimerElapsed, timerArgs);
 	timerManager.SetTimer(attackBackswingTimerHandle, attackBackswingTimerDelegate, backswingDuration, false, backswingDuration);
 
 	return true;
@@ -232,9 +318,19 @@ void AUnitBase::LeavePassengerCarrier()
 	SetPassengerCarrier(nullptr);
 }
 
+int AUnitBase::GetTotalPassengerSeats() const
+{
+	return passengerSeats;
+}
+
+int AUnitBase::GetOccupiedPassengerSeats() const
+{
+	return passengers.Num();
+}
+
 int AUnitBase::GetFreePassengerSeats() const
 {
-	return passengerSeats - passengers.Num();
+	return GetTotalPassengerSeats() - GetOccupiedPassengerSeats();
 }
 
 void AUnitBase::AddPassenger(AUnitBase* passenger)
@@ -501,6 +597,16 @@ bool AUnitBase::CanAttackTarget(AUnitBase* targetUnit)
 }
 
 bool AUnitBase::CanEverAttackTarget(AUnitBase* targetUnit)
+{
+	return false;
+}
+
+bool AUnitBase::CanAttackPoint(const FVector& targetPoint)
+{
+	return false;
+}
+
+bool AUnitBase::CanEverAttackPoint()
 {
 	return false;
 }

@@ -19,10 +19,16 @@ class ZOMBIESIEGE_API ABuilding : public AUnitBase
 
 private:
 	UPROPERTY(EditDefaultsOnly)
+	FName weaponDefaultName;
+
+	UPROPERTY(EditDefaultsOnly)
 	bool bIsBuiltOnSpawn = false;
 
 	UPROPERTY(VisibleAnywhere)
 	float buildingProgress = 0.0f;
+
+	UPROPERTY(VisibleAnywhere)
+	UWeaponInfo* weaponDefault;
 
 protected:
 	virtual void BeginPlay() override;
@@ -30,7 +36,15 @@ protected:
 public:
 	ABuilding();
 
-	virtual float ReceiveHealing(const FHealingInstance& repair);
+	virtual float ReceiveHealing(const FHealingInstance& repair) override;
+
+	virtual bool CanAttackTarget(AUnitBase* attackTarget) override;
+
+	virtual bool CanAttackPoint(const FVector& targetPoint) override;
+
+	virtual bool CanEverAttackPoint() override;
+
+	virtual bool CanEverAttackTarget(AUnitBase* targetUnit) override;
 
 	UFUNCTION(BlueprintCallable)
 	float GetBuildingProgressFraction() const;

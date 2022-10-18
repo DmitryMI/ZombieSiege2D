@@ -88,7 +88,7 @@ public:
 	/// <summary>
 	/// Duration in seconds of a pause between two hits (excluding backswing and relaxation)
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>Duration in seconds</returns>
 	virtual float GetCooldownDuration() const
 	{
 		return cooldownDuration;

@@ -3,6 +3,18 @@
 
 #include "UnitAiController.h"
 
+void AUnitAiController::BeginPlay()
+{
+    Super::BeginPlay();
+}
+
+void AUnitAiController::OnPossess(APawn* pawn)
+{
+    Super::OnPossess(pawn);
+
+    IssueHoldPositionOrder();
+}
+
 void AUnitAiController::UnitEnteredPassengerCarrierEventHandler(const FUnitEnteredPassengerCarrierEventArgs& args)
 {
     if (args.enteringUnit == GetPawn())
@@ -56,6 +68,14 @@ void AUnitAiController::IssueHoldPositionOrder()
 {
     bool ok = RunBehaviorTree(holdPositionBehaviorTree);
     check(ok);
+
+    UBlackboardComponent* blackboard = GetBlackboardComponent();
+    check(blackboard);
+
+    APawn* pawn = GetPawn();
+    check(pawn);
+
+    blackboard->SetValueAsVector("TargetLocation", pawn->GetActorLocation());
 }
 
 void AUnitAiController::IssueEnterPassengerCarrierOrder(AUnitBase* carrier)

@@ -32,6 +32,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	UBehaviorTree* enterPassengerCarrierBehaviorTree;
 
+	virtual void BeginPlay() override;
+
+	virtual void OnPossess(APawn* pawn) override;
+
 	virtual void UnitEnteredPassengerCarrierEventHandler(const FUnitEnteredPassengerCarrierEventArgs& args);
 	
 public:

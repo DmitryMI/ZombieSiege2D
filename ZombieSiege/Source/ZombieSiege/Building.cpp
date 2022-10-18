@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "ZombieSiegeUtils.h"
 #include "Macros.h"
+#include "WeaponManager.h"
 
 void ABuilding::BeginPlay()
 {
@@ -20,6 +21,8 @@ void ABuilding::BeginPlay()
 		SetUnitState(EUnitState::Birth);
 		SetBuildingProgress(0);
 	}
+
+	weaponDefault = AWeaponManager::GetInstance(GetWorld())->GetWeaponInfo(weaponDefaultName);
 }
 
 ABuilding::ABuilding()
@@ -37,6 +40,50 @@ float ABuilding::ReceiveHealing(const FHealingInstance& repair)
 	}
 
 	return healingActual;
+}
+
+bool ABuilding::CanAttackTarget(AUnitBase* attackTarget)
+{
+	int totalSeats = GetTotalPassengerSeats();
+
+	if (totalSeats > 0 && GetOccupiedPassengerSeats() == 0)
+	{
+		return false;
+	}
+
+	return CanAttackTargetWithWeapon(attackTarget, weaponDefault);
+}
+
+bool ABuilding::CanAttackPoint(const FVector& targetPoint)
+{
+	int totalSeats = GetTotalPassengerSeats();
+
+	if (totalSeats > 0 && GetOccupiedPassengerSeats() == 0)
+	{
+		return false;
+	}
+
+	return CanAttackPointWithWeapon(targetPoint, weaponDefault);
+}
+
+bool ABuilding::CanEverAttackPoint()
+{
+	if (!weaponDefault)
+	{
+		return false;
+	}
+
+	return weaponDefault->CanThisWeaponEverAttackPoint();
+}
+
+bool ABuilding::CanEverAttackTarget(AUnitBase* targetUnit)
+{
+	if (!weaponDefault)
+	{
+		return false;
+	}
+
+	return weaponDefault->CanThisWeaponEverAttackPoint();
 }
 
 float ABuilding::GetBuildingProgressFraction() const
