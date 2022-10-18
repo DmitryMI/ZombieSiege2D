@@ -19,6 +19,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AProjectileBase> projectileClass;
 
+	UPROPERTY(EditDefaultsOnly)
+	float scatterAngleDeg = 0.1f;
+
+	UPROPERTY(EditDefaultsOnly)
+	float shootBehindTargetFactor = 0.0f;
+
 	virtual AProjectileBase* SpawnProjectile(AUnitBase* instigator, const FAttackParameters& params = FAttackParameters());
 
 public:

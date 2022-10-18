@@ -38,7 +38,16 @@ void UProjectileWeaponInfo::AttackPoint(AUnitBase* attacker, const FVector& targ
 	}
 
 	AProjectileBase* projectile = SpawnProjectile(attacker, params);
-	projectile->MoveTowards(targetPoint);
+
+	FVector vectorToTarget = (targetPoint - projectile->GetActorLocation());
+
+	float scatter = FMath::RandRange(-scatterAngleDeg, scatterAngleDeg);
+	vectorToTarget = vectorToTarget.RotateAngleAxis(scatter, FVector::UpVector);
+	vectorToTarget *= 1 + shootBehindTargetFactor;
+
+	FVector targetPointMod = projectile->GetActorLocation() + vectorToTarget;
+
+	projectile->MoveTowards(targetPointMod);
 }
 
 bool UProjectileWeaponInfo::CanAttackTarget(AUnitBase* attacker, AUnitBase* target)
