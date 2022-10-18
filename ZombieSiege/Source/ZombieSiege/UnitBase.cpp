@@ -6,53 +6,7 @@
 #include "WeaponInfo.h"
 #include "Components/CapsuleComponent.h"
 
-
-bool AUnitBase::IsOnCooldown()
-{
-	return bIsOnCooldown;
-}
-
-bool AUnitBase::CanAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon)
-{
-	if (bIsOnCooldown)
-	{
-		return false;
-	}
-
-	if (GetUnitState() != EUnitState::None && GetUnitState() != EUnitState::Moving)
-	{
-		return false;
-	}
-
-	if (!CanCommitAttackTargetWithWeapon(target, weapon))
-	{
-		return false;
-	}
-
-	return true;
-}
-
-bool AUnitBase::CanAttackPointWithWeapon(const FVector targetPoint, UWeaponInfo* weapon)
-{
-	if (bIsOnCooldown)
-	{
-		return false;
-	}
-
-	if (GetUnitState() != EUnitState::None && GetUnitState() != EUnitState::Moving)
-	{
-		return false;
-	}
-
-	if (!CanCommitAttackPointWithWeapon(targetPoint, weapon))
-	{
-		return false;
-	}
-
-	return true;
-}
-
-bool AUnitBase::CanCommitAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon)
+bool AUnitBase::CanFinishAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon)
 {
 	if (!weapon)
 	{
@@ -72,7 +26,7 @@ bool AUnitBase::CanCommitAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* 
 	return true;
 }
 
-bool AUnitBase::CanCommitAttackPointWithWeapon(const FVector targetPoint, UWeaponInfo* weapon)
+bool AUnitBase::CanFinishAttackPointWithWeapon(const FVector targetPoint, UWeaponInfo* weapon)
 {
 	if (!weapon)
 	{
@@ -92,143 +46,20 @@ bool AUnitBase::CanCommitAttackPointWithWeapon(const FVector targetPoint, UWeapo
 	return true;
 }
 
-void AUnitBase::OnBackswingTimerElapsed(FBackswingTimerElapsedArgs args)
+bool AUnitBase::IsOnCooldown()
 {
-	attackBackswingTimerDelegate.Unbind();
-	FVector targetPoint = args.targetPoint;
-	if (args.bIsTargetOrder)
-	{
-		if (CanCommitAttackTargetWithWeapon(args.targetUnit, activeWeapon))
-		{
-			//Commit the attack target
-			activeWeapon->AttackTarget(this, args.targetUnit);
-		}
-	}
-	else
-	{
-		if (CanCommitAttackPointWithWeapon(targetPoint, activeWeapon))
-		{
-			//Commit the attack point
-			activeWeapon->AttackPoint(this, targetPoint);
-		}
-	}
-
-	SetUnitState(EUnitState::AttackingRelaxation);
-
-	check(activeWeapon);
-
-	FTimerManager& timerManager = GetWorld()->GetTimerManager();
-
-	float relaxationDuration = activeWeapon->GetRelaxationDuration();
-	attackRelaxationTimerDelegate.BindUObject(this, &AUnitBase::OnRelaxationTimerElapsed);
-	timerManager.SetTimer(attackRelaxationTimerHandle, attackRelaxationTimerDelegate, relaxationDuration, false, relaxationDuration);
+	check(attackDispatcher);
+	return attackDispatcher->IsOnCooldown();
 }
-
-void AUnitBase::OnRelaxationTimerElapsed()
-{
-	attackRelaxationTimerDelegate.Unbind();
-
-	SetUnitState(EUnitState::None);
-
-	if (activeWeapon == nullptr)
-	{
-		// If weaponInfo is suddenly nullptr, we don't have any option than to reset cooldown right away
-		OnCooldownTimerElapsed();
-		return;
-	}
-
-	float cooldownDuration = activeWeapon->GetCooldownDuration();
-
-	if (!FMath::IsNearlyZero(cooldownDuration))
-	{
-
-		FTimerManager& timerManager = GetWorld()->GetTimerManager();
-
-		attackCooldownTimerDelegate.BindUObject(this, &AUnitBase::OnCooldownTimerElapsed);
-
-		timerManager.SetTimer(
-			attackCooldownTimerHandle,
-			attackCooldownTimerDelegate,
-			cooldownDuration,
-			false,
-			cooldownDuration);
-	}
-	else
-	{
-		OnCooldownTimerElapsed();
-	}
-}
-
-void AUnitBase::OnCooldownTimerElapsed()
-{
-	bIsOnCooldown = false;
-}
-
-bool AUnitBase::AttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon)
-{
-	if (!CanAttackTargetWithWeapon(target, weapon))
-	{
-		return false;
-	}
-
-	activeWeapon = weapon;
-
-	check(activeWeapon);
-
-	SetUnitState(EUnitState::AttackingBackswing);
-
-	bIsOnCooldown = true;
-
-	FTimerManager& timerManager = GetWorld()->GetTimerManager();
-
-	float backswingDuration = activeWeapon->GetBackswingDuration();
-	FBackswingTimerElapsedArgs timerArgs;
-	timerArgs.bIsTargetOrder = true;
-	timerArgs.targetUnit = target;
-	timerArgs.targetPoint = FVector::Zero();
-
-	attackBackswingTimerDelegate.BindUObject(this, &AUnitBase::OnBackswingTimerElapsed, timerArgs);
-	timerManager.SetTimer(attackBackswingTimerHandle, attackBackswingTimerDelegate, backswingDuration, false, backswingDuration);
-
-	return true;
-}
-
-bool AUnitBase::AttackPointWithWeapon(const FVector targetPoint, UWeaponInfo* weapon)
-{
-	if (!CanAttackPointWithWeapon(targetPoint, weapon))
-	{
-		return false;
-	}
-
-	activeWeapon = weapon;
-
-	check(activeWeapon);
-
-	SetUnitState(EUnitState::AttackingBackswing);
-
-	bIsOnCooldown = true;
-
-	FTimerManager& timerManager = GetWorld()->GetTimerManager();
-
-	float backswingDuration = activeWeapon->GetBackswingDuration();
-
-	FBackswingTimerElapsedArgs timerArgs;
-	timerArgs.bIsTargetOrder = false;
-	timerArgs.targetUnit = nullptr;
-	timerArgs.targetPoint = targetPoint;
-
-	attackBackswingTimerDelegate.BindUObject(this, &AUnitBase::OnBackswingTimerElapsed, timerArgs);
-	timerManager.SetTimer(attackBackswingTimerHandle, attackBackswingTimerDelegate, backswingDuration, false, backswingDuration);
-
-	return true;
-}
-
 
 void AUnitBase::SetUnitState(EUnitState nextState)
 {
 	EUnitState oldState = currentState;
 	currentState = nextState;
-	onUnitStateChangedEvent.Broadcast(oldState, nextState);
+	if (oldState != currentState)
+	{
+		onUnitStateChangedEvent.Broadcast(oldState, nextState);
+	}
 }
 
 FName AUnitBase::GetUnitTypeName() const
@@ -591,9 +422,9 @@ float AUnitBase::GetMaxHealth() const
 	return maxHealth;
 }
 
-bool AUnitBase::CanAttackTarget(AUnitBase* targetUnit)
+bool AUnitBase::CanBeginAttackTarget(AUnitBase* targetUnit)
 {
-	return false;
+	return !IsHidden();
 }
 
 bool AUnitBase::CanEverAttackTarget(AUnitBase* targetUnit)
@@ -601,9 +432,9 @@ bool AUnitBase::CanEverAttackTarget(AUnitBase* targetUnit)
 	return false;
 }
 
-bool AUnitBase::CanAttackPoint(const FVector& targetPoint)
+bool AUnitBase::CanBeginAttackPoint(const FVector& targetPoint)
 {
-	return false;
+	return !IsHidden();
 }
 
 bool AUnitBase::CanEverAttackPoint()
@@ -634,6 +465,39 @@ void AUnitBase::SetMovementComponentSpeedCap(float speedCap)
 	}
 }
 
+bool AUnitBase::BeginAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon)
+{
+	check(attackDispatcher);
+
+	return attackDispatcher->BeginAttackTarget(this, weapon, target);
+}
+
+bool AUnitBase::BeginAttackPointWithWeapon(const FVector& point, UWeaponInfo* weapon)
+{
+	check(attackDispatcher);
+
+	return attackDispatcher->BeginAttackPoint(this, weapon, point);
+}
+
+void AUnitBase::OnAttackStateChanged(const FAttackDispatcherStateChangedEventArgs& args)
+{
+	switch (args.stateNew)
+	{
+	case EAttackState::None:
+		SetUnitState(EUnitState::None);
+		break;
+	case EAttackState::Backswing:
+		SetUnitState(EUnitState::AttackingBackswing);
+		break;
+	case EAttackState::Relaxation:
+		SetUnitState(EUnitState::AttackingRelaxation);
+		break;
+	case EAttackState::Cooldown:
+		SetUnitState(EUnitState::None);
+		break;
+	}
+}
+
 AUnitBase::AUnitBase() : Super()
 {
 	
@@ -660,11 +524,13 @@ EFaceDirection AUnitBase::GetFacingDirection()
 }
 
 
-bool AUnitBase::AttackTarget(AUnitBase* target)
+bool AUnitBase::BeginAttackTarget(AUnitBase* target)
 {
-	// Should always be overriden in child classes
-	checkNoEntry();
+	return false;
+}
 
+bool AUnitBase::BeginAttackPoint(const FVector& point)
+{
 	return false;
 }
 
@@ -692,6 +558,13 @@ void AUnitBase::BeginPlay()
 	check(movementComponent);
 
 	SetMovementComponentSpeedCap(GetMaxSpeed());
+
+	if (attackDispatcher == nullptr)
+	{
+		attackDispatcher = NewObject<UAttackDispatcher>(this);
+
+		attackDispatcher->OnAttackDispatcherStateChanged().AddUObject(this, &AUnitBase::OnAttackStateChanged);
+	}
 }
 
 void AUnitBase::EndPlay(const EEndPlayReason::Type EndPlayReason)

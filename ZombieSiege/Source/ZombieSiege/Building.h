@@ -38,9 +38,9 @@ public:
 
 	virtual float ReceiveHealing(const FHealingInstance& repair) override;
 
-	virtual bool CanAttackTarget(AUnitBase* attackTarget) override;
+	virtual bool CanBeginAttackTarget(AUnitBase* attackTarget) override;
 
-	virtual bool CanAttackPoint(const FVector& targetPoint) override;
+	virtual bool CanBeginAttackPoint(const FVector& targetPoint) override;
 
 	virtual bool CanEverAttackPoint() override;
 

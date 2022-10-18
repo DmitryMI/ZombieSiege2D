@@ -99,43 +99,12 @@ private:
 	int passengerSeats;
 
 	UPROPERTY(VisibleAnywhere)
-	TArray<AUnitBase*> passengers;
-
-	UPROPERTY(VisibleAnywhere)
-	bool bIsOnCooldown;
-
-	FTimerHandle attackBackswingTimerHandle;
-	FTimerDelegate attackBackswingTimerDelegate;
-
-	FTimerHandle attackRelaxationTimerHandle;
-	FTimerDelegate attackRelaxationTimerDelegate;
-
-	FTimerHandle attackCooldownTimerHandle;
-	FTimerDelegate attackCooldownTimerDelegate;
-
-	UFUNCTION()
-	void OnBackswingTimerElapsed(FBackswingTimerElapsedArgs args);
-
-	UFUNCTION()
-	void OnRelaxationTimerElapsed();
-
-	UFUNCTION()
-	void OnCooldownTimerElapsed();
+	TArray<AUnitBase*> passengers;	
 
 protected:
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	UWeaponInfo* activeWeapon;
-
-	UFUNCTION(BlueprintCallable)
-	bool IsOnCooldown();
-
-	virtual bool CanCommitAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon);
-	virtual bool CanCommitAttackPointWithWeapon(const FVector targetPoint, UWeaponInfo* weapon);
-	virtual bool CanAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon);
-	virtual bool CanAttackPointWithWeapon(const FVector targetPoint, UWeaponInfo* weapon);
-	virtual bool AttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon);
-	virtual bool AttackPointWithWeapon(const FVector targetPoint, UWeaponInfo* weapon);
+	UPROPERTY(VisibleAnywhere)
+	UAttackDispatcher* attackDispatcher;
 
 	UPROPERTY(Transient)
 	UCharacterMovementComponent* movementComponent;
@@ -166,8 +135,20 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void SetMovementComponentSpeedCap(float speedCap);
 
+	bool BeginAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon);
+	bool BeginAttackPointWithWeapon(const FVector& point, UWeaponInfo* weapon);
+
+	UFUNCTION()
+	virtual void OnAttackStateChanged(const FAttackDispatcherStateChangedEventArgs& args);
+
 public:
 	AUnitBase();
+
+	virtual bool CanFinishAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon);
+	virtual bool CanFinishAttackPointWithWeapon(const FVector targetPoint, UWeaponInfo* weapon);
+
+	UFUNCTION(BlueprintCallable)
+	bool IsOnCooldown();
 
 	UFUNCTION(BlueprintCallable)
 	float GetVisionRadius();
@@ -344,13 +325,13 @@ public:
 	float GetMaxHealth() const;
 
 	UFUNCTION(BlueprintCallable)
-	virtual bool CanAttackTarget(AUnitBase* targetUnit);
+	virtual bool CanBeginAttackTarget(AUnitBase* targetUnit);
 
 	UFUNCTION(BlueprintCallable)
 	virtual bool CanEverAttackTarget(AUnitBase* targetUnit);
 
 	UFUNCTION(BlueprintCallable)
-	virtual bool CanAttackPoint(const FVector& targetPoint);
+	virtual bool CanBeginAttackPoint(const FVector& targetPoint);
 
 	UFUNCTION(BlueprintCallable)
 	virtual bool CanEverAttackPoint();
@@ -364,7 +345,10 @@ public:
 	/// </summary>
 	/// <param name="target">Target to be damaged by this Unit</param>
 	/// <returns>True if attack was successful (regardless of actual damage amount)</returns>
-	virtual bool AttackTarget(AUnitBase* targetUnit);
+	virtual bool BeginAttackTarget(AUnitBase* targetUnit);
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool BeginAttackPoint(const FVector& point);
 
 	UFUNCTION(BlueprintCallable)
 	/// <summary>

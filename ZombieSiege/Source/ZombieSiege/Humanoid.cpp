@@ -34,6 +34,11 @@ void AHumanoid::BeginPlay()
 	check(weaponDefault);
 }
 
+void AHumanoid::OnAttackStateChanged(const FAttackDispatcherStateChangedEventArgs& args)
+{
+	Super::OnAttackStateChanged(args);
+}
+
 EFaceDirection AHumanoid::GetDirectionFromVector(const FVector& vec)
 {
 	if (vec.IsNearlyZero())
@@ -120,18 +125,52 @@ bool AHumanoid::CanEverAttackTarget(AUnitBase* target)
 	return weaponDefault->CanThisWeaponEverAttackTarget(target);
 }
 
-bool AHumanoid::CanAttackTarget(AUnitBase* target)
+
+bool AHumanoid::CanBeginAttackTarget(AUnitBase* target)
 {
-	return CanAttackTargetWithWeapon(target, weaponDefault);
+	bool superOk = Super::CanBeginAttackTarget(target);
+	bool weaponOk = attackDispatcher->CanBeginAttackTarget(this, weaponDefault, target);
+	return superOk && weaponOk;
 }
 
-bool AHumanoid::AttackTarget(AUnitBase* target)
+bool AHumanoid::BeginAttackTarget(AUnitBase* target)
 {
 	FVector vec = target->GetActorLocation() - GetActorLocation();
 	EFaceDirection direction = GetDirectionFromVector(vec);
 	SetFacingDirection(direction);
 
-	return AttackTargetWithWeapon(target, weaponDefault);
+	if (!CanBeginAttackTarget(target))
+	{
+		return false;
+	}
+
+	return BeginAttackTargetWithWeapon(target, weaponDefault);
+}
+
+bool AHumanoid::CanEverAttackPoint()
+{
+	return weaponDefault->CanThisWeaponEverAttackPoint();
+}
+
+bool AHumanoid::CanBeginAttackPoint(const FVector& point)
+{
+	bool superOk = Super::CanBeginAttackPoint(point);
+	bool weaponOk = weaponDefault->CanAttackPoint(this, point);
+	return superOk && weaponOk;
+}
+
+bool AHumanoid::BeginAttackPoint(const FVector& point)
+{
+	FVector vec = point - GetActorLocation();
+	EFaceDirection direction = GetDirectionFromVector(vec);
+	SetFacingDirection(direction);
+
+	if (!CanBeginAttackPoint(point))
+	{
+		return false;
+	}
+
+	return BeginAttackPointWithWeapon(point, weaponDefault);
 }
 
 

@@ -40,19 +40,9 @@ protected:
 	
 	virtual void BeginPlay() override;	
 
+	virtual void OnAttackStateChanged(const FAttackDispatcherStateChangedEventArgs& args) override;
+
 public:		
-
-	UFUNCTION(BlueprintCallable)
-	UWeaponInfo* GetWeaponInfo() 
-	{ 
-		return activeWeapon;
-	}
-
-	UFUNCTION(BlueprintCallable)
-	void SetWeaponInfo(UWeaponInfo* weapon)
-	{ 
-		activeWeapon = weapon;
-	}
 
 	UFUNCTION(BlueprintCallable)
 	static EFaceDirection GetDirectionFromVector(const FVector& vec);
@@ -65,7 +55,13 @@ public:
 
 	virtual bool CanEverAttackTarget(AUnitBase* target) override;
 
-	virtual bool CanAttackTarget(AUnitBase* target) override;
+	virtual bool CanBeginAttackTarget(AUnitBase* target) override;
 
-	virtual bool AttackTarget(AUnitBase* target) override;
+	virtual bool BeginAttackTarget(AUnitBase* target) override;
+
+	virtual bool CanEverAttackPoint() override;
+
+	virtual bool CanBeginAttackPoint(const FVector& point) override;
+
+	virtual bool BeginAttackPoint(const FVector& point) override;
 };

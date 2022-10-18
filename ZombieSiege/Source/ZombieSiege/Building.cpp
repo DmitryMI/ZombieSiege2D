@@ -42,7 +42,7 @@ float ABuilding::ReceiveHealing(const FHealingInstance& repair)
 	return healingActual;
 }
 
-bool ABuilding::CanAttackTarget(AUnitBase* attackTarget)
+bool ABuilding::CanBeginAttackTarget(AUnitBase* attackTarget)
 {
 	int totalSeats = GetTotalPassengerSeats();
 
@@ -51,10 +51,10 @@ bool ABuilding::CanAttackTarget(AUnitBase* attackTarget)
 		return false;
 	}
 
-	return CanAttackTargetWithWeapon(attackTarget, weaponDefault);
+	return true;
 }
 
-bool ABuilding::CanAttackPoint(const FVector& targetPoint)
+bool ABuilding::CanBeginAttackPoint(const FVector& targetPoint)
 {
 	int totalSeats = GetTotalPassengerSeats();
 
@@ -63,7 +63,7 @@ bool ABuilding::CanAttackPoint(const FVector& targetPoint)
 		return false;
 	}
 
-	return CanAttackPointWithWeapon(targetPoint, weaponDefault);
+	return true;
 }
 
 bool ABuilding::CanEverAttackPoint()

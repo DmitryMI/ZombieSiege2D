@@ -3,10 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "WeaponInfo.h"
 #include "AttackDispatcher.generated.h"
 
 class AUnitBase;
+class UWeaponInfo;
 
 USTRUCT(BlueprintType)
 struct FAttackDispatcherStateChangedEventArgs
@@ -18,6 +18,7 @@ public:
 	EAttackState stateNew;
 
 	FAttackDispatcherStateChangedEventArgs(UAttackDispatcher* dispatcherArg, EAttackState stateOldArg, EAttackState stateNewArg);
+	FAttackDispatcherStateChangedEventArgs();
 };
 
 UENUM(BlueprintType)
@@ -90,9 +91,13 @@ public:
 	FVector GetTargetPoint();
 	bool IsOnCooldown();
 
+	bool CanBeginAttackTarget(AUnitBase* owner, UWeaponInfo* weapon, AUnitBase* unit);
+
+	bool CanBeginAttackPoint(AUnitBase* owner, UWeaponInfo* weapon, const FVector& point);
+
 	bool BeginAttackTarget(AUnitBase* owner, UWeaponInfo* weapon, AUnitBase* unit);
 
-	bool BegineAttackPoint(AUnitBase* owner, UWeaponInfo* weapon, const FVector& point);
+	bool BeginAttackPoint(AUnitBase* owner, UWeaponInfo* weapon, const FVector& point);
 
 	void CancelAttack();
 

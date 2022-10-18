@@ -2,6 +2,7 @@
 
 
 #include "AttackDispatcher.h"
+#include "WeaponInfo.h"
 
 UAttackDispatcher::UAttackDispatcher()
 {
@@ -10,7 +11,6 @@ UAttackDispatcher::UAttackDispatcher()
 
 UAttackDispatcher::~UAttackDispatcher()
 {
-	ClearTimer();
 	attackTimerDelegate.Unbind();
 }
 
@@ -46,7 +46,17 @@ FVector UAttackDispatcher::GetTargetPoint()
 
 bool UAttackDispatcher::IsOnCooldown()
 {
-	return attackState == EAttackState::Backswing || attackState == EAttackState::Cooldown;
+	return attackState != EAttackState::None;
+}
+
+bool UAttackDispatcher::CanBeginAttackTarget(AUnitBase* owner, UWeaponInfo* weapon, AUnitBase* unit)
+{
+	return !IsOnCooldown() && weapon->CanAttackTarget(owner, unit);
+}
+
+bool UAttackDispatcher::CanBeginAttackPoint(AUnitBase* owner, UWeaponInfo* weapon, const FVector& point)
+{
+	return !IsOnCooldown() && weapon->CanAttackPoint(owner, point);
 }
 
 void UAttackDispatcher::OnAttackTimerElapsed()
@@ -66,25 +76,22 @@ void UAttackDispatcher::TickStateMachine()
 		break;
 
 	case EAttackState::Backswing:
-		bool attackHappened = CommitAttack();
 
-		if (attackHappened)
+		if (CommitAttack())
 		{
-			SetTimer(weaponInfo->GetRelaxationDuration());
 			attackState = EAttackState::Relaxation;
+			SetTimer(weaponInfo->GetRelaxationDuration());			
 		}
 		else
 		{
-			ClearTimer();
 			attackState = EAttackState::None;
+			ClearTimer();
 		}
 
 		break;
 	case EAttackState::Relaxation:
-
-		SetTimer(weaponInfo->GetCooldownDuration());
-
 		attackState = EAttackState::Cooldown;
+		SetTimer(weaponInfo->GetCooldownDuration());
 		break;
 	case EAttackState::Cooldown:
 		attackState = EAttackState::None;
@@ -99,11 +106,6 @@ void UAttackDispatcher::TickStateMachine()
 
 bool UAttackDispatcher::BeginAttack()
 {
-	if (attackState == EAttackState::Backswing || attackState == EAttackState::Cooldown)
-	{
-		return false;
-	}
-
 	attackState = EAttackState::None;
 	ClearTimer();
 
@@ -116,7 +118,7 @@ bool UAttackDispatcher::CommitAttack()
 {
 	if (attackMode == EAttackMode::Target)
 	{
-		if (!weaponInfo->CanAttackTarget(owningUnit, targetUnit))
+		if (!owningUnit->CanFinishAttackTargetWithWeapon(targetUnit, weaponInfo))
 		{
 			return false;
 		}
@@ -125,7 +127,7 @@ bool UAttackDispatcher::CommitAttack()
 	}
 	else if (attackMode == EAttackMode::Point)
 	{
-		if (!weaponInfo->CanAttackPoint(owningUnit, targetPoint))
+		if (!owningUnit->CanFinishAttackPointWithWeapon(targetPoint, weaponInfo))
 		{
 			return false;
 		}
@@ -148,7 +150,14 @@ void UAttackDispatcher::BroadcastStateChangedEvent(EAttackState stateOld, EAttac
 
 void UAttackDispatcher::SetTimer(float timeout)
 {
-	GetWorld()->GetTimerManager().SetTimer(attackTimerHandle, attackTimerDelegate, timeout, false, timeout);
+	if (FMath::IsNearlyZero(timeout))
+	{
+		attackTimerDelegate.ExecuteIfBound();
+	}
+	else
+	{
+		GetWorld()->GetTimerManager().SetTimer(attackTimerHandle, attackTimerDelegate, timeout, false, timeout);
+	}
 }
 
 void UAttackDispatcher::ClearTimer()
@@ -162,7 +171,7 @@ bool UAttackDispatcher::BeginAttackTarget(AUnitBase* owner, UWeaponInfo* weapon,
 	check(weapon);
 	check(unit);
 
-	if (!weapon->CanAttackTarget(owner, unit))
+	if (!CanBeginAttackTarget(owner, weapon, unit))
 	{
 		return false;
 	}
@@ -175,12 +184,12 @@ bool UAttackDispatcher::BeginAttackTarget(AUnitBase* owner, UWeaponInfo* weapon,
 	return BeginAttack();
 }
 
-bool UAttackDispatcher::BegineAttackPoint(AUnitBase* owner, UWeaponInfo* weapon, const FVector& point)
+bool UAttackDispatcher::BeginAttackPoint(AUnitBase* owner, UWeaponInfo* weapon, const FVector& point)
 {
 	check(owner);
 	check(weapon);
 
-	if (!weapon->CanAttackPoint(owner, point))
+	if (!CanBeginAttackPoint(owner, weapon, point))
 	{
 		return false;
 	}
@@ -205,4 +214,11 @@ FAttackDispatcherStateChangedEventArgs::FAttackDispatcherStateChangedEventArgs(U
 	dispatcher = dispatcherArg;
 	stateOld = stateOldArg;
 	stateNew = stateNewArg;
+}
+
+FAttackDispatcherStateChangedEventArgs::FAttackDispatcherStateChangedEventArgs()
+{
+	dispatcher = nullptr;
+	stateOld = EAttackState::None;
+	stateNew = EAttackState::None;
 }

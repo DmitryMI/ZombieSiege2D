@@ -127,20 +127,24 @@ ABuilding* ASurvivor::Build(const TSubclassOf<ABuilding>& buildingClass, FVector
 
 bool ASurvivor::CanRepairTarget(ABuilding* target)
 {
-	return CanAttackTargetWithWeapon(target, repairWeapon);
+	bool superOk = AUnitBase::CanBeginAttackTarget(target);
+	bool weaponOk = repairWeapon->CanAttackTarget(this, target);
+	return superOk && weaponOk;
 }
 
 float ASurvivor::RepairTarget(ABuilding* target)
 {
-	return AttackTargetWithWeapon(target, repairWeapon);
+	return BeginAttackTargetWithWeapon(target, repairWeapon);
 }
 
 bool ASurvivor::CanGatherTarget(ADoodad* gatherTarget)
 {
-	return CanAttackTargetWithWeapon(gatherTarget, gatheringWeapon);
+	bool superOk = AUnitBase::CanBeginAttackTarget(gatherTarget);
+	bool weaponOk = gatheringWeapon->CanAttackTarget(this, gatherTarget);
+	return superOk && weaponOk;
 }
 
 float ASurvivor::GatherTarget(ADoodad* gatherTarget)
 {
-	return AttackTargetWithWeapon(gatherTarget, gatheringWeapon);
+	return BeginAttackTargetWithWeapon(gatherTarget, gatheringWeapon);
 }
