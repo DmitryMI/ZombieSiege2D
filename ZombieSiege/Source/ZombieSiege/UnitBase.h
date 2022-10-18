@@ -19,19 +19,11 @@
 #include "UnitState.h"
 #include "Macros.h"
 #include "ArmorNature.h"
+#include "AttackDispatcher.h"
 #include "UnitBase.generated.h"
 
 class AUnitBase;
 
-USTRUCT()
-struct FBackswingTimerElapsedArgs
-{
-	GENERATED_BODY();
-
-	bool bIsTargetOrder;
-	AUnitBase* targetUnit;
-	FVector targetPoint;
-};
 
 UCLASS()
 class ZOMBIESIEGE_API AUnitBase : public ACharacter
