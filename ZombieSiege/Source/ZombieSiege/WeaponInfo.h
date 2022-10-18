@@ -7,7 +7,9 @@
 #include "UnitBase.h"
 #include "ZombieSiegeUtils.h"
 #include "WeaponNature.h"
+#include "AttackParameters.h"
 #include "WeaponInfo.generated.h"
+
 
 UCLASS(Blueprintable)
 /// <summary>
@@ -180,7 +182,7 @@ public:
 	/// </summary>
 	/// <param name="attacker">Weapon user</param>
 	/// <param name="target">Attack target unit</param>
-	virtual void AttackTarget(AUnitBase* attacker, AUnitBase* target)
+	virtual void AttackTarget(AUnitBase* attacker, AUnitBase* target, const FAttackParameters& params = FAttackParameters())
 	{
 
 	}
@@ -191,7 +193,7 @@ public:
 	/// </summary>
 	/// <param name="attacker">Weapon user</param>
 	/// <param name="targetPoint">Attack target unit</param>
-	virtual void AttackPoint(AUnitBase* attacker, const FVector& targetPoint)
+	virtual void AttackPoint(AUnitBase* attacker, const FVector& targetPoint, const FAttackParameters& params = FAttackParameters())
 	{
 
 	}

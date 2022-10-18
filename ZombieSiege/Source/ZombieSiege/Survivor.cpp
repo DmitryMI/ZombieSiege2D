@@ -125,11 +125,16 @@ ABuilding* ASurvivor::Build(const TSubclassOf<ABuilding>& buildingClass, FVector
 	return building;
 }
 
-bool ASurvivor::CanRepairTarget(ABuilding* target)
+bool ASurvivor::CanRepairTarget(ABuilding* target, FAttackTestParameters testParams)
 {
-	bool superOk = AUnitBase::CanBeginAttackTarget(target);
-	bool weaponOk = repairWeapon->CanAttackTarget(this, target);
-	return superOk && weaponOk;
+	if (UZombieSiegeUtils::AreEnemies(this, target))
+	{
+		return false;
+	}
+
+	testParams.bTestAffilation = false;
+	bool superOk = AUnitBase::CanAttackTargetWithWeapon(target, repairWeapon, testParams);
+	return superOk;
 }
 
 float ASurvivor::RepairTarget(ABuilding* target)
@@ -137,11 +142,11 @@ float ASurvivor::RepairTarget(ABuilding* target)
 	return BeginAttackTargetWithWeapon(target, repairWeapon);
 }
 
-bool ASurvivor::CanGatherTarget(ADoodad* gatherTarget)
+bool ASurvivor::CanGatherTarget(ADoodad* gatherTarget, FAttackTestParameters testParams)
 {
-	bool superOk = AUnitBase::CanBeginAttackTarget(gatherTarget);
-	bool weaponOk = gatheringWeapon->CanAttackTarget(this, gatherTarget);
-	return superOk && weaponOk;
+	testParams.bTestAffilation = false;
+	bool superOk = Super::CanAttackTargetWithWeapon(gatherTarget, gatheringWeapon, testParams);
+	return superOk;
 }
 
 float ASurvivor::GatherTarget(ADoodad* gatherTarget)

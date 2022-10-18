@@ -7,6 +7,7 @@
 #include "HealingInstance.h"
 #include "BuildingProgressChangedEventArgs.h"
 #include "ZombieSiegePlayerController.h"
+#include "Turret.h"
 #include "Building.generated.h"
 
 /**
@@ -19,9 +20,15 @@ class ZOMBIESIEGE_API ABuilding : public AUnitBase
 
 private:
 	UPROPERTY(EditDefaultsOnly)
-	FName weaponDefaultName;
+	TSubclassOf<ATurret> turretClass;
 
 	UPROPERTY(EditDefaultsOnly)
+	float turretSpawnRadius = 50.0f;
+
+	UPROPERTY(EditDefaultsOnly)
+	FName weaponDefaultName;
+
+	UPROPERTY(EditAnywhere)
 	bool bIsBuiltOnSpawn = false;
 
 	UPROPERTY(VisibleAnywhere)
@@ -30,21 +37,23 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	UWeaponInfo* weaponDefault;
 
+	UPROPERTY(VisibleAnywhere)
+	TArray<ATurret*> turrets;
+
 protected:
 	virtual void BeginPlay() override;
+
+	virtual bool CanAttackAnything(FAttackTestParameters testParams);
 
 public:
 	ABuilding();
 
+
+	virtual bool CanAttackPoint(const FVector& targetPoint, FAttackTestParameters testParams) override;
+
+	virtual bool CanAttackTarget(AUnitBase* targetUnit, FAttackTestParameters testParams) override;
+
 	virtual float ReceiveHealing(const FHealingInstance& repair) override;
-
-	virtual bool CanBeginAttackTarget(AUnitBase* attackTarget) override;
-
-	virtual bool CanBeginAttackPoint(const FVector& targetPoint) override;
-
-	virtual bool CanEverAttackPoint() override;
-
-	virtual bool CanEverAttackTarget(AUnitBase* targetUnit) override;
 
 	UFUNCTION(BlueprintCallable)
 	float GetBuildingProgressFraction() const;

@@ -30,7 +30,7 @@ TMap<EResourceType, float> USurvivorRepair::CalculateRequiredResourceAmount(ABui
 	return map;
 }
 
-void USurvivorRepair::AttackTarget(AUnitBase* attacker, AUnitBase* target)
+void USurvivorRepair::AttackTarget(AUnitBase* attacker, AUnitBase* target, const FAttackParameters& params)
 {
 	if (!CanAttackTarget(attacker, target))
 	{

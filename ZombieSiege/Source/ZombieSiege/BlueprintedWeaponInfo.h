@@ -71,12 +71,12 @@ public:
 		return canAttackPointReturn;
 	}
 
-	virtual void AttackTarget(AUnitBase* attacker, AUnitBase* target) override
+	virtual void AttackTarget(AUnitBase* attacker, AUnitBase* target, const FAttackParameters& params = FAttackParameters()) override
 	{
 		BlueprintedAttackTarget(attacker, target);
 	}
 
-	virtual void AttackPoint(AUnitBase* attacker, const FVector& targetPoint) override
+	virtual void AttackPoint(AUnitBase* attacker, const FVector& targetPoint, const FAttackParameters& params = FAttackParameters()) override
 	{
 		BlueprintedAttackPoint(attacker, targetPoint);
 	}

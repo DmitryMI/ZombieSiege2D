@@ -19,11 +19,11 @@
 #include "UnitState.h"
 #include "Macros.h"
 #include "ArmorNature.h"
-#include "AttackDispatcher.h"
+#include "AttackTestParameters.h"
 #include "UnitBase.generated.h"
 
 class AUnitBase;
-
+class UAttackDispatcher;
 
 UCLASS()
 class ZOMBIESIEGE_API AUnitBase : public ACharacter
@@ -86,7 +86,7 @@ private:
 	/// </summary>
 	bool bIsDying = false;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditAnywhere)
 	bool assignToLocalPlayerOnSpawn;
 
 	UPROPERTY(VisibleAnywhere)
@@ -325,16 +325,16 @@ public:
 	float GetMaxHealth() const;
 
 	UFUNCTION(BlueprintCallable)
-	virtual bool CanBeginAttackTarget(AUnitBase* targetUnit);
+	virtual bool CanAttackPointWithWeapon(const FVector& targetPoint, UWeaponInfo* weapon, FAttackTestParameters testParams);
+	
+	UFUNCTION(BlueprintCallable)
+	virtual bool CanAttackPoint(const FVector& targetPoint, FAttackTestParameters testParams);
 
 	UFUNCTION(BlueprintCallable)
-	virtual bool CanEverAttackTarget(AUnitBase* targetUnit);
+	virtual bool CanAttackTargetWithWeapon(AUnitBase* targetUnit, UWeaponInfo* weapon, FAttackTestParameters testParams);
 
 	UFUNCTION(BlueprintCallable)
-	virtual bool CanBeginAttackPoint(const FVector& targetPoint);
-
-	UFUNCTION(BlueprintCallable)
-	virtual bool CanEverAttackPoint();
+	virtual bool CanAttackTarget(AUnitBase* targetUnit, FAttackTestParameters testParams);
 
 	UFUNCTION(BlueprintCallable)
 	virtual float GetAttackRange();

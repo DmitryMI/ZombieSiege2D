@@ -51,11 +51,20 @@ bool UAttackDispatcher::IsOnCooldown()
 
 bool UAttackDispatcher::CanBeginAttackTarget(AUnitBase* owner, UWeaponInfo* weapon, AUnitBase* unit)
 {
+	if (!weapon)
+	{
+		return false;
+	}
+
 	return !IsOnCooldown() && weapon->CanAttackTarget(owner, unit);
 }
 
 bool UAttackDispatcher::CanBeginAttackPoint(AUnitBase* owner, UWeaponInfo* weapon, const FVector& point)
 {
+	if (!weapon)
+	{
+		return false;
+	}
 	return !IsOnCooldown() && weapon->CanAttackPoint(owner, point);
 }
 
@@ -123,7 +132,7 @@ bool UAttackDispatcher::CommitAttack()
 			return false;
 		}
 
-		weaponInfo->AttackTarget(owningUnit, targetUnit);
+		weaponInfo->AttackTarget(owningUnit, targetUnit, attackParameters);
 	}
 	else if (attackMode == EAttackMode::Point)
 	{
@@ -132,7 +141,7 @@ bool UAttackDispatcher::CommitAttack()
 			return false;
 		}
 
-		weaponInfo->AttackPoint(owningUnit, targetPoint);
+		weaponInfo->AttackPoint(owningUnit, targetPoint, attackParameters);
 	}
 	else
 	{
@@ -165,7 +174,7 @@ void UAttackDispatcher::ClearTimer()
 	GetWorld()->GetTimerManager().ClearTimer(attackTimerHandle);
 }
 
-bool UAttackDispatcher::BeginAttackTarget(AUnitBase* owner, UWeaponInfo* weapon, AUnitBase* unit)
+bool UAttackDispatcher::BeginAttackTarget(AUnitBase* owner, UWeaponInfo* weapon, AUnitBase* unit, const FAttackParameters& params)
 {
 	check(owner);
 	check(weapon);
@@ -176,6 +185,7 @@ bool UAttackDispatcher::BeginAttackTarget(AUnitBase* owner, UWeaponInfo* weapon,
 		return false;
 	}
 
+	attackParameters = params;
 	attackMode = EAttackMode::Target;
 	targetUnit = unit;
 	owningUnit = owner;
@@ -184,7 +194,7 @@ bool UAttackDispatcher::BeginAttackTarget(AUnitBase* owner, UWeaponInfo* weapon,
 	return BeginAttack();
 }
 
-bool UAttackDispatcher::BeginAttackPoint(AUnitBase* owner, UWeaponInfo* weapon, const FVector& point)
+bool UAttackDispatcher::BeginAttackPoint(AUnitBase* owner, UWeaponInfo* weapon, const FVector& point, const FAttackParameters& params)
 {
 	check(owner);
 	check(weapon);
@@ -194,6 +204,7 @@ bool UAttackDispatcher::BeginAttackPoint(AUnitBase* owner, UWeaponInfo* weapon, 
 		return false;
 	}
 
+	attackParameters = params;
 	attackMode = EAttackMode::Point;
 	targetUnit = nullptr;
 	targetPoint = point;

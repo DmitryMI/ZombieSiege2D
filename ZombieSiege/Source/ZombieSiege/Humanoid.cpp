@@ -2,6 +2,7 @@
 
 
 #include "Humanoid.h"
+#include "AttackDispatcher.h"
 
 // Sets default values
 AHumanoid::AHumanoid()
@@ -120,17 +121,14 @@ float AHumanoid::GetAttackRange()
 	return weaponDefault->GetRange();
 }
 
-bool AHumanoid::CanEverAttackTarget(AUnitBase* target)
+bool AHumanoid::CanAttackPoint(const FVector& targetPoint, FAttackTestParameters testParams)
 {
-	return weaponDefault->CanThisWeaponEverAttackTarget(target);
+	return Super::CanAttackPointWithWeapon(targetPoint, weaponDefault, testParams);
 }
 
-
-bool AHumanoid::CanBeginAttackTarget(AUnitBase* target)
+bool AHumanoid::CanAttackTarget(AUnitBase* target, FAttackTestParameters testParams)
 {
-	bool superOk = Super::CanBeginAttackTarget(target);
-	bool weaponOk = attackDispatcher->CanBeginAttackTarget(this, weaponDefault, target);
-	return superOk && weaponOk;
+	return Super::CanAttackTargetWithWeapon(target, weaponDefault, testParams);
 }
 
 bool AHumanoid::BeginAttackTarget(AUnitBase* target)
@@ -139,24 +137,12 @@ bool AHumanoid::BeginAttackTarget(AUnitBase* target)
 	EFaceDirection direction = GetDirectionFromVector(vec);
 	SetFacingDirection(direction);
 
-	if (!CanBeginAttackTarget(target))
+	if (!CanAttackTargetWithWeapon(target, weaponDefault, FAttackTestParameters(true, true, false)))
 	{
 		return false;
 	}
 
 	return BeginAttackTargetWithWeapon(target, weaponDefault);
-}
-
-bool AHumanoid::CanEverAttackPoint()
-{
-	return weaponDefault->CanThisWeaponEverAttackPoint();
-}
-
-bool AHumanoid::CanBeginAttackPoint(const FVector& point)
-{
-	bool superOk = Super::CanBeginAttackPoint(point);
-	bool weaponOk = weaponDefault->CanAttackPoint(this, point);
-	return superOk && weaponOk;
 }
 
 bool AHumanoid::BeginAttackPoint(const FVector& point)
@@ -165,7 +151,7 @@ bool AHumanoid::BeginAttackPoint(const FVector& point)
 	EFaceDirection direction = GetDirectionFromVector(vec);
 	SetFacingDirection(direction);
 
-	if (!CanBeginAttackPoint(point))
+	if (!CanAttackPointWithWeapon(point, weaponDefault, FAttackTestParameters(true, true, false)))
 	{
 		return false;
 	}

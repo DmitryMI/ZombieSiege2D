@@ -4,46 +4,17 @@
 #include "UnitBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "WeaponInfo.h"
+#include "AttackDispatcher.h"
 #include "Components/CapsuleComponent.h"
 
 bool AUnitBase::CanFinishAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon)
 {
-	if (!weapon)
-	{
-		return false;
-	}
-
-	if (!weapon->CanThisWeaponEverAttackTarget(target))
-	{
-		return false;
-	}
-
-	if (!weapon->CanAttackTarget(this, target))
-	{
-		return false;
-	}
-
-	return true;
+	return CanAttackTargetWithWeapon(target, weapon, FAttackTestParameters(false, true, false));
 }
 
 bool AUnitBase::CanFinishAttackPointWithWeapon(const FVector targetPoint, UWeaponInfo* weapon)
 {
-	if (!weapon)
-	{
-		return false;
-	}
-
-	if (!weapon->CanThisWeaponEverAttackPoint())
-	{
-		return false;
-	}
-
-	if (!weapon->CanAttackPoint(this, targetPoint))
-	{
-		return false;
-	}
-
-	return true;
+	return CanAttackPointWithWeapon(targetPoint, weapon, FAttackTestParameters(false, true, false));
 }
 
 bool AUnitBase::IsOnCooldown()
@@ -422,22 +393,67 @@ float AUnitBase::GetMaxHealth() const
 	return maxHealth;
 }
 
-bool AUnitBase::CanBeginAttackTarget(AUnitBase* targetUnit)
+bool AUnitBase::CanAttackPointWithWeapon(const FVector& targetPoint, UWeaponInfo* weapon, FAttackTestParameters testParams)
 {
-	return !IsHidden();
+	if (weapon == nullptr)
+	{
+		return false;
+	}
+
+	if (testParams.bTestCooldown && IsOnCooldown())
+	{
+		return false;
+	}
+
+	if (testParams.bTestPhysicalState && IsHidden())
+	{
+		return false;
+	}
+
+	if (!testParams.bTestRange)
+	{
+		return weapon->CanThisWeaponEverAttackPoint();
+	}
+
+	return weapon->CanAttackPoint(this, targetPoint);
 }
 
-bool AUnitBase::CanEverAttackTarget(AUnitBase* targetUnit)
+bool AUnitBase::CanAttackPoint(const FVector& targetPoint, FAttackTestParameters testParams)
 {
 	return false;
 }
 
-bool AUnitBase::CanBeginAttackPoint(const FVector& targetPoint)
+bool AUnitBase::CanAttackTargetWithWeapon(AUnitBase* targetUnit, UWeaponInfo* weapon, FAttackTestParameters testParams)
 {
-	return !IsHidden();
+	if (weapon == nullptr)
+	{
+		return false;
+	}
+
+	if (testParams.bTestCooldown && IsOnCooldown())
+	{
+		return false;
+	}
+
+	if (testParams.bTestAffilation && !UZombieSiegeUtils::AreEnemies(this, targetUnit))
+	{
+		return false;
+	}
+
+	if (testParams.bTestPhysicalState && IsHidden())
+	{
+		return false;
+	}
+
+	if (!testParams.bTestRange)
+	{
+		return weapon->CanThisWeaponEverAttackTarget(targetUnit);
+	}
+
+	return weapon->CanAttackTarget(this, targetUnit);
 }
 
-bool AUnitBase::CanEverAttackPoint()
+bool AUnitBase::CanAttackTarget(AUnitBase* targetUnit, FAttackTestParameters testParams)
 {
 	return false;
 }
@@ -469,12 +485,22 @@ bool AUnitBase::BeginAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weap
 {
 	check(attackDispatcher);
 
+	if (!CanAttackTargetWithWeapon(target, weapon, FAttackTestParameters(true, true, false)))
+	{
+		return false;
+	}
+
 	return attackDispatcher->BeginAttackTarget(this, weapon, target);
 }
 
 bool AUnitBase::BeginAttackPointWithWeapon(const FVector& point, UWeaponInfo* weapon)
 {
 	check(attackDispatcher);
+
+	if (!CanAttackPointWithWeapon(point, weapon, FAttackTestParameters(true, true, false)))
+	{
+		return false;
+	}
 
 	return attackDispatcher->BeginAttackPoint(this, weapon, point);
 }

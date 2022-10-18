@@ -19,13 +19,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AProjectileBase> projectileClass;
 
-	virtual AProjectileBase* SpawnProjectile(AUnitBase* instigator);
+	virtual AProjectileBase* SpawnProjectile(AUnitBase* instigator, const FAttackParameters& params = FAttackParameters());
 
 public:
 	UProjectileWeaponInfo();
 
-	virtual void AttackTarget(AUnitBase* attacker, AUnitBase* target) override;
-	virtual void AttackPoint(AUnitBase* attacker, const FVector& targetPoint) override;
+	virtual void AttackTarget(AUnitBase* attacker, AUnitBase* target, const FAttackParameters& params = FAttackParameters()) override;
+	virtual void AttackPoint(AUnitBase* attacker, const FVector& targetPoint, const FAttackParameters& params = FAttackParameters()) override;
 
 	virtual bool CanAttackTarget(AUnitBase* attacker, AUnitBase* target) override;
 

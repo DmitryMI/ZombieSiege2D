@@ -3,11 +3,11 @@
 
 #include "ProjectileWeaponInfo.h"
 
-AProjectileBase* UProjectileWeaponInfo::SpawnProjectile(AUnitBase* instigator)
+AProjectileBase* UProjectileWeaponInfo::SpawnProjectile(AUnitBase* instigator, const FAttackParameters& params)
 {
 	UWorld* world = GetWorld();
 	
-	FVector location = instigator->GetActorLocation();
+	FVector location = instigator->GetActorLocation() + params.projectileSpawnRelativeLocation;
 
 	FActorSpawnParameters spawnParameters;
 	spawnParameters.Instigator = instigator;
@@ -25,19 +25,19 @@ UProjectileWeaponInfo::UProjectileWeaponInfo()
 	bCanEverAttackPoint = true;
 }
 
-void UProjectileWeaponInfo::AttackTarget(AUnitBase* attacker, AUnitBase* target)
+void UProjectileWeaponInfo::AttackTarget(AUnitBase* attacker, AUnitBase* target, const FAttackParameters& params)
 {
-	AttackPoint(attacker, target->GetActorLocation());
+	AttackPoint(attacker, target->GetActorLocation(), params);
 }
 
-void UProjectileWeaponInfo::AttackPoint(AUnitBase* attacker, const FVector& targetPoint)
+void UProjectileWeaponInfo::AttackPoint(AUnitBase* attacker, const FVector& targetPoint, const FAttackParameters& params)
 {
 	if (!CanAttackPoint(attacker, targetPoint))
 	{
 		return;
 	}
 
-	AProjectileBase* projectile = SpawnProjectile(attacker);
+	AProjectileBase* projectile = SpawnProjectile(attacker, params);
 	projectile->MoveTowards(targetPoint);
 }
 

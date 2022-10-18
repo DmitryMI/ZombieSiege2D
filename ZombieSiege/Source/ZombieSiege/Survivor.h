@@ -47,13 +47,13 @@ public:
 	virtual ABuilding* Build(const TSubclassOf<ABuilding>& buildingClass, FVector location);
 
 	UFUNCTION(BlueprintCallable)
-	virtual bool CanRepairTarget(ABuilding* target);
+	virtual bool CanRepairTarget(ABuilding* target, FAttackTestParameters testParams);
 
 	UFUNCTION(BlueprintCallable)
 	virtual float RepairTarget(ABuilding* target);
 
 	UFUNCTION(BlueprintCallable)
-	virtual bool CanGatherTarget(ADoodad* gatherTarget);
+	virtual bool CanGatherTarget(ADoodad* gatherTarget, FAttackTestParameters testParams);
 
 	UFUNCTION(BlueprintCallable)
 	virtual float GatherTarget(ADoodad* gatherTarget);

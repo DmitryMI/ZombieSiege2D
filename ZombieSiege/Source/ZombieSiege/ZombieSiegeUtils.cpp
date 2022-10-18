@@ -73,7 +73,7 @@ TArray<AUnitBase*> UZombieSiegeUtils::FindAliveUnitsInRadius(
 	return units;
 }
 
-TArray<AUnitBase*> UZombieSiegeUtils::FindAttackableEnemiesInRadius(const UObject* WorldContextObject, AUnitBase* instigator, const FVector& center, float searchRadius, const TArray<AActor*>& ignoredActors)
+TArray<AUnitBase*> UZombieSiegeUtils::FindAttackableEnemiesInRadius(const UObject* WorldContextObject, AUnitBase* instigator, const FVector& center, float searchRadius, const TArray<AActor*>& ignoredActors, bool bTestReachability)
 {
 	auto ignoredActorsClone = ignoredActors;
 	if (!ignoredActorsClone.Contains(instigator))
@@ -84,7 +84,7 @@ TArray<AUnitBase*> UZombieSiegeUtils::FindAttackableEnemiesInRadius(const UObjec
 	UWorld* world = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
 	check(world);
 
-	auto filter = [instigator, world](AUnitBase* unit)
+	auto filter = [instigator, world, bTestReachability](AUnitBase* unit)
 	{
 		if (!UZombieSiegeUtils::AreEnemies(instigator, unit))
 		{
@@ -96,12 +96,12 @@ TArray<AUnitBase*> UZombieSiegeUtils::FindAttackableEnemiesInRadius(const UObjec
 			return false;
 		}
 
-		if (!instigator->CanEverAttackTarget(unit))
+		if (!instigator->CanAttackTarget(unit, FAttackTestParameters(false, false, false, false)))
 		{
 			return false;
 		}
 
-		if (!UZombieSiegeUtils::IsUnitReachable(world, instigator, unit, 250.0f))
+		if (bTestReachability && !UZombieSiegeUtils::IsUnitReachable(world, instigator, unit, 250.0f))
 		{
 			return false;
 		}

@@ -223,7 +223,9 @@ public:
 		AUnitBase* instigator,
 		const FVector& center,
 		float searchRadius,
-		const TArray<AActor*>& ignoredActors);
+		const TArray<AActor*>& ignoredActors,
+		bool bTestReachability = true
+	);
 
 	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
 	static float GetDistance2DBetweenSimpleCollisions(AActor* actor1, AActor* actor2);
@@ -281,6 +283,12 @@ public:
 	static bool GetRandomReachableLocation(const UObject* WorldContextObject, const FVector& center, float radius, FVector& outRandomLocation);
 
 	static bool GetRandomReachableLocation(const UWorld* world, const FVector& center, float radius, FVector& outRandomLocation);
+
+	UFUNCTION(BlueprintCallable)
+	static FAttackTestParameters MakeAttackTestParameters(bool bCooldown, bool bRange, bool bAffilation, bool bPhysicalState)
+	{
+		return FAttackTestParameters(bCooldown, bRange, bAffilation, bPhysicalState);
+	}
 };
 
 

@@ -16,5 +16,5 @@ class ZOMBIESIEGE_API UMeleeWeaponInfo : public UWeaponInfo
 	
 public:
 
-	virtual void AttackTarget(AUnitBase* attacker, AUnitBase* target) override;
+	virtual void AttackTarget(AUnitBase* attacker, AUnitBase* target, const FAttackParameters& params = FAttackParameters()) override;
 };

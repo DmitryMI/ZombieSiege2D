@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AttackParameters.h"
 #include "AttackDispatcher.generated.h"
 
 class AUnitBase;
@@ -61,6 +62,9 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	UWeaponInfo* weaponInfo;
 
+	UPROPERTY(VisibleAnywhere)
+	FAttackParameters attackParameters;
+
 	FTimerHandle attackTimerHandle;
 	FTimerDelegate attackTimerDelegate;
 
@@ -95,9 +99,9 @@ public:
 
 	bool CanBeginAttackPoint(AUnitBase* owner, UWeaponInfo* weapon, const FVector& point);
 
-	bool BeginAttackTarget(AUnitBase* owner, UWeaponInfo* weapon, AUnitBase* unit);
+	bool BeginAttackTarget(AUnitBase* owner, UWeaponInfo* weapon, AUnitBase* unit, const FAttackParameters& params = FAttackParameters());
 
-	bool BeginAttackPoint(AUnitBase* owner, UWeaponInfo* weapon, const FVector& point);
+	bool BeginAttackPoint(AUnitBase* owner, UWeaponInfo* weapon, const FVector& point, const FAttackParameters& params = FAttackParameters());
 
 	void CancelAttack();
 

@@ -23,11 +23,96 @@ void ABuilding::BeginPlay()
 	}
 
 	weaponDefault = AWeaponManager::GetInstance(GetWorld())->GetWeaponInfo(weaponDefaultName);
+
+	if (turretClass)
+	{
+		for (int i = 0; i < GetTotalPassengerSeats(); i++)
+		{
+			float angleStep = i * 360 / GetTotalPassengerSeats();
+			FVector turretLocationVector = FVector::RightVector * turretSpawnRadius;
+			FVector turretLocation = turretLocationVector.RotateAngleAxis(angleStep, FVector::UpVector);
+			turretLocation.Z = GetActorLocation().Z;
+
+			ATurret* turret = GetWorld()->SpawnActor<ATurret>(turretClass, turretLocation, FRotator::ZeroRotator);
+			check(turret);
+			turret->SetOwningUnit(this);
+
+			turretLocation.Z = 0;
+			turret->SetActorRelativeLocation(turretLocation);
+
+			// TODO Active only when seat is occupied
+			turret->SetTurrectActive(true);
+
+			turrets.Add(turret);
+		}
+	}
 }
+
+bool ABuilding::CanAttackAnything(FAttackTestParameters testParams)
+{
+	if (!testParams.bTestPhysicalState)
+	{
+		return true;
+	}
+
+	int totalSeats = GetTotalPassengerSeats();
+
+	/*
+	if (totalSeats > 0 && GetOccupiedPassengerSeats() == 0)
+	{
+		return false;
+	}
+	*/
+
+	if (!IsFullyBuilt())
+	{
+		return false;
+	}
+
+	return true;
+}
+
+
 
 ABuilding::ABuilding()
 {
 	AddClassifications(EUnitClassification::Building);
+}
+
+bool ABuilding::CanAttackPoint(const FVector& targetPoint, FAttackTestParameters testParams)
+{
+	if (!CanAttackAnything(testParams))
+	{
+		return false;
+	}
+	
+	for (ATurret* turret : turrets)
+	{
+		if (turret->CanAttackPoint(targetPoint, testParams))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool ABuilding::CanAttackTarget(AUnitBase* targetUnit, FAttackTestParameters testParams)
+{
+	if (!CanAttackAnything(testParams))
+	{
+		return false;
+	}
+
+	for (ATurret* turret : turrets)
+	{
+		if (turret->CanAttackTarget(targetUnit, testParams))
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 float ABuilding::ReceiveHealing(const FHealingInstance& repair)
@@ -40,50 +125,6 @@ float ABuilding::ReceiveHealing(const FHealingInstance& repair)
 	}
 
 	return healingActual;
-}
-
-bool ABuilding::CanBeginAttackTarget(AUnitBase* attackTarget)
-{
-	int totalSeats = GetTotalPassengerSeats();
-
-	if (totalSeats > 0 && GetOccupiedPassengerSeats() == 0)
-	{
-		return false;
-	}
-
-	return true;
-}
-
-bool ABuilding::CanBeginAttackPoint(const FVector& targetPoint)
-{
-	int totalSeats = GetTotalPassengerSeats();
-
-	if (totalSeats > 0 && GetOccupiedPassengerSeats() == 0)
-	{
-		return false;
-	}
-
-	return true;
-}
-
-bool ABuilding::CanEverAttackPoint()
-{
-	if (!weaponDefault)
-	{
-		return false;
-	}
-
-	return weaponDefault->CanThisWeaponEverAttackPoint();
-}
-
-bool ABuilding::CanEverAttackTarget(AUnitBase* targetUnit)
-{
-	if (!weaponDefault)
-	{
-		return false;
-	}
-
-	return weaponDefault->CanThisWeaponEverAttackPoint();
 }
 
 float ABuilding::GetBuildingProgressFraction() const

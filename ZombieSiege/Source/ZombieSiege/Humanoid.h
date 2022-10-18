@@ -9,6 +9,7 @@
 #include "UnitGraphicsComponent.h"
 #include "WeaponInfo.h"
 #include "WeaponManager.h"
+#include "AttackTestParameters.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Humanoid.generated.h"
 
@@ -53,15 +54,11 @@ public:
 
 	virtual float GetAttackRange() override;
 
-	virtual bool CanEverAttackTarget(AUnitBase* target) override;
+	virtual bool CanAttackPoint(const FVector& targetPoint, FAttackTestParameters testParams) override;
 
-	virtual bool CanBeginAttackTarget(AUnitBase* target) override;
+	virtual bool CanAttackTarget(AUnitBase* target, FAttackTestParameters testParams) override;
 
 	virtual bool BeginAttackTarget(AUnitBase* target) override;
-
-	virtual bool CanEverAttackPoint() override;
-
-	virtual bool CanBeginAttackPoint(const FVector& point) override;
 
 	virtual bool BeginAttackPoint(const FVector& point) override;
 };

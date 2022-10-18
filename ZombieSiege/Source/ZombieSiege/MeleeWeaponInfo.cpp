@@ -3,7 +3,7 @@
 
 #include "MeleeWeaponInfo.h"
 
-void UMeleeWeaponInfo::AttackTarget(AUnitBase* attacker, AUnitBase* target)
+void UMeleeWeaponInfo::AttackTarget(AUnitBase* attacker, AUnitBase* target, const FAttackParameters& params)
 {
 	if (!CanAttackTarget(attacker, target))
 	{
