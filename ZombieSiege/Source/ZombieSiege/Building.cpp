@@ -36,6 +36,7 @@ void ABuilding::BeginPlay()
 			ATurret* turret = GetWorld()->SpawnActor<ATurret>(turretClass, turretLocation, FRotator::ZeroRotator);
 			check(turret);
 			turret->SetOwningUnit(this);
+			turret->SetTurretIndex(i);
 
 			turretLocation.Z = 0;
 			turret->SetActorRelativeLocation(turretLocation);
@@ -77,6 +78,11 @@ bool ABuilding::CanAttackAnything(FAttackTestParameters testParams)
 ABuilding::ABuilding()
 {
 	AddClassifications(EUnitClassification::Building);
+}
+
+const TArray<ATurret*> ABuilding::GetTurrets()
+{
+	return turrets;
 }
 
 bool ABuilding::CanAttackPoint(const FVector& targetPoint, FAttackTestParameters testParams)

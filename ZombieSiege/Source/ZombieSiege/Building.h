@@ -8,13 +8,14 @@
 #include "BuildingProgressChangedEventArgs.h"
 #include "ZombieSiegePlayerController.h"
 #include "Turret.h"
+#include "TurretCarrier.h"
 #include "Building.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ZOMBIESIEGE_API ABuilding : public AUnitBase
+class ZOMBIESIEGE_API ABuilding : public AUnitBase, public ITurretCarrier
 {
 	GENERATED_BODY()
 
@@ -48,6 +49,7 @@ protected:
 public:
 	ABuilding();
 
+	const TArray<ATurret*> GetTurrets();
 
 	virtual bool CanAttackPoint(const FVector& targetPoint, FAttackTestParameters testParams) override;
 

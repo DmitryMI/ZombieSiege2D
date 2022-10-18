@@ -189,6 +189,16 @@ void ATurret::SetOwningUnit(AUnitBase* unit)
 	AttachToActor(owningUnit, attachmentRules);
 }
 
+int ATurret::GetTurretIndex()
+{
+	return turretIndex;
+}
+
+void ATurret::SetTurretIndex(int index)
+{
+	turretIndex = index;
+}
+
 AUnitBase* ATurret::GetOwningUnit()
 {
 	return owningUnit;

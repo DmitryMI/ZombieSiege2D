@@ -35,6 +35,9 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	bool bIsTurretActive = true;
 
+	UPROPERTY(VisibleAnywhere)
+	int turretIndex = -1;
+
 public:	
 	// Sets default values for this component's properties
 	ATurret();
@@ -77,6 +80,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetOwningUnit(AUnitBase* unit);
+
+	UFUNCTION(BlueprintCallable)
+	int GetTurretIndex();
+
+	UFUNCTION(BlueprintCallable)
+	void SetTurretIndex(int index);
 
 	UFUNCTION(BlueprintCallable)
 	AUnitBase* GetOwningUnit();
