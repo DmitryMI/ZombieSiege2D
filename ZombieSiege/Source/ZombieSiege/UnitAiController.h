@@ -9,6 +9,7 @@
 #include "UnitAiController.generated.h"
 
 class UUnitOrder;
+class UAISenseConfig_Sight;
 
 
 USTRUCT(BlueprintType)
@@ -72,11 +73,22 @@ protected:
 
 	virtual void OnUnPossess() override;
 
+	UAISenseConfig_Sight* GetSightSenseConfig();
+
+	void SetPerceptionSightRadius(float radius);
+
 	virtual void UnitEnteredPassengerCarrierEventHandler(const FUnitEnteredPassengerCarrierEventArgs& args);
 
 	void ExecuteOrder(UUnitOrder* order);
 	
 public:
+
+	UFUNCTION(BlueprintCallable)
+	bool GetPerceivedUnits(TArray<AUnitBase*>& outUnits) const;
+
+	UFUNCTION(BlueprintCallable)
+	bool GetPerceivedAttackableEnemies(TArray<AUnitBase*>& outEnemies) const;
+
 	UFUNCTION(BlueprintCallable)
 	void IssueOrder(UUnitOrder* order);
 

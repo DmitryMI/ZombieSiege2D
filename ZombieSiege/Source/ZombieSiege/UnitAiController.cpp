@@ -7,10 +7,21 @@
 #include "AttackUnitOrder.h"
 #include "AttackOnMoveOrder.h"
 #include "WanderingOrder.h"
+#include "Perception/AISense_Sight.h"
+#include "Perception/AIPerceptionComponent.h"
+#include "Perception/AISenseConfig.h"
+#include "Perception/AISenseConfig_Sight.h" 
 
 void AUnitAiController::BeginPlay()
 {
     Super::BeginPlay();
+
+    if (PerceptionComponent)
+    {
+        UAISenseConfig_Sight* sightConfig = GetSightSenseConfig();
+        check(sightConfig);
+        sightConfig->PeripheralVisionAngleDegrees = 360;
+    }
 }
 
 void AUnitAiController::OnPossess(APawn* pawn)
@@ -22,9 +33,16 @@ void AUnitAiController::OnPossess(APawn* pawn)
     Super::OnPossess(pawn);
 
     IssueHoldPositionOrder();
-
     args.possessedUnitNew = Cast<AUnitBase>(pawn);
-    
+
+    if (PerceptionComponent)
+    {
+        AUnitBase* unit = Cast<AUnitBase>(GetPawn());
+        float sightRadius = unit->GetVisionRadius();
+
+        SetPerceptionSightRadius(sightRadius);
+    }
+       
     if (args.possessedUnitOld != args.possessedUnitNew)
     {
         onPossessedPawnChangedEvent.Broadcast(args);
@@ -43,6 +61,23 @@ void AUnitAiController::OnUnPossess()
     onPossessedPawnChangedEvent.Broadcast(args);
 }
 
+UAISenseConfig_Sight* AUnitAiController::GetSightSenseConfig()
+{
+    FAISenseID senseId = UAISense::GetSenseID(PerceptionComponent->GetDominantSense());
+    UAISenseConfig* senseConfig = PerceptionComponent->GetSenseConfig(senseId);
+    UAISenseConfig_Sight* sightConfig = Cast<UAISenseConfig_Sight>(senseConfig);
+    return sightConfig;
+}
+
+void AUnitAiController::SetPerceptionSightRadius(float radius)
+{
+    UAISenseConfig_Sight* sightConfig = GetSightSenseConfig();
+    if (sightConfig)
+    {
+        sightConfig->SightRadius = radius;
+    }
+}
+
 void AUnitAiController::UnitEnteredPassengerCarrierEventHandler(const FUnitEnteredPassengerCarrierEventArgs& args)
 {
     if (args.enteringUnit == GetPawn())
@@ -58,6 +93,69 @@ void AUnitAiController::ExecuteOrder(UUnitOrder* order)
     args.controller = this;
     args.order = order;
     onOrderExecutionStartedEvent.Broadcast(args);
+}
+
+bool AUnitAiController::GetPerceivedUnits(TArray<AUnitBase*>& outUnits) const
+{
+    if (!PerceptionComponent)
+    {
+        return false;
+    }
+
+    TArray<AActor*> arrTemp;
+    PerceptionComponent->GetCurrentlyPerceivedActors(UAISense_Sight::StaticClass(), arrTemp);
+
+    for (AActor* actor : arrTemp)
+    {
+        AUnitBase* unit = Cast<AUnitBase>(actor);
+        if (!unit)
+        {
+            continue;
+        }
+
+        outUnits.Add(unit);
+    }
+    return !outUnits.IsEmpty();
+}
+
+bool AUnitAiController::GetPerceivedAttackableEnemies(TArray<AUnitBase*>& outEnemies) const
+{
+    if (!PerceptionComponent)
+    {
+        return false;
+    }
+
+    AUnitBase* controlledUnit = Cast<AUnitBase>(GetPawn());
+    if (!controlledUnit)
+    {
+        return false;
+    }
+
+    TArray<AActor*> arrTemp;
+    PerceptionComponent->GetCurrentlyPerceivedActors(UAISense_Sight::StaticClass(), arrTemp);
+
+    for (AActor* actor : arrTemp)
+    {
+        AUnitBase* unit = Cast<AUnitBase>(actor);
+        if (!unit)
+        {
+            continue;
+        }
+
+        if (!unit->IsAlive())
+        {
+            continue;
+        }
+
+        if (!controlledUnit->CanAttackTarget(unit, FAttackTestParameters(false, false, true, false)))
+        {
+            continue;
+        }
+
+        outEnemies.Add(unit);
+    }
+
+    return !outEnemies.IsEmpty();
 }
 
 void AUnitAiController::IssueOrder(UUnitOrder* order)
