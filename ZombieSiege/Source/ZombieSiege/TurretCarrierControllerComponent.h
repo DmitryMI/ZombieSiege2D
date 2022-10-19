@@ -6,12 +6,13 @@
 #include "Components/ActorComponent.h"
 #include "UnitBase.h"
 #include "TurretCarrier.h"
-#include "TurretControllerComponent.generated.h"
+#include "UnitAiController.h"
+#include "TurretCarrierControllerComponent.generated.h"
 
 class AUnitAiController;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class ZOMBIESIEGE_API UTurretControllerComponent : public UActorComponent
+class ZOMBIESIEGE_API UTurretCarrierControllerComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
@@ -20,15 +21,13 @@ private:
 
 public:	
 	// Sets default values for this component's properties
-	UTurretControllerComponent();
+	UTurretCarrierControllerComponent();
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
 	void OnOwnerPossessedPawnChangedHandler(const FPossessedPawnChangedEventArgs& args);
-
-	void OnHoldPositionOrderIssued();
 
 public:	
 	// Called every frame
