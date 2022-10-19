@@ -131,3 +131,8 @@ void AProjectileBase::SetImpactDamageRange(const FVector2D& damageRange)
 	impactDamageMinMax = damageRange;
 }
 
+float AProjectileBase::GetMaxSpeed()
+{
+	return maxSpeed;
+}
+

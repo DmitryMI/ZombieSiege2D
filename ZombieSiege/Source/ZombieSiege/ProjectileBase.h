@@ -97,4 +97,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetImpactDamageRange(const FVector2D& damageRange);
 
+	UFUNCTION(BlueprintCallable)
+	float GetMaxSpeed();
+
 };

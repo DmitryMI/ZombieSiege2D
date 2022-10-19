@@ -36,4 +36,15 @@ public:
 	virtual bool CanAttackTarget(AUnitBase* attacker, AUnitBase* target) override;
 
 	virtual bool CanAttackPoint(AUnitBase* attacker, const FVector& targetPoint) override;
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool SuggestProjectileVelocity(
+		const FVector& targetLocation,
+		const FVector& targetVelocity,
+		const FVector& launchLocation,
+		float projectileSpeed,
+		float& outInterceptionTime,
+		FVector& outInterceptionLocation,
+		FVector& outLaunchVelocity
+	);
 };
