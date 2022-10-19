@@ -24,5 +24,7 @@ class ZOMBIESIEGE_API ITurretCarrier
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 
-	const TArray<ATurret*>& GetTurrets();
+	static TArray<ATurret*> EmptyArray;
+
+	virtual const TArray<ATurret*>& GetTurrets() const;
 };

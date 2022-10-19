@@ -95,7 +95,7 @@ ABuilding::ABuilding()
 	AddClassifications(EUnitClassification::Building);
 }
 
-const TArray<ATurret*> ABuilding::GetTurrets()
+const TArray<ATurret*>& ABuilding::GetTurrets() const
 {
 	return turrets;
 }

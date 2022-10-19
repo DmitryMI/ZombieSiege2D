@@ -14,6 +14,11 @@ void UAttackUnitOrder::SetTargetUnit(AUnitBase* unit)
 	targetUnit = unit;
 }
 
+AUnitBase* UAttackUnitOrder::GetTargetUnit()
+{
+	return targetUnit;
+}
+
 void UAttackUnitOrder::Execute()
 {
 	Super::Execute();

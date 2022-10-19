@@ -21,6 +21,15 @@ struct FPossessedPawnChangedEventArgs
 	AUnitBase* possessedUnitNew;
 };
 
+USTRUCT(BlueprintType)
+struct FOrderExecutionStartedEventArgs
+{
+	GENERATED_BODY()
+
+	AUnitAiController* controller;
+	UUnitOrder* order;
+};
+
 UCLASS()
 class ZOMBIESIEGE_API AUnitAiController : public AAIController
 {
@@ -64,11 +73,14 @@ protected:
 	virtual void OnUnPossess() override;
 
 	virtual void UnitEnteredPassengerCarrierEventHandler(const FUnitEnteredPassengerCarrierEventArgs& args);
+
+	void ExecuteOrder(UUnitOrder* order);
 	
 public:
 	UFUNCTION(BlueprintCallable)
 	void IssueOrder(UUnitOrder* order);
 
+	UFUNCTION(BlueprintCallable)
 	void QueueOrder(UUnitOrder* order);
 
 	UFUNCTION(BlueprintCallable)
@@ -95,12 +107,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void OnOrderFinished(UUnitOrder* order);
 
-	//DECLARE_EVENT_OneParam(AUnitAiController, FOn)
+	DECLARE_EVENT_OneParam(AUnitAiController, FOnOrderExecutionStartedEvent, const FOrderExecutionStartedEventArgs&);
+	FOnOrderExecutionStartedEvent& OnOrderExecutionStarted() { return onOrderExecutionStartedEvent; }
 
 	DECLARE_EVENT_OneParam(AUnitAiController, FOnPossessedPawnChangedEvent, const FPossessedPawnChangedEventArgs&);
 	FOnPossessedPawnChangedEvent& OnPossessedPawnChanged() { return onPossessedPawnChangedEvent; }
 private:
 	FOnPossessedPawnChangedEvent onPossessedPawnChangedEvent;
+	FOnOrderExecutionStartedEvent onOrderExecutionStartedEvent;
 };
 
 

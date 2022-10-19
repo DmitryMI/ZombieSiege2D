@@ -3,4 +3,11 @@
 
 #include "TurretCarrier.h"
 
+TArray<ATurret*> ITurretCarrier::EmptyArray;
+
 // Add default functionality here for any ITurretCarrier functions that are not pure virtual.
+
+const TArray<ATurret*>& ITurretCarrier::GetTurrets() const
+{
+	return EmptyArray;
+}

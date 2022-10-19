@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "UnitBase.h"
 #include "TurretAIController.generated.h"
 
 /**
@@ -29,6 +30,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetAutoAimEnabled(bool bEnabled);
+
+	UFUNCTION(BlueprintCallable)
+	AUnitBase* GetTargetUnit();
+
+	UFUNCTION(BlueprintCallable)
+	void SetTargetUnit(AUnitBase* target);
 
 #if WITH_EDITOR  
 	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;

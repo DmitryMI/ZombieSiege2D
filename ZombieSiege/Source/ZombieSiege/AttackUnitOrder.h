@@ -23,5 +23,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetTargetUnit(AUnitBase* unit);
 
+	UFUNCTION(BlueprintCallable)
+	AUnitBase* GetTargetUnit();
+
 	virtual void Execute() override;
 };

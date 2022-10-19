@@ -125,6 +125,11 @@ public:
 	{
 		check(unit);
 
+		if (!unit->IsAlive())
+		{
+			return false;
+		}
+
 		return unit->HasAnyClassification(static_cast<EUnitClassification>(targetClassifications));
 	}
 

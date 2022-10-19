@@ -51,11 +51,20 @@ void AUnitAiController::UnitEnteredPassengerCarrierEventHandler(const FUnitEnter
     }
 }
 
+void AUnitAiController::ExecuteOrder(UUnitOrder* order)
+{
+    order->Execute();
+    FOrderExecutionStartedEventArgs args;
+    args.controller = this;
+    args.order = order;
+    onOrderExecutionStartedEvent.Broadcast(args);
+}
+
 void AUnitAiController::IssueOrder(UUnitOrder* order)
 {
     orderQueue.Empty();
     executingOrder = order;
-    order->Execute();
+    ExecuteOrder(executingOrder);
 }
 
 void AUnitAiController::QueueOrder(UUnitOrder* order)
@@ -132,6 +141,6 @@ void AUnitAiController::OnOrderFinished(UUnitOrder* order)
         check(nextOrder);
         executingOrder = nextOrder;
 
-        executingOrder->Execute();
+        ExecuteOrder(executingOrder);
     }
 }

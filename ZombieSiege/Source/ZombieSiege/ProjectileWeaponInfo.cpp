@@ -52,6 +52,11 @@ void UProjectileWeaponInfo::AttackPoint(AUnitBase* attacker, const FVector& targ
 
 bool UProjectileWeaponInfo::CanAttackTarget(AUnitBase* attacker, AUnitBase* target)
 {
+	if (!CanThisWeaponEverAttackTarget(target))
+	{
+		return false;
+	}
+
 	return CanAttackPoint(attacker, target->GetActorLocation());
 }
 

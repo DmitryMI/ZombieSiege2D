@@ -51,7 +51,7 @@ protected:
 public:
 	ABuilding();
 
-	const TArray<ATurret*> GetTurrets();
+	virtual const TArray<ATurret*>& GetTurrets() const override;
 
 	virtual bool CanAttackPoint(const FVector& targetPoint, FAttackTestParameters testParams) override;
 
