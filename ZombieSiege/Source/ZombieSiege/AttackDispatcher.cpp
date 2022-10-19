@@ -127,6 +127,10 @@ bool UAttackDispatcher::CommitAttack()
 {
 	if (attackMode == EAttackMode::Target)
 	{
+		if (targetUnit == nullptr)
+		{
+			return false;
+		}
 		if (!owningUnit->CanFinishAttackTargetWithWeapon(targetUnit, weaponInfo))
 		{
 			return false;
