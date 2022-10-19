@@ -49,8 +49,23 @@ void ABuilding::BeginPlay()
 	}
 }
 
+void ABuilding::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	for (ATurret* turret : turrets)
+	{
+		turret->Destroy();
+	}
+
+	turrets.Empty();
+}
+
 bool ABuilding::CanAttackAnything(FAttackTestParameters testParams)
 {
+	if (!IsAlive())
+	{
+		return false;
+	}
+
 	if (!testParams.bTestPhysicalState)
 	{
 		return true;
@@ -131,6 +146,16 @@ float ABuilding::ReceiveHealing(const FHealingInstance& repair)
 	}
 
 	return healingActual;
+}
+
+void ABuilding::FinishDying(const FDamageInstance& killingDamage)
+{
+	for (ATurret* turret : turrets)
+	{
+		turret->SetTurrectActive(false);
+	}
+
+	Super::FinishDying(killingDamage);
 }
 
 float ABuilding::GetBuildingProgressFraction() const

@@ -8,9 +8,19 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "UnitAiController.generated.h"
 
-/**
- * 
- */
+class UUnitOrder;
+
+
+USTRUCT(BlueprintType)
+struct FPossessedPawnChangedEventArgs
+{
+	GENERATED_BODY()
+
+	AUnitAiController* controller;
+	AUnitBase* possessedUnitOld;
+	AUnitBase* possessedUnitNew;
+};
+
 UCLASS()
 class ZOMBIESIEGE_API AUnitAiController : public AAIController
 {
@@ -18,27 +28,49 @@ class ZOMBIESIEGE_API AUnitAiController : public AAIController
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
-	UBehaviorTree* attackUnitBehaviorTree;
+	TSubclassOf<UUnitOrder> attackUnitOrderClass;
 
 	UPROPERTY(EditDefaultsOnly)
-	UBehaviorTree* attackOnMoveBehaviorTree;
+	TSubclassOf<UUnitOrder> attackOnMoveOrderClass;
 
 	UPROPERTY(EditDefaultsOnly)
-	UBehaviorTree* holdPositionBehaviorTree;
+	TSubclassOf<UUnitOrder> holdPositionOrderClass;
 
 	UPROPERTY(EditDefaultsOnly)
-	UBehaviorTree* wandererBehaviorTree;
+	TSubclassOf<UUnitOrder> wandererOrderClass;
 
 	UPROPERTY(EditDefaultsOnly)
-	UBehaviorTree* enterPassengerCarrierBehaviorTree;
+	TSubclassOf<UUnitOrder> enterPassengerCarrierOrderClass;
+
+	UPROPERTY(EditAnywhere)
+	TArray<UUnitOrder*> orderQueue;
+
+	UPROPERTY(EditAnywhere)
+	UUnitOrder* executingOrder;
+
+	template<typename T>
+	T* CreateOrder(TSubclassOf<UUnitOrder> clazz)
+	{
+		check(clazz);
+		T* order = NewObject<T>(this, clazz);
+		order->SetController(this);
+		return order;
+	}
 
 	virtual void BeginPlay() override;
 
 	virtual void OnPossess(APawn* pawn) override;
 
+	virtual void OnUnPossess() override;
+
 	virtual void UnitEnteredPassengerCarrierEventHandler(const FUnitEnteredPassengerCarrierEventArgs& args);
 	
 public:
+	UFUNCTION(BlueprintCallable)
+	void IssueOrder(UUnitOrder* order);
+
+	void QueueOrder(UUnitOrder* order);
+
 	UFUNCTION(BlueprintCallable)
 	void IssueMoveOrder(const FVector& moveToLocation);
 
@@ -58,5 +90,17 @@ public:
 	virtual void IssueEnterPassengerCarrierOrder(AUnitBase* carrier);
 
 	UFUNCTION(BlueprintCallable)
-	virtual void CancelOrder();
+	virtual void CancelAllOrders();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void OnOrderFinished(UUnitOrder* order);
+
+	//DECLARE_EVENT_OneParam(AUnitAiController, FOn)
+
+	DECLARE_EVENT_OneParam(AUnitAiController, FOnPossessedPawnChangedEvent, const FPossessedPawnChangedEventArgs&);
+	FOnPossessedPawnChangedEvent& OnPossessedPawnChanged() { return onPossessedPawnChangedEvent; }
+private:
+	FOnPossessedPawnChangedEvent onPossessedPawnChangedEvent;
 };
+
+

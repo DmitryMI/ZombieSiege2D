@@ -2,6 +2,11 @@
 
 
 #include "UnitAiController.h"
+#include "UnitOrder.h"
+#include "HoldPositionOrder.h"
+#include "AttackUnitOrder.h"
+#include "AttackOnMoveOrder.h"
+#include "WanderingOrder.h"
 
 void AUnitAiController::BeginPlay()
 {
@@ -10,16 +15,58 @@ void AUnitAiController::BeginPlay()
 
 void AUnitAiController::OnPossess(APawn* pawn)
 {
+    FPossessedPawnChangedEventArgs args;
+    args.controller = this;
+    args.possessedUnitOld = Cast<AUnitBase>(GetPawn());
+
     Super::OnPossess(pawn);
 
     IssueHoldPositionOrder();
+
+    args.possessedUnitNew = Cast<AUnitBase>(pawn);
+    
+    if (args.possessedUnitOld != args.possessedUnitNew)
+    {
+        onPossessedPawnChangedEvent.Broadcast(args);
+    }
+}
+
+void AUnitAiController::OnUnPossess()
+{
+    FPossessedPawnChangedEventArgs args;
+    args.controller = this;
+    args.possessedUnitOld = Cast<AUnitBase>(GetPawn());
+    Super::OnUnPossess();
+   
+    args.possessedUnitNew = nullptr;
+
+    onPossessedPawnChangedEvent.Broadcast(args);
 }
 
 void AUnitAiController::UnitEnteredPassengerCarrierEventHandler(const FUnitEnteredPassengerCarrierEventArgs& args)
 {
     if (args.enteringUnit == GetPawn())
     {
-        CancelOrder();
+        CancelAllOrders();
+    }
+}
+
+void AUnitAiController::IssueOrder(UUnitOrder* order)
+{
+    orderQueue.Empty();
+    executingOrder = order;
+    order->Execute();
+}
+
+void AUnitAiController::QueueOrder(UUnitOrder* order)
+{
+    if (executingOrder == nullptr || executingOrder->GetOrderType() == EUnitOrderType::HoldPosition)
+    {
+        IssueOrder(order);
+    }
+    else
+    {
+        orderQueue.Add(order);
     }
 }
 
@@ -29,78 +76,62 @@ void AUnitAiController::IssueMoveOrder(const FVector& moveToLocation)
 
 void AUnitAiController::IssueAttackUnitOrder(AUnitBase* attackTarget)
 {
-    check(attackTarget);
-
-    bool ok = RunBehaviorTree(attackUnitBehaviorTree);
-    check(ok);
-
-    UBlackboardComponent* blackboard = GetBlackboardComponent();
-    check(blackboard);
-
-    blackboard->SetValueAsObject("Target", attackTarget);
+    UAttackUnitOrder* order = CreateOrder<UAttackUnitOrder>(attackUnitOrderClass);
+    order->SetTargetUnit(attackTarget);
+    IssueOrder(order);
 }
 
 void AUnitAiController::IssueAttackOnMoveOrder(const FVector& location)
 {
-    bool ok = RunBehaviorTree(attackOnMoveBehaviorTree);
-    check(ok);
-
-    UBlackboardComponent* blackboard = GetBlackboardComponent();
-    check(blackboard);
-
-    blackboard->SetValueAsVector("TargetLocation", location);
+    UAttackOnMoveOrder* order = CreateOrder<UAttackOnMoveOrder>(attackOnMoveOrderClass);
+    order->SetTargetLocation(location);
+    IssueOrder(order);
 }
 
 void AUnitAiController::IssueWanderingOrder(FVector aroundLocation, float radius, float standingDuration)
 {
-    bool ok = RunBehaviorTree(wandererBehaviorTree);
-    check(ok);
-
-    UBlackboardComponent* blackboard = GetBlackboardComponent();
-    check(blackboard);
-
-    blackboard->SetValueAsVector("StickToPoint", aroundLocation);
-    blackboard->SetValueAsFloat("WanderingRadius", radius);
-    blackboard->SetValueAsFloat("StandingDuration", standingDuration);
+    UWanderingOrder* order = CreateOrder<UWanderingOrder>(wandererOrderClass);
+    order->SetParameters(aroundLocation, radius, standingDuration);
+    IssueOrder(order);
 }
 
 void AUnitAiController::IssueHoldPositionOrder()
 {
-    bool ok = RunBehaviorTree(holdPositionBehaviorTree);
-    check(ok);
-
-    UBlackboardComponent* blackboard = GetBlackboardComponent();
-    check(blackboard);
-
-    APawn* pawn = GetPawn();
-    check(pawn);
-
-    blackboard->SetValueAsVector("TargetLocation", pawn->GetActorLocation());
+    UHoldPositionOrder* order = CreateOrder<UHoldPositionOrder>(holdPositionOrderClass);
+    order->SetHoldLocation(GetPawn()->GetActorLocation());
+    IssueOrder(order);
 }
 
 void AUnitAiController::IssueEnterPassengerCarrierOrder(AUnitBase* carrier)
 {
-    if (!carrier->HasClassifications(EUnitClassification::PassengerCarrier))
-    {
-        return;
-    }
-
-    if (carrier->GetFreePassengerSeats() == 0)
-    {
-        return;
-    }
-
-    bool ok = RunBehaviorTree(enterPassengerCarrierBehaviorTree);
-    check(ok);
-
-    UBlackboardComponent* blackboard = GetBlackboardComponent();
-    check(blackboard);
-
-    blackboard->SetValueAsObject("PassengerCarrier", carrier);
+    
 }
 
-void AUnitAiController::CancelOrder()
+void AUnitAiController::CancelAllOrders()
 {
-    bool ok = RunBehaviorTree(holdPositionBehaviorTree);
-    check(ok);
+    executingOrder->CancelOrder();
+    orderQueue.Empty();
+
+    IssueHoldPositionOrder();
+}
+
+void AUnitAiController::OnOrderFinished(UUnitOrder* order)
+{
+    check(executingOrder == order);
+
+    UUnitOrder* nextOrder = nullptr;
+    
+    if (orderQueue.IsEmpty())
+    {
+        IssueHoldPositionOrder();
+    }
+    else
+    {
+        nextOrder = orderQueue[0];
+        orderQueue.Remove(0);
+        check(nextOrder);
+        executingOrder = nextOrder;
+
+        executingOrder->Execute();
+    }
 }

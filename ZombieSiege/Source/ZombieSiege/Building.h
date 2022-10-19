@@ -44,6 +44,8 @@ private:
 protected:
 	virtual void BeginPlay() override;
 
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 	virtual bool CanAttackAnything(FAttackTestParameters testParams);
 
 public:
@@ -56,6 +58,8 @@ public:
 	virtual bool CanAttackTarget(AUnitBase* targetUnit, FAttackTestParameters testParams) override;
 
 	virtual float ReceiveHealing(const FHealingInstance& repair) override;
+
+	virtual void FinishDying(const FDamageInstance& killingDamage) override;
 
 	UFUNCTION(BlueprintCallable)
 	float GetBuildingProgressFraction() const;

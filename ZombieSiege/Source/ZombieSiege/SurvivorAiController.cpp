@@ -4,21 +4,14 @@
 #include "SurvivorAiController.h"
 #include "UnitBase.h"
 #include "Building.h"
+#include "GatherOrder.h"
+#include "BuildOrder.h"
+#include "RepairOrder.h"
 
 
 void ASurvivorAiController::BeginPlay()
 {
     Super::BeginPlay();
-
-    ensure(holdPositionBehaviorTree);
-    ensure(wandererBehaviorTree);
-    ensure(gathererBehaviorTree);
-
-    if (GetPawn() != nullptr)
-    {
-        //IssueWanderingOrder(GetPawn()->GetActorLocation());
-        IssueHoldPositionOrder();
-    }
 }
 
 void ASurvivorAiController::Tick(float deltaTime)
@@ -37,42 +30,27 @@ void ASurvivorAiController::SetAssignedToJob(AJobBase* job)
 
     if (job == nullptr)
     {
-        IssueWanderingOrder(GetPawn()->GetActorLocation());
+        CancelAllOrders();
     }
 }
 
 void ASurvivorAiController::IssueGatherOrder(AUnitBase* gatherableUnit)
 {
-    check(gatherableUnit);    
-
-    bool ok = RunBehaviorTree(gathererBehaviorTree);
-    check(ok);
-
-    UBlackboardComponent* blackboard = GetBlackboardComponent();
-    check(blackboard);
-
-    blackboard->SetValueAsObject("GatheringTarget", gatherableUnit);
+    UGatherOrder* order = CreateOrder<UGatherOrder>(gatherOrderClass);
+    order->SetGatherTarget(Cast<ADoodad>(gatherableUnit));
+    IssueOrder(order);
 }
 
 void ASurvivorAiController::IssueBuildOrder(TSubclassOf<ABuilding> buildingClass, const FVector& location)
 {
-    bool ok = RunBehaviorTree(buildBehaviorTree);
-    check(ok);
-
-    UBlackboardComponent* blackboard = GetBlackboardComponent();
-    check(blackboard);
-
-    blackboard->SetValueAsClass("BuildingClass", buildingClass);
-    blackboard->SetValueAsVector("Location", location);
+    UBuildOrder* order = CreateOrder<UBuildOrder>(buildOrderClass);
+    order->SetParameters(buildingClass, location);
+    IssueOrder(order);
 }
 
 void ASurvivorAiController::IssueRepairOrder(ABuilding* building)
 {
-    bool ok = RunBehaviorTree(repairBehaviorTree);
-    check(ok);
-
-    UBlackboardComponent* blackboard = GetBlackboardComponent();
-    check(blackboard);
-
-    blackboard->SetValueAsObject("Building", building);
+    URepairOrder* order = CreateOrder<URepairOrder>(repairOrderClass);
+    order->SetTargetBuilding(building);
+    IssueOrder(order);
 }

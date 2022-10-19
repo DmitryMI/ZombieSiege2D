@@ -24,13 +24,13 @@ private:
 	AJobBase* assignedToJob;
 
 	UPROPERTY(EditDefaultsOnly)
-	UBehaviorTree* gathererBehaviorTree;
+	TSubclassOf<UUnitOrder> gatherOrderClass;
 
 	UPROPERTY(EditDefaultsOnly)
-	UBehaviorTree* buildBehaviorTree;
+	TSubclassOf<UUnitOrder> buildOrderClass;
 
 	UPROPERTY(EditDefaultsOnly)
-	UBehaviorTree* repairBehaviorTree;
+	TSubclassOf<UUnitOrder> repairOrderClass;
 	
 protected:
 	virtual void BeginPlay() override;
