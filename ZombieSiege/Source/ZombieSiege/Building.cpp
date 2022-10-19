@@ -42,7 +42,7 @@ void ABuilding::BeginPlay()
 			turret->SetActorRelativeLocation(turretLocation);
 
 			// TODO Active only when seat is occupied
-			turret->SetTurrectActive(true);
+			turret->SetTurrectActive(IsFullyBuilt());
 
 			turrets.Add(turret);
 		}
@@ -188,6 +188,12 @@ void ABuilding::SetBuildingProgress(float progress)
 		{
 			buildingProgress = GetMaxHealth();
 			SetUnitState(EUnitState::None);
+			
+			for (ATurret* turret : GetTurrets())
+			{
+				turret->SetTurrectActive(true);
+			}
+			
 		}
 		else if (GetUnitState() != EUnitState::Birth && buildingProgress < GetMaxHealth())
 		{
@@ -197,7 +203,6 @@ void ABuilding::SetBuildingProgress(float progress)
 		FBuildingProgressChangedEventArgs args(this, progressOld, buildingProgress);
 		onBuildingProgressChangedEvent.Broadcast(args);
 	}
-
 }
 
 void ABuilding::AddBuildingProgress(float addProgress)
