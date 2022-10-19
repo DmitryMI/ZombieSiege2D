@@ -65,15 +65,22 @@ void AZombieSiegeGameModeBase::SpawnDebugHorde(int count)
 			UE_LOG(LogTemp, Warning, TEXT("Debug zombie %s spawned at %s"), *zombieName, *zombie->GetActorLocation().ToString());
 
 			AZombieAiController* controller = zombie->GetController<AZombieAiController>();
-			check(controller);
-
-			TArray<AUnitBase*> localPlayerUnits = localPlayerContoller->GetControlledUnits();
-
-			if (localPlayerUnits.Num() != 0)
+			
+			if (controller)
 			{
-				AUnitBase* randomPlayersUnit = localPlayerUnits[FMath::RandRange(0, localPlayerUnits.Num() - 1)];
-				controller->IssueAttackOnMoveOrder(randomPlayersUnit->GetActorLocation());
+				TArray<AUnitBase*> localPlayerUnits = localPlayerContoller->GetControlledUnits();
+
+				if (localPlayerUnits.Num() != 0)
+				{
+					AUnitBase* randomPlayersUnit = localPlayerUnits[FMath::RandRange(0, localPlayerUnits.Num() - 1)];
+					controller->IssueAttackOnMoveOrder(randomPlayersUnit->GetActorLocation());
+				}
 			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("Zombie has no AIController attached!"), *randomPoint.ToString());
+			}
+			
 		}
 		else
 		{
