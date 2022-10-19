@@ -23,6 +23,6 @@ private:
 public:
 
 	UFUNCTION(BlueprintCallable, Exec)
-	void SpawnDebugHorde(int count);	
+	void SpawnDebugHorde(int count, bool bIssueAttackOnMoveOrder);	
 	
 };

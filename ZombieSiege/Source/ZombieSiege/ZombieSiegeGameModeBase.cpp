@@ -8,7 +8,7 @@
 #include "ZombieAiController.h"
 #include "ZombieSiegeUtils.h"
 
-void AZombieSiegeGameModeBase::SpawnDebugHorde(int count)
+void AZombieSiegeGameModeBase::SpawnDebugHorde(int count, bool bIssueAttackOnMoveOrder)
 {
 	UWorld* world = GetWorld();
 	AUnitManager* manager = AUnitManager::GetInstance(world);
@@ -66,7 +66,7 @@ void AZombieSiegeGameModeBase::SpawnDebugHorde(int count)
 
 			AZombieAiController* controller = zombie->GetController<AZombieAiController>();
 			
-			if (controller)
+			if (controller && bIssueAttackOnMoveOrder)
 			{
 				TArray<AUnitBase*> localPlayerUnits = localPlayerContoller->GetControlledUnits();
 
