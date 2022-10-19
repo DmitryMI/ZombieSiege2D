@@ -100,4 +100,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	float GetMaxSpeed();
 
+	UFUNCTION(BlueprintCallable)
+	virtual void SetMaxSpeed(float speed);
+
 };

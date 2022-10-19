@@ -136,3 +136,9 @@ float AProjectileBase::GetMaxSpeed()
 	return maxSpeed;
 }
 
+void AProjectileBase::SetMaxSpeed(float speed)
+{
+	maxSpeed = speed;
+	movementComponent->MaxSpeed = maxSpeed;
+}
+

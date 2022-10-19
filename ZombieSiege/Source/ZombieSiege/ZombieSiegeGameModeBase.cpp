@@ -42,11 +42,13 @@ void AZombieSiegeGameModeBase::SpawnDebugHorde(int count)
 
 	FVector terrainLocation = UZombieSiegeUtils::GetTerrainIntersection(worldLocation, worldDirection, terrainHeight);
 
+	float radius = FMath::Min(viewportWidth, viewportHeight);
+
 	for (int i = 0; i < count; i++)
 	{
 	
 		FVector randomPoint;
-		bool foundPoint = UZombieSiegeUtils::GetRandomReachableLocation(GetWorld(), terrainLocation, count * 100.0f, randomPoint);
+		bool foundPoint = UZombieSiegeUtils::GetRandomReachableLocation(GetWorld(), terrainLocation, radius, randomPoint);
 
 		if (!foundPoint)
 		{

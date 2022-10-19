@@ -19,6 +19,11 @@ AProjectileBase* UProjectileWeaponInfo::SpawnProjectile(AUnitBase* instigator, c
 	projectile->SetImpactDamageRange(damageMinMax);
 	projectile->SetWeaponInfo(this);
 
+	if (bOverrideProjectileMaxSpeed)
+	{
+		projectile->SetMaxSpeed(overrideProjectileMaxSpeed);
+	}
+
 	return projectile;
 }
 
@@ -29,7 +34,16 @@ UProjectileWeaponInfo::UProjectileWeaponInfo()
 
 void UProjectileWeaponInfo::AttackTarget(AUnitBase* attacker, AUnitBase* target, const FAttackParameters& params)
 {
-	float projectileMaxSpeed = projectileClass.GetDefaultObject()->GetMaxSpeed();
+	float projectileMaxSpeed;
+	if (bOverrideProjectileMaxSpeed)
+	{
+		projectileMaxSpeed = overrideProjectileMaxSpeed;		
+	}
+	else
+	{
+		projectileMaxSpeed = projectileClass.GetDefaultObject()->GetMaxSpeed();
+	}
+
 	FVector targetVelocity = target->GetVelocity();
 
 	FVector targetLocation = target->GetActorLocation();
@@ -188,9 +202,14 @@ bool UProjectileWeaponInfo::SuggestProjectileVelocity(
 		outInterceptionTime = time;
 		outInterceptionLocation = launchLocation + outLaunchVelocity * time;
 
-		DrawDebugLine(GetWorld(), launchLocation, outInterceptionLocation, FColor::Green, false, time, 0, 2.0f);
-		DrawDebugLine(GetWorld(), targetLocation, outInterceptionLocation, FColor::Red, false, time, 0, 2.0f);
-		DrawDebugPoint(GetWorld(), outInterceptionLocation, 5.0f, FColor::Blue, false, time);
+#if WITH_EDITOR
+		if (bDebugDrawProjectilePrediction)
+		{
+			DrawDebugLine(GetWorld(), launchLocation, outInterceptionLocation, FColor::Green, false, time, 0, 2.0f);
+			DrawDebugLine(GetWorld(), targetLocation, outInterceptionLocation, FColor::Red, false, time, 0, 2.0f);
+		}
+#endif
+
 	}
 
 	return bHasSolution;

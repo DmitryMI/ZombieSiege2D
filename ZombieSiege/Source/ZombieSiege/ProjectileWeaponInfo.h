@@ -16,6 +16,10 @@ class ZOMBIESIEGE_API UProjectileWeaponInfo : public UWeaponInfo
 	GENERATED_BODY()
 	
 protected:
+
+	UPROPERTY(EditDefaultsOnly)
+	bool bDebugDrawProjectilePrediction;
+
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AProjectileBase> projectileClass;
 
@@ -24,6 +28,12 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	float shootBehindTargetFactor = 0.0f;
+
+	UPROPERTY(EditAnywhere)
+	bool bOverrideProjectileMaxSpeed;
+
+	UPROPERTY(EditAnywhere)
+	float overrideProjectileMaxSpeed = 1000.0f;
 
 	virtual AProjectileBase* SpawnProjectile(AUnitBase* instigator, const FAttackParameters& params = FAttackParameters());
 
