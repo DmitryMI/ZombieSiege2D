@@ -24,5 +24,13 @@ public:
 	virtual void Execute() override;
 
 	UFUNCTION(BlueprintCallable)
+	AUnitBase* GetTargetUnit();
+
+	UFUNCTION(BlueprintCallable)
+	void SetTargetUnit(AUnitBase* unit);
+
+	UFUNCTION(BlueprintCallable)
 	void SetHoldLocation(const FVector& location);
+
+	virtual void TargetPerceptionStarted(AUnitBase* unit);
 };

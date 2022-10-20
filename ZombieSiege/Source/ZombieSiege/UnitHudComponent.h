@@ -18,11 +18,7 @@ class ZOMBIESIEGE_API UUnitHudComponent : public UWidgetComponent
 	GENERATED_BODY()
 
 private:
-	/// <summary>
-	/// Widget instance created by the parent class. Must NOT be UPROPERTY
-	/// </summary>
-	UUnitHudWidget* unitHudWidgetInstance;
-
+	
 	UPROPERTY(EditAnywhere)
 	bool bHideHealthIfFull;
 

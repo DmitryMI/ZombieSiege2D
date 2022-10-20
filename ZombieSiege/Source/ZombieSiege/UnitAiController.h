@@ -6,6 +6,9 @@
 #include "AIController.h"
 #include "UnitBase.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "GenericTeamAgentInterface.h"
+#include "Perception/AIPerceptionTypes.h"
+#include "Perception/AIPerceptionSystem.h"
 #include "UnitAiController.generated.h"
 
 class UUnitOrder;
@@ -80,8 +83,13 @@ protected:
 	virtual void UnitEnteredPassengerCarrierEventHandler(const FUnitEnteredPassengerCarrierEventArgs& args);
 
 	void ExecuteOrder(UUnitOrder* order);
+
+	UFUNCTION()
+	virtual void OnTargetPerceptionUpdatedHandler(AActor* Actor, FAIStimulus Stimulus);
 	
 public:
+
+	virtual FGenericTeamId GetGenericTeamId() const override;
 
 	UFUNCTION(BlueprintCallable)
 	bool GetPerceivedUnits(TArray<AUnitBase*>& outUnits) const;

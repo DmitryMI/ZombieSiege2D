@@ -25,4 +25,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetTargetLocation(const FVector& location);
+
+	UFUNCTION(BlueprintCallable)
+	AUnitBase* GetTargetUnit();
+
+	UFUNCTION(BlueprintCallable)
+	void SetTargetUnit(AUnitBase* unit);
+
+	virtual void TargetPerceptionStarted(AUnitBase* unit);
 };

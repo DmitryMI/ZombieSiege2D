@@ -76,7 +76,7 @@ void AZombieSiegeGameModeBase::SpawnDebugHorde(int count, bool bIssueAttackOnMov
 					controller->IssueAttackOnMoveOrder(randomPlayersUnit->GetActorLocation());
 				}
 			}
-			else
+			else if(!controller)
 			{
 				UE_LOG(LogTemp, Error, TEXT("Zombie has no AIController attached!"), *randomPoint.ToString());
 			}

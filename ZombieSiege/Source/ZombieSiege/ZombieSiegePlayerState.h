@@ -19,6 +19,9 @@ class ZOMBIESIEGE_API AZombieSiegePlayerState : public APlayerState
 private:
 	UPROPERTY(EditAnywhere)
 	TMap<EResourceType, float> storedResources;
+
+	UPROPERTY(VisibleAnywhere)
+	uint8 playerTeamId;
 	
 public:
 	UFUNCTION(BlueprintCallable)
@@ -60,4 +63,10 @@ public:
 	/// <param name="type">Resource Type</param>
 	/// <param name="amount">Amount</param>
 	void SetStoredResourceAmount(EResourceType type, float amount);
+
+	UFUNCTION(BlueprintCallable)
+	uint8 GetPlayerTeamId();
+
+	UFUNCTION(BlueprintCallable)
+	void SetPlayerTeamId(uint8 team);
 };

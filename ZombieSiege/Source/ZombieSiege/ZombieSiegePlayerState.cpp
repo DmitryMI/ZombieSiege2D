@@ -91,3 +91,13 @@ void AZombieSiegePlayerState::SetStoredResourceAmount(EResourceType type, float 
 		storedResources.Add(type, amount);
 	}
 }
+
+uint8 AZombieSiegePlayerState::GetPlayerTeamId()
+{
+	return playerTeamId;
+}
+
+void AZombieSiegePlayerState::SetPlayerTeamId(uint8 team)
+{
+	playerTeamId = team;
+}

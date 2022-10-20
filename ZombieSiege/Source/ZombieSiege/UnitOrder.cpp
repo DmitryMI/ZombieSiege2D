@@ -67,3 +67,11 @@ void UUnitOrder::Execute()
 
 	GetBlackboard()->SetValueAsObject("Order", this);
 }
+
+void UUnitOrder::TargetPerceptionStarted(AUnitBase* unit)
+{
+}
+
+void UUnitOrder::TargetPerceptionEnded(AUnitBase* unit)
+{
+}

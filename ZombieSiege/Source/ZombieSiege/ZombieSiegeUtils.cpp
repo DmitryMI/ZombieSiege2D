@@ -333,10 +333,7 @@ bool UZombieSiegeUtils::AreEnemies(AUnitBase* unitA, AUnitBase* unitB)
 	check(unitA);
 	check(unitB);
 
-	AZombieSiegePlayerController* controllerA = unitA->GetOwningPlayerController();
-	AZombieSiegePlayerController* controllerB = unitB->GetOwningPlayerController();
-
-	return controllerA != controllerB;
+	return FGenericTeamId::GetAttitude(unitA->GetGenericTeamId(), unitB->GetGenericTeamId()) == ETeamAttitude::Hostile;
 }
 
 int UZombieSiegeUtils::GetDirectionSpriteIndex(EFaceDirection faceDirectionEnum)

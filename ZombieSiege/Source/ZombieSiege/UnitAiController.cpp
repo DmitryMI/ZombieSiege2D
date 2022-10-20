@@ -21,6 +21,8 @@ void AUnitAiController::BeginPlay()
         UAISenseConfig_Sight* sightConfig = GetSightSenseConfig();
         check(sightConfig);
         sightConfig->PeripheralVisionAngleDegrees = 360;
+
+        PerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(this, &AUnitAiController::OnTargetPerceptionUpdatedHandler);
     }
 }
 
@@ -41,8 +43,11 @@ void AUnitAiController::OnPossess(APawn* pawn)
         float sightRadius = unit->GetVisionRadius();
 
         SetPerceptionSightRadius(sightRadius);
+
+        UAIPerceptionSystem* perceptionSystem = UAIPerceptionSystem::GetCurrent(GetWorld());
+        perceptionSystem->UpdateListener(*GetPerceptionComponent());
     }
-       
+
     if (args.possessedUnitOld != args.possessedUnitNew)
     {
         onPossessedPawnChangedEvent.Broadcast(args);
@@ -93,6 +98,40 @@ void AUnitAiController::ExecuteOrder(UUnitOrder* order)
     args.controller = this;
     args.order = order;
     onOrderExecutionStartedEvent.Broadcast(args);
+}
+
+void AUnitAiController::OnTargetPerceptionUpdatedHandler(AActor* Actor, FAIStimulus Stimulus)
+{
+    AUnitBase* unit = Cast<AUnitBase>(Actor);
+    if (!unit)
+    {
+        return;
+    }
+
+    AUnitBase* controlledUnit = Cast<AUnitBase>(GetPawn());
+
+    if (executingOrder)
+    {
+        if (Stimulus.WasSuccessfullySensed())
+        {
+            executingOrder->TargetPerceptionStarted(unit);
+        }
+        else
+        {
+            executingOrder->TargetPerceptionEnded(unit);
+        }
+    }
+}
+
+FGenericTeamId AUnitAiController::GetGenericTeamId() const
+{
+    AUnitBase* controlledUnit = Cast<AUnitBase>(GetPawn());
+    if (!controlledUnit)
+    {
+        return FGenericTeamId();
+    }
+
+    return controlledUnit->GetGenericTeamId();
 }
 
 bool AUnitAiController::GetPerceivedUnits(TArray<AUnitBase*>& outUnits) const

@@ -7,6 +7,11 @@
 #include "AttackDispatcher.h"
 #include "Components/CapsuleComponent.h"
 
+FGenericTeamId AUnitBase::GetGenericTeamId() const
+{
+	return unitTeamId;
+}
+
 bool AUnitBase::CanFinishAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon)
 {
 	return CanAttackTargetWithWeapon(target, weapon, FAttackTestParameters(false, true, false));
@@ -248,6 +253,21 @@ void AUnitBase::SetOwningPlayer(AZombieSiegePlayerController* controller)
 	{
 		owningPlayerController->AddToControlledUnits(this);
 	}
+
+	uint8 teamId = TEAM_NEUTRAL_PASSIVE;
+	FGenericTeamId unitTeam;
+
+	if (owningPlayerController)
+	{
+		AZombieSiegePlayerState* playerState = controller->GetPlayerState<AZombieSiegePlayerState>();
+		if (playerState)
+		{
+			teamId = playerState->GetPlayerTeamId();
+		}
+	}
+	
+	unitTeam = FGenericTeamId(teamId);
+	SetGenericTeamId(unitTeam);
 }
 
 void AUnitBase::SetMaxSpeed(float speedArg)
@@ -529,6 +549,11 @@ AUnitBase::AUnitBase() : Super()
 	
 }
 
+void AUnitBase::SetGenericTeamId(const FGenericTeamId& TeamID)
+{
+	unitTeamId = TeamID;
+}
+
 float AUnitBase::GetVisionRadius()
 {
 	return visionRadius;
@@ -591,6 +616,8 @@ void AUnitBase::BeginPlay()
 
 		attackDispatcher->OnAttackDispatcherStateChanged().AddUObject(this, &AUnitBase::OnAttackStateChanged);
 	}
+
+	
 }
 
 void AUnitBase::EndPlay(const EEndPlayReason::Type EndPlayReason)

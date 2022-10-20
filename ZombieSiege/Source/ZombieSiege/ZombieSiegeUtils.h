@@ -285,9 +285,9 @@ public:
 	static bool GetRandomReachableLocation(const UWorld* world, const FVector& center, float radius, FVector& outRandomLocation);
 
 	UFUNCTION(BlueprintCallable)
-	static FAttackTestParameters MakeAttackTestParameters(bool bCooldown, bool bRange, bool bAffilation, bool bPhysicalState)
+	static FAttackTestParameters MakeAttackTestParameters(bool bCooldown, bool bRange, bool bAffiliation, bool bPhysicalState)
 	{
-		return FAttackTestParameters(bCooldown, bRange, bAffilation, bPhysicalState);
+		return FAttackTestParameters(bCooldown, bRange, bAffiliation, bPhysicalState);
 	}
 };
 

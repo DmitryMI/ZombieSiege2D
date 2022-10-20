@@ -20,13 +20,14 @@
 #include "Macros.h"
 #include "ArmorNature.h"
 #include "AttackTestParameters.h"
+#include "GenericTeamAgentInterface.h"
 #include "UnitBase.generated.h"
 
 class AUnitBase;
 class UAttackDispatcher;
 
 UCLASS()
-class ZOMBIESIEGE_API AUnitBase : public ACharacter
+class ZOMBIESIEGE_API AUnitBase : public ACharacter, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
@@ -76,6 +77,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float speed = 0.0f;
+
+	UPROPERTY(EditAnywhere)
+	FGenericTeamId unitTeamId;
 
 	UPROPERTY(VisibleAnywhere)
 	bool bIsAlive = true;
@@ -143,6 +147,10 @@ protected:
 
 public:
 	AUnitBase();
+
+	virtual void SetGenericTeamId(const FGenericTeamId& TeamID);
+
+	virtual FGenericTeamId GetGenericTeamId() const override;
 
 	virtual bool CanFinishAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon);
 	virtual bool CanFinishAttackPointWithWeapon(const FVector targetPoint, UWeaponInfo* weapon);

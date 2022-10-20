@@ -19,11 +19,11 @@ struct FAttackTestParameters
 	UPROPERTY(EditAnywhere)
 	bool bTestPhysicalState;
 
-	FAttackTestParameters(bool bCooldown, bool bRange, bool bAffilation, bool bPhysicalState)
+	FAttackTestParameters(bool bCooldown, bool bRange, bool bAffiliation, bool bPhysicalState)
 	{
 		bTestCooldown = bCooldown;
 		bTestRange = bRange;
-		bTestAffilation = bAffilation;
+		bTestAffilation = bAffiliation;
 		bTestPhysicalState = bPhysicalState;
 	}
 	

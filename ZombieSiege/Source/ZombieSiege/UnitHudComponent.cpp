@@ -24,7 +24,7 @@ void UUnitHudComponent::BeginPlay()
 		building->OnBuildingProgressChanged().AddUObject(this, &UUnitHudComponent::OnOwnerBuildingProgressChangedHandler);
 	}
 
-	unitHudWidgetInstance = Cast<UUnitHudWidget>(GetWidget());
+	UUnitHudWidget* unitHudWidgetInstance = Cast<UUnitHudWidget>(GetWidget());
 	check(unitHudWidgetInstance);
 	unitHudWidgetInstance->SetUnit(owner);
 	UpdateUnitHudWidget();
@@ -42,6 +42,8 @@ void UUnitHudComponent::OnOwnerBuildingProgressChangedHandler(const FBuildingPro
 
 void UUnitHudComponent::UpdateUnitHudWidget()
 {
+	UUnitHudWidget* unitHudWidgetInstance = Cast<UUnitHudWidget>(GetWidget());
+
 	if (bHideHealthIfFull)
 	{
 		AUnitBase* owner = GetOwnerUnit();

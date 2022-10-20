@@ -54,4 +54,10 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void Execute();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void TargetPerceptionStarted(AUnitBase* unit);
+
+	UFUNCTION(BlueprintCallable)
+	virtual void TargetPerceptionEnded(AUnitBase* unit);
 };
