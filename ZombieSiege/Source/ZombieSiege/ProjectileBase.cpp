@@ -30,6 +30,8 @@ AProjectileBase::AProjectileBase()
 void AProjectileBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+	launchLocation = GetActorLocation();
 	
 	movementComponent = Cast<UProjectileMovementComponent>(GetComponentByClass(UProjectileMovementComponent::StaticClass()));
 	check(movementComponent);
@@ -47,6 +49,13 @@ bool AProjectileBase::IsTargetLocationReached()
 	float deltaSqr = deltaVec.Size2D();
 
 	return deltaSqr <= FMath::Square(reachibilityTestRadius);
+}
+
+bool AProjectileBase::IsRangeExceeded()
+{
+	float distanceSqr = (GetActorLocation() - launchLocation).Size2D();
+
+	return distanceSqr > FMath::Square(maxRange);
 }
 
 void AProjectileBase::BeginProjectileDeath()
@@ -98,7 +107,11 @@ void AProjectileBase::Tick(float DeltaTime)
 
 	if (bIsProjectileAlive)
 	{
-		if (IsTargetLocationReached())
+		if (bDiesOnTargetPointReached && IsTargetLocationReached())
+		{
+			KillProjectile();
+		}
+		else if (IsRangeExceeded())
 		{
 			KillProjectile();
 		}

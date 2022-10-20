@@ -39,10 +39,10 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	FName unitGraphicsDataName;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	EUnitState currentState = EUnitState::None;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	EFaceDirection facingDirection = EFaceDirection::Up;
 
 	UPROPERTY(EditDefaultsOnly, meta = (Bitmask, BitmaskEnum = EUnitClassification))
@@ -81,10 +81,10 @@ private:
 	UPROPERTY(EditAnywhere)
 	FGenericTeamId unitTeamId;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	bool bIsAlive = true;
 	
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	/// <summary>
 	/// Is True when health becomes 0, but before anything else happens. Can be reset to false to prevent the actual death.
 	/// </summary>
@@ -93,21 +93,21 @@ private:
 	UPROPERTY(EditAnywhere)
 	bool assignToLocalPlayerOnSpawn;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	AZombieSiegePlayerController* owningPlayerController;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	AUnitBase* passengerCarrier;
 
 	UPROPERTY(EditDefaultsOnly)
 	int passengerSeats;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	TArray<AUnitBase*> passengers;	
 
 protected:
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	UAttackDispatcher* attackDispatcher;
 
 	UPROPERTY(Transient)

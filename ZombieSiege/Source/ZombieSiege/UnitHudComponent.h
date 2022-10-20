@@ -19,7 +19,7 @@ class ZOMBIESIEGE_API UUnitHudComponent : public UWidgetComponent
 
 private:
 	
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	bool bHideHealthIfFull;
 
 protected:

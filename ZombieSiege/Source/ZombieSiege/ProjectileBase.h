@@ -29,6 +29,12 @@ protected:
 	bool bDiesOnCollision = true;
 
 	UPROPERTY(EditDefaultsOnly)
+	bool bDiesOnTargetPointReached = true;
+
+	UPROPERTY(EditDefaultsOnly)
+	float maxRange = 5000.0f;
+
+	UPROPERTY(EditDefaultsOnly)
 	float maxSpeed = 1000.0f;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -37,13 +43,16 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	float reachibilityTestRadius = 5.0f;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	UWeaponInfo* weaponInfo;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	bool bIsProjectileAlive = true;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
+	FVector launchLocation;
+
+	UPROPERTY()
 	FVector targetPoint;
 
 public:	
@@ -64,6 +73,8 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual bool IsTargetLocationReached();
+
+	bool IsRangeExceeded();
 
 	virtual void BeginProjectileDeath();
 

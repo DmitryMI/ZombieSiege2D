@@ -17,25 +17,25 @@ class ZOMBIESIEGE_API UUnitGraphicsComponent : public USceneComponent
 	GENERATED_BODY()
 
 private:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	bool bAutoSetGraphicsData = true;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	bool bOverrideGraphicsDataName = false;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	FName graphicsDataName;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	bool bAutoUpdateFlipbook = true;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	float minimalFlipbookAutoUpdateInterval = 0.1f;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	UUnitGraphicsData* unitGraphicsData;
 	
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	float flipbookAutoUpdateIntervalCounter = 0.0f;
 
 protected:
