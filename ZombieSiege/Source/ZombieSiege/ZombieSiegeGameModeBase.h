@@ -23,6 +23,9 @@ private:
 public:
 
 	UFUNCTION(BlueprintCallable, Exec)
-	void SpawnDebugHorde(int count, bool bIssueAttackOnMoveOrder);	
+	void SpawnDebugHorde(FName unitName, int count, bool bIssueAttackOnMoveOrder);	
+
+	UFUNCTION(BlueprintCallable, Exec)
+	void SpawnDebugZombies(int count, bool bIssueAttackOnMoveOrder);
 	
 };

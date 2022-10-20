@@ -485,10 +485,14 @@ float AUnitBase::GetAttackRange()
 
 void AUnitBase::FinishDying(const FDamageInstance& killingDamageInstance)
 {
-	// Should be overwritten by child classes (e.g. to start death animation).
+	PreFinishDying(killingDamageInstance);
 
 	bIsAlive = false;
-	Destroy();
+	MakeAllPassengersLeave();
+	FUnitDiedEventArgs diedArgs(this, killingDamageInstance.source);
+	onUnitDiedEvent.Broadcast(diedArgs);
+
+	PostFinishDying(killingDamageInstance);
 }
 
 void AUnitBase::SetMovementComponentSpeedCap(float speedCap)
@@ -627,7 +631,13 @@ void AUnitBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		LeavePassengerCarrier();
 	}
 
-	MakeAllPassengersLeave();
+	// If an alive unit is somehow deleted, run the death sequence, because other objects can rely on it
+	if (IsAlive())
+	{
+		FinishDying(FDamageInstance());
+	}
+
+	onUnitDestroyedEvent.Broadcast(this);
 }
 
 bool AUnitBase::ShouldBeHidden()
@@ -664,10 +674,7 @@ void AUnitBase::BeginDying(const FDamageInstance& killingDamageInstance)
 		}
 		
 		UE_LOG(LogTemp, Display, TEXT("Unit %s was killed by %s"), *name, *killerName);
-
-		MakeAllPassengersLeave();
-		FUnitDiedEventArgs diedArgs(this, killingDamageInstance.source);
-		onUnitDiedEvent.Broadcast(diedArgs);
+		
 		FinishDying(killingDamageInstance);
 	}
 	else
@@ -680,6 +687,16 @@ void AUnitBase::BeginDying(const FDamageInstance& killingDamageInstance)
 			SetHealth(1.0f);
 		}
 	}
+}
+
+void AUnitBase::PreFinishDying(const FDamageInstance& killingDamageInstance)
+{
+	
+}
+
+void AUnitBase::PostFinishDying(const FDamageInstance& killingDamageInstance)
+{
+	Destroy();
 }
 
 float AUnitBase::ReceiveDamage(const FDamageInstance& damage)

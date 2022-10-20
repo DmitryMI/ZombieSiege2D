@@ -53,10 +53,12 @@ void UUnitHudComponent::UpdateUnitHudWidget()
 		if (FMath::IsNearlyEqual(health, maxHealth))
 		{
 			unitHudWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
+			SetHiddenInGame(true, true);
 		}
 		else
 		{
 			unitHudWidgetInstance->SetVisibility(ESlateVisibility::Visible);
+			SetHiddenInGame(false, true);
 		}
 	}
 

@@ -122,33 +122,23 @@ void UTurretCarrierControllerComponent::SetTurretTargetUnit(ATurret* turret, AUn
 
 AUnitBase* UTurretCarrierControllerComponent::GetClosestAliveAttackableEnemy()
 {
-	AUnitBase* owner = GetOwningUnit<AUnitBase>();
+	AUnitBase* controlledUnit = GetOwningUnit<AUnitBase>();
+	AUnitAiController* controller = GetOwningController<AUnitAiController>();
 
-	TArray<AUnitBase*> enemies = UZombieSiegeUtils::FindAttackableEnemiesInRadius(
-		this,
-		owner,
-		owner->GetActorLocation(),
-		owner->GetVisionRadius(),
-		TArray<AActor*>(),
-		false
-	);
+	TArray<AUnitBase*> enemies;
+	bool ok = controller->GetPerceivedAttackableEnemies(enemies);
 
-	AUnitBase* closestEnemy = UZombieSiegeUtils::GetClosestUnit(enemies, owner->GetActorLocation());
+	AUnitBase* closestEnemy = UZombieSiegeUtils::GetClosestUnit(enemies, controlledUnit->GetActorLocation());
 	return closestEnemy;
 }
 
 void UTurretCarrierControllerComponent::SpreadTargetsAcrossTurrets()
 {
 	AUnitBase* owner = GetOwningUnit<AUnitBase>();
+	AUnitAiController* controller = GetOwningController<AUnitAiController>();
 
-	TArray<AUnitBase*> enemies = UZombieSiegeUtils::FindAttackableEnemiesInRadius(
-		this,
-		owner,
-		owner->GetActorLocation(),
-		owner->GetVisionRadius(),
-		TArray<AActor*>(),
-		false
-	);
+	TArray<AUnitBase*> enemies;
+	bool ok = controller->GetPerceivedAttackableEnemies(enemies);
 
 	if (enemies.IsEmpty())
 	{

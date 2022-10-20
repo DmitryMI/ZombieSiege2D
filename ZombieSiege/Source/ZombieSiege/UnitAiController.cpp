@@ -12,6 +12,7 @@
 #include "Perception/AISenseConfig.h"
 #include "Perception/AISenseConfig_Sight.h" 
 
+
 void AUnitAiController::BeginPlay()
 {
     Super::BeginPlay();
@@ -80,6 +81,7 @@ void AUnitAiController::SetPerceptionSightRadius(float radius)
     if (sightConfig)
     {
         sightConfig->SightRadius = radius;
+        sightConfig->LoseSightRadius = radius;
     }
 }
 

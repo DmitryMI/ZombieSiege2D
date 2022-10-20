@@ -8,17 +8,17 @@
 #include "ZombieAiController.h"
 #include "ZombieSiegeUtils.h"
 
-void AZombieSiegeGameModeBase::SpawnDebugHorde(int count, bool bIssueAttackOnMoveOrder)
+void AZombieSiegeGameModeBase::SpawnDebugHorde(FName unitName, int count, bool bIssueAttackOnMoveOrder)
 {
 	UWorld* world = GetWorld();
 	AUnitManager* manager = AUnitManager::GetInstance(world);
 	check(manager);
 
-	TSubclassOf<AUnitBase> unitClass = manager->GetUnitClass("Zombie");
+	TSubclassOf<AUnitBase> unitClass = manager->GetUnitClass(unitName);
 
 	if (!unitClass)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Zombie UnitClass is not registered!"));
+		UE_LOG(LogTemp, Error, TEXT("UnitClass %s is not registered!"), *unitName.ToString());
 		return;
 	}
 
@@ -57,14 +57,14 @@ void AZombieSiegeGameModeBase::SpawnDebugHorde(int count, bool bIssueAttackOnMov
 
 		randomPoint.Z = 250;
 
-		AZombie* zombie = world->SpawnActor<AZombie>(unitClass, randomPoint, FRotator::ZeroRotator);
-		if (zombie)
+		AUnitBase* spawnedUnit = world->SpawnActor<AUnitBase>(unitClass, randomPoint, FRotator::ZeroRotator);
+		if (spawnedUnit)
 		{
-			FString zombieName;
-			zombie->GetName(zombieName);
-			UE_LOG(LogTemp, Warning, TEXT("Debug zombie %s spawned at %s"), *zombieName, *zombie->GetActorLocation().ToString());
+			FString unitName;
+			spawnedUnit->GetName(unitName);
+			UE_LOG(LogTemp, Warning, TEXT("Debug unit %s spawned at %s"), *unitName, *spawnedUnit->GetActorLocation().ToString());
 
-			AZombieAiController* controller = zombie->GetController<AZombieAiController>();
+			AUnitAiController* controller = spawnedUnit->GetController<AUnitAiController>();
 			
 			if (controller && bIssueAttackOnMoveOrder)
 			{
@@ -73,18 +73,24 @@ void AZombieSiegeGameModeBase::SpawnDebugHorde(int count, bool bIssueAttackOnMov
 				if (localPlayerUnits.Num() != 0)
 				{
 					AUnitBase* randomPlayersUnit = localPlayerUnits[FMath::RandRange(0, localPlayerUnits.Num() - 1)];
+					check(randomPlayersUnit);
 					controller->IssueAttackOnMoveOrder(randomPlayersUnit->GetActorLocation());
 				}
 			}
 			else if(!controller)
 			{
-				UE_LOG(LogTemp, Error, TEXT("Zombie has no AIController attached!"), *randomPoint.ToString());
+				UE_LOG(LogTemp, Error, TEXT("Unit has no AIController attached!"), *randomPoint.ToString());
 			}
 			
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("Failed to spawn debug zombie at %s"), *randomPoint.ToString());
+			UE_LOG(LogTemp, Error, TEXT("Failed to spawn debug unit at %s"), *randomPoint.ToString());
 		}
 	}
+}
+
+void AZombieSiegeGameModeBase::SpawnDebugZombies(int count, bool bIssueAttackOnMoveOrder)
+{
+	SpawnDebugHorde("Zombie", count, bIssueAttackOnMoveOrder);
 }

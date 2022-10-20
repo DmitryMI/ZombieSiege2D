@@ -129,6 +129,21 @@ protected:
 	/// <param name="killingDamageInstance">DamageInstance that made health zero</param>
 	virtual void BeginDying(const FDamageInstance& killingDamageInstance);
 
+	UFUNCTION()
+	/// <summary>
+	/// Is invoked by FinishDying before bIsAlive is set to false, OnUnitDied event is triggered and all passengers released
+	/// </summary>
+	/// <param name="killingDamageInstance">Damage instance that set Health to zero</param>
+	virtual void PreFinishDying(const FDamageInstance& killingDamageInstance);
+
+	UFUNCTION()
+	/// <summary>
+	/// Is invoked by FinishDying after bIsAlive is set to false, OnUnitDied event is triggered and all passengers released.
+	/// Can be used to destroy the actor.
+	/// </summary>
+	/// <param name="killingDamageInstance">Damage instance that made Health zero</param>
+	virtual void PostFinishDying(const FDamageInstance& killingDamageInstance);
+
 	UFUNCTION(BlueprintCallable)
 	/// <summary>
 	/// Used internally to kill this Unit after it received damage and nothing has prevented it's death. Must set bIsAlive to False.
@@ -398,6 +413,9 @@ public:
 	/// <returns>Event declaration</returns>
 	FOnUnitDiedEvent& OnUnitDied() { return onUnitDiedEvent; }
 
+	DECLARE_EVENT_OneParam(AUnitBase, FOnUnitDestroyedEvent, AUnitBase*);
+	FOnUnitDestroyedEvent& OnUnitDestroyed() { return onUnitDestroyedEvent; }
+
 	DECLARE_EVENT_TwoParams(AUnitBase, FOnUnitStateChangedEvent, EUnitState stateOld, EUnitState stateNew);
 	FOnUnitStateChangedEvent& OnUnitStateChanged() { return onUnitStateChangedEvent; }
 	
@@ -413,4 +431,5 @@ private:
 	FOnUnitIsDyingEvent onUnitIsDyingEvent;
 	FOnUnitDiedEvent onUnitDiedEvent;
 	FOnUnitEnteredPassengerCarrierEvent onUnitEnteredPassengerCarrierEvent;
+	FOnUnitDestroyedEvent onUnitDestroyedEvent;
 };

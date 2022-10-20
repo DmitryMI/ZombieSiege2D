@@ -5,6 +5,10 @@
 #include "CoreMinimal.h"
 #include "AIController.h"
 #include "UnitBase.h"
+#include "Perception/AISense_Sight.h"
+#include "Perception/AIPerceptionComponent.h"
+#include "Perception/AISenseConfig.h"
+#include "Perception/AISenseConfig_Sight.h" 
 #include "TurretAIController.generated.h"
 
 /**
@@ -23,7 +27,21 @@ private:
 protected:
 	virtual void BeginPlay() override;
 
+	UAISenseConfig_Sight* GetSightSenseConfig();
+
+	void SetPerceptionSightRadius(float radius);
+
+	virtual void OnPossess(APawn* pawn) override;
+
+	UFUNCTION()
+	virtual void OnTargetPerceptionUpdatedHandler(AActor* Actor, FAIStimulus Stimulus);
+
 public:
+
+	virtual FGenericTeamId GetGenericTeamId() const override;
+
+	UFUNCTION(BlueprintCallable)
+	bool GetPerceivedAttackableEnemies(TArray<AUnitBase*>& outEnemies) const;
 
 	UFUNCTION(BlueprintCallable)
 	bool IsAutoAimEnabled();

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "UnitDiedEventArgs.h"
 #include "ZombieSiegePlayerController.generated.h"
 
 class ABuilding;
@@ -84,6 +85,7 @@ protected:
 	bool DeprojectMouseOnTerrain(FVector& deprojectedLocation);
 
 	virtual void OnControlledUnitDiedHandler(const FUnitDiedEventArgs& args);
+	virtual void OnControlledUnitDestroyedHandler(AUnitBase* unit);
 
 public:
 

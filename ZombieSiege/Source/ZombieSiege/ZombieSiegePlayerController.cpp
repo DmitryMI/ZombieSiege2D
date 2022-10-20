@@ -306,7 +306,11 @@ bool AZombieSiegePlayerController::DeprojectMouseOnTerrain(FVector& deprojectedL
 
 void AZombieSiegePlayerController::OnControlledUnitDiedHandler(const FUnitDiedEventArgs& args)
 {
-	AUnitBase* unit = args.deadUnit;
+	
+}
+
+void AZombieSiegePlayerController::OnControlledUnitDestroyedHandler(AUnitBase* unit)
+{
 	check(unit);
 
 	RemoveFromControlledUnits(unit);
