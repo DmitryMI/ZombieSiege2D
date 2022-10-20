@@ -83,6 +83,16 @@ void AProjectileBase::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 		return;
 	}
 
+	if (!unit->GetActorEnableCollision())
+	{
+		return;
+	}
+
+	if (!unit->IsAlive())
+	{
+		return;
+	}
+
 	AUnitBase* instigator = GetInstigator<AUnitBase>();
 
 	if (instigator && !UZombieSiegeUtils::AreEnemies(instigator, unit))
