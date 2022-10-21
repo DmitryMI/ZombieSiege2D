@@ -8,9 +8,9 @@ UWanderingOrder::UWanderingOrder()
     orderType = EUnitOrderType::Wander;
 }
 
-void UWanderingOrder::Execute()
+void UWanderingOrder::ExecuteOrder()
 {
-    Super::Execute();
+    Super::ExecuteOrder();
 
     UBlackboardComponent* blackboard = GetBlackboard();
 

@@ -28,7 +28,7 @@ public:
 
 	UWanderingOrder();
 
-	virtual void Execute() override;
+	virtual void ExecuteOrder() override;
 
 	UFUNCTION(BlueprintCallable)
 	void SetParameters(const FVector& aroundPoint, float radius, float standForSeconds);

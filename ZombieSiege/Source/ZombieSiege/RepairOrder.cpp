@@ -8,9 +8,9 @@ URepairOrder::URepairOrder()
 	orderType = EUnitOrderType::Repair;
 }
 
-void URepairOrder::Execute()
+void URepairOrder::ExecuteOrder()
 {
-	Super::Execute();
+	Super::ExecuteOrder();
 	GetBlackboard()->SetValueAsObject("Building", targetBuilding);
 }
 

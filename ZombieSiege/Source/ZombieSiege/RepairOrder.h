@@ -21,7 +21,7 @@ protected:
 public:
 	URepairOrder();
 
-	virtual void Execute() override;
+	virtual void ExecuteOrder() override;
 
 	void SetTargetBuilding(ABuilding* building);
 };

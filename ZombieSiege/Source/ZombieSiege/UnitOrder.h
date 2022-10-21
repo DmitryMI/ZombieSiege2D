@@ -55,7 +55,7 @@ public:
 	virtual void CancelOrder();
 
 	UFUNCTION(BlueprintCallable)
-	virtual void Execute();
+	virtual void ExecuteOrder();
 
 	UFUNCTION(BlueprintCallable)
 	virtual void UnitPerceptionUpdated(AUnitBase* unit, FAIStimulus Stimulus);

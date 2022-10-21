@@ -45,13 +45,13 @@ public:
 	virtual void SetAssignedToJob(AJobBase* job);
 
 	UFUNCTION(BlueprintCallable)
-	virtual void IssueGatherOrder(AUnitBase* gatherableUnit);
+	virtual void IssueGatherOrder(AUnitBase* gatherableUnit, bool bQueue = false);
 
 	UFUNCTION(BlueprintCallable)
-	virtual void IssueBuildOrder(TSubclassOf<ABuilding> buildingClass, const FVector& location);
+	virtual void IssueBuildOrder(TSubclassOf<ABuilding> buildingClass, const FVector& location, bool bQueue = false);
 
 	UFUNCTION(BlueprintCallable)
-	virtual void IssueRepairOrder(ABuilding* building);
+	virtual void IssueRepairOrder(ABuilding* building, bool bQueue = false);
 
 	
 };

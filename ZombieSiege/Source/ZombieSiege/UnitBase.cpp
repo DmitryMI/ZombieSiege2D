@@ -489,7 +489,9 @@ void AUnitBase::FinishDying(const FDamageInstance& killingDamageInstance)
 
 	bIsAlive = false;
 	MakeAllPassengersLeave();
-	SetActorEnableCollision(false);
+	SetActorEnableCollision(false);	
+	SetUnitState(EUnitState::Dead);
+
 	FUnitDiedEventArgs diedArgs(this, killingDamageInstance.source);
 	onUnitDiedEvent.Broadcast(diedArgs);
 
@@ -547,6 +549,11 @@ void AUnitBase::OnAttackStateChanged(const FAttackDispatcherStateChangedEventArg
 		SetUnitState(EUnitState::None);
 		break;
 	}
+}
+
+void AUnitBase::OnDecayTimerExpiredHandler()
+{
+	Destroy();
 }
 
 AUnitBase::AUnitBase() : Super()
@@ -692,22 +699,26 @@ void AUnitBase::BeginDying(const FDamageInstance& killingDamageInstance)
 
 void AUnitBase::PreFinishDying(const FDamageInstance& killingDamageInstance)
 {
-	
+	// Can be overridden in child classes to play some animations
+	SetActorHiddenInGame(true);
 }
 
 void AUnitBase::PostFinishDying(const FDamageInstance& killingDamageInstance)
 {
-	//SetActorHiddenInGame(true);
-	Destroy();
+	SetActorHiddenInGame(true);
+
+	UWorld* world = GetWorld();
+
+	check(world);
+	check(decayTime > 0);
+
+	world->GetTimerManager().SetTimer(decayTimerHandle, this, &AUnitBase::OnDecayTimerExpiredHandler, decayTime, false, decayTime);
 }
 
 float AUnitBase::ReceiveDamage(const FDamageInstance& damage)
 {
-	// Simple implementation, should be overriden in child classes
-
 	if (bIsDying || !bIsAlive)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ReceiveDamage invoked for a unit with bIsDying == %d and bIsAlive == %d"), bIsDying, bIsAlive);
 		return 0.0f;
 	}
 

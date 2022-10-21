@@ -12,9 +12,9 @@ UHoldPositionOrder::UHoldPositionOrder()
 	orderType = EUnitOrderType::HoldPosition;
 }
 
-void UHoldPositionOrder::Execute()
+void UHoldPositionOrder::ExecuteOrder()
 {
-	Super::Execute();
+	Super::ExecuteOrder();
 
 	GetBlackboard()->SetValueAsVector("TargetLocation", holdLocation);
 

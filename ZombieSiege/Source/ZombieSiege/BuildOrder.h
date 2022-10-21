@@ -24,7 +24,7 @@ private:
 public:
 	UBuildOrder();
 
-	virtual void Execute() override;
+	virtual void ExecuteOrder() override;
 
 	void SetParameters(TSubclassOf<ABuilding> clazz, const FVector& location);
 };

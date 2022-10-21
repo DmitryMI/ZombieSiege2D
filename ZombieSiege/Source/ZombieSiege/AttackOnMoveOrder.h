@@ -21,7 +21,7 @@ protected:
 public:
 	UAttackOnMoveOrder();
 
-	virtual void Execute() override;
+	virtual void ExecuteOrder() override;
 
 	UFUNCTION(BlueprintCallable)
 	void SetTargetLocation(const FVector& location);

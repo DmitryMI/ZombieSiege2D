@@ -286,8 +286,10 @@ bool UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(
 	UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(world);
 
 	//UNavigationPath* navPath = FindPathBetweenLocationsWorld(world, movingActorLocation, targetActorLocation, movingAgent);
-	UNavigationPath* pathToActor = NavSys->FindPathToActorSynchronously(world, movingActorLocation, goalAgent, tolerance, movingAgent);
-	pathToActor->EnableDebugDrawing(true, FLinearColor::Red);
+	//UNavigationPath* pathToActor = NavSys->FindPathToActorSynchronously(world, movingActorLocation, goalAgent, tolerance, movingAgent);
+	UNavigationPath* pathToActor = NavSys->FindPathToLocationSynchronously(world, movingActorLocation, targetActorLocation, movingAgent);
+	//pathToActor->EnableDebugDrawing(true, FLinearColor::Red);
+	//GEngine->DeferredCommands.Add(TEXT("pause"));
 
 	bool bPathToActorInvalid = !pathToActor->IsValid();
 	if (pathToActor == nullptr || bPathToActorInvalid)
@@ -303,7 +305,7 @@ bool UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(
 		}
 
 		UNavigationPath* pathToRandomPoint = FindPathBetweenLocationsWorld(world, movingActorLocation, randomPoint.Location, movingAgent);
-		pathToRandomPoint->EnableDebugDrawing(true, FLinearColor::Green);
+		//pathToRandomPoint->EnableDebugDrawing(true, FLinearColor::Green);
 		bool pathToRandomPointInvalid = !pathToRandomPoint->IsValid();
 		if (pathToRandomPoint == nullptr || pathToRandomPointInvalid)
 		{

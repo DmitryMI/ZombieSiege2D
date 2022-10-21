@@ -94,3 +94,27 @@ void AZombieSiegeGameModeBase::SpawnDebugZombies(int count, bool bIssueAttackOnM
 {
 	SpawnDebugHorde("Zombie", count, bIssueAttackOnMoveOrder);
 }
+
+void AZombieSiegeGameModeBase::KillAll(FName unitTypeName, bool bForceDeath)
+{
+	// TODO Replace UGameplayStatics::GetAllActorsOfClass with something more efficient
+
+	AUnitManager* manager = AUnitManager::GetInstance(GetWorld());
+	check(manager);
+
+	TSubclassOf<AUnitBase> unitClass = manager->GetUnitClass(unitTypeName);
+
+	TArray<AActor*> actors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), unitClass, actors);
+
+	for (AActor* actor : actors)
+	{
+		AUnitBase* unit = Cast<AUnitBase>(actor);
+		if (!unit)
+		{
+			continue;
+		}
+
+		unit->KillUnit(bForceDeath);
+	}
+}

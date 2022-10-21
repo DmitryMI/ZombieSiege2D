@@ -21,7 +21,7 @@ public:
 
 	UHoldPositionOrder();
 
-	virtual void Execute() override;
+	virtual void ExecuteOrder() override;
 
 	UFUNCTION(BlueprintCallable)
 	AUnitBase* GetTargetUnit();

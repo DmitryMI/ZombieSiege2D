@@ -27,5 +27,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Exec)
 	void SpawnDebugZombies(int count, bool bIssueAttackOnMoveOrder);
+
+	UFUNCTION(BlueprintCallable, Exec)
+	void KillAll(FName unitTypeName, bool bForceDeath = true);
 	
 };

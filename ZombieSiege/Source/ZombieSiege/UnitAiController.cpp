@@ -8,6 +8,7 @@
 #include "AttackOnMoveOrder.h"
 #include "WanderingOrder.h"
 #include "ZombieSiegeUtils.h"
+#include "BrainComponent.h"
 #include "Perception/AISense_Sight.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig.h"
@@ -117,7 +118,13 @@ void AUnitAiController::UnitEnteredPassengerCarrierEventHandler(const FUnitEnter
 
 void AUnitAiController::ExecuteOrder(UUnitOrder* order)
 {
-    order->Execute();
+    UE_LOG(LogTemp, Display, TEXT("Unit %s (%s) executes order %s"), *GetPawn()->GetName(), *GetName(), *order->GetName());
+
+    if (BrainComponent)
+    {
+        BrainComponent->ResumeLogic("ExecureOrder");
+    }
+    order->ExecuteOrder();
     FOrderExecutionStartedEventArgs args;
     args.controller = this;
     args.order = order;
@@ -217,18 +224,31 @@ AUnitAiController::AUnitAiController(const FObjectInitializer& ObjectInitializer
 
 }
 
-void AUnitAiController::IssueOrder(UUnitOrder* order)
+void AUnitAiController::IssueOrder(UUnitOrder* order, bool bQueue)
 {
-    orderQueue.Empty();
-    executingOrder = order;
-    ExecuteOrder(executingOrder);
+    if (bQueue)
+    {
+        QueueOrder(order);
+    }
+    else
+    {
+        if (executingOrder)
+        {
+            executingOrder->CancelOrder();
+        }
+
+        orderQueue.Empty();
+        executingOrder = order;
+
+        ExecuteOrder(executingOrder);
+    }
 }
 
 void AUnitAiController::QueueOrder(UUnitOrder* order)
 {
     if (executingOrder == nullptr || executingOrder->GetOrderType() == EUnitOrderType::HoldPosition)
     {
-        IssueOrder(order);
+        IssueOrder(order, false);
     }
     else
     {
@@ -236,29 +256,29 @@ void AUnitAiController::QueueOrder(UUnitOrder* order)
     }
 }
 
-void AUnitAiController::IssueMoveOrder(const FVector& moveToLocation)
+void AUnitAiController::IssueMoveOrder(const FVector& moveToLocation, bool bQueue)
 {
 }
 
-void AUnitAiController::IssueAttackUnitOrder(AUnitBase* attackTarget)
+void AUnitAiController::IssueAttackUnitOrder(AUnitBase* attackTarget, bool bQueue)
 {
     UAttackUnitOrder* order = CreateOrder<UAttackUnitOrder>(attackUnitOrderClass);
     order->SetTargetUnit(attackTarget);
-    IssueOrder(order);
+    IssueOrder(order, bQueue);
 }
 
-void AUnitAiController::IssueAttackOnMoveOrder(const FVector& location)
+void AUnitAiController::IssueAttackOnMoveOrder(const FVector& location, bool bQueue)
 {
     UAttackOnMoveOrder* order = CreateOrder<UAttackOnMoveOrder>(attackOnMoveOrderClass);
     order->SetTargetLocation(location);
-    IssueOrder(order);
+    IssueOrder(order, bQueue);
 }
 
 void AUnitAiController::IssueWanderingOrder(FVector aroundLocation, float radius, float standingDuration)
 {
     UWanderingOrder* order = CreateOrder<UWanderingOrder>(wandererOrderClass);
     order->SetParameters(aroundLocation, radius, standingDuration);
-    IssueOrder(order);
+    IssueOrder(order, false);
 }
 
 void AUnitAiController::UnitDamageReceivedEventHandler(const FDamageReceivedEventArgs& args)
@@ -295,10 +315,10 @@ void AUnitAiController::IssueHoldPositionOrder()
 {
     UHoldPositionOrder* order = CreateOrder<UHoldPositionOrder>(holdPositionOrderClass);
     order->SetHoldLocation(GetPawn()->GetActorLocation());
-    IssueOrder(order);
+    IssueOrder(order, false);
 }
 
-void AUnitAiController::IssueEnterPassengerCarrierOrder(AUnitBase* carrier)
+void AUnitAiController::IssueEnterPassengerCarrierOrder(AUnitBase* carrier, bool bQueue)
 {
     
 }
@@ -316,11 +336,33 @@ void AUnitAiController::CancelAllOrders()
     {
         IssueHoldPositionOrder();
     }
+    else
+    {
+        if (BrainComponent)
+        {
+            BrainComponent->PauseLogic("Unit is dead");
+        }
+    }
 }
 
-void AUnitAiController::OnOrderFinished(UUnitOrder* order)
+void AUnitAiController::ReportOrderFinished(UUnitOrder* order, EOrderResult result)
 {
     check(executingOrder == order);
+
+    UE_LOG(LogTemp, Display, TEXT("Unit %s (%s) finished order %s with result %d"), *GetPawn()->GetName(), *GetName(), *order->GetName(), (int)result);
+
+    switch (result)
+    {
+    case EOrderResult::Abort:
+        order->CancelOrder();
+        break;
+    case EOrderResult::Success:
+        order->FinishOrder(true);
+        break;
+    case EOrderResult::Fail:
+        order->FinishOrder(false);
+        break;
+    }
 
     UUnitOrder* nextOrder = nullptr;
     
@@ -330,6 +372,13 @@ void AUnitAiController::OnOrderFinished(UUnitOrder* order)
         if (unit && unit->IsAlive())
         {
             IssueHoldPositionOrder();
+        }
+        else
+        {
+            if (BrainComponent)
+            {
+                BrainComponent->PauseLogic("Unit is dead");
+            }
         }
     }
     else

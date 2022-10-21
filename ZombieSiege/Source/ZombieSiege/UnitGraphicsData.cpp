@@ -36,7 +36,7 @@ UPaperFlipbook* UUnitGraphicsData::GetFlipbook(EUnitState state, EFaceDirection 
 		FString name;
 		GetName(name);
 		FString stateName = UEnumUtils::GetUnitStateName(state);
-		UE_LOG(LogTemp, Error, TEXT("Animation of %s is not defined for state %s"), *name, *stateName);
+		//UE_LOG(LogTemp, Error, TEXT("Animation of %s is not defined for state %s"), *name, *stateName);
 		return nullptr;
 	}
 

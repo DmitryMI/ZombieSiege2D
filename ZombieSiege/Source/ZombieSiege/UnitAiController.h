@@ -16,6 +16,13 @@
 class UUnitOrder;
 class UAISenseConfig_Sight;
 
+UENUM(BlueprintType)
+enum class EOrderResult : uint8
+{
+	Success,
+	Fail,
+	Abort
+};
 
 USTRUCT(BlueprintType)
 struct FPossessedPawnChangedEventArgs
@@ -110,19 +117,19 @@ public:
 	bool GetPerceivedAttackableEnemies(TArray<AUnitBase*>& outEnemies) const;
 
 	UFUNCTION(BlueprintCallable)
-	void IssueOrder(UUnitOrder* order);
+	void IssueOrder(UUnitOrder* order, bool bQueue);
 
 	UFUNCTION(BlueprintCallable)
 	void QueueOrder(UUnitOrder* order);
 
 	UFUNCTION(BlueprintCallable)
-	void IssueMoveOrder(const FVector& moveToLocation);
+	void IssueMoveOrder(const FVector& moveToLocation, bool bQueue = false);
 
 	UFUNCTION(BlueprintCallable)
-	void IssueAttackUnitOrder(AUnitBase* attackTarget);
+	void IssueAttackUnitOrder(AUnitBase* attackTarget, bool bQueue = false);
 
 	UFUNCTION(BlueprintCallable)
-	void IssueAttackOnMoveOrder(const FVector& location);
+	void IssueAttackOnMoveOrder(const FVector& location, bool bQueue = false);
 
 	UFUNCTION(BlueprintCallable)
 	virtual void IssueWanderingOrder(FVector aroundLocation, float radius = 500.0f, float standingDuration = 2.0f);
@@ -131,13 +138,13 @@ public:
 	virtual void IssueHoldPositionOrder();
 
 	UFUNCTION(BlueprintCallable)
-	virtual void IssueEnterPassengerCarrierOrder(AUnitBase* carrier);
+	virtual void IssueEnterPassengerCarrierOrder(AUnitBase* carrier, bool bQueue = false);
 
 	UFUNCTION(BlueprintCallable)
 	virtual void CancelAllOrders();
 
 	UFUNCTION(BlueprintCallable)
-	virtual void OnOrderFinished(UUnitOrder* order);
+	virtual void ReportOrderFinished(UUnitOrder* order, EOrderResult result);
 
 	DECLARE_EVENT_OneParam(AUnitAiController, FOnOrderExecutionStartedEvent, const FOrderExecutionStartedEventArgs&);
 	FOnOrderExecutionStartedEvent& OnOrderExecutionStarted() { return onOrderExecutionStartedEvent; }

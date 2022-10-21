@@ -22,7 +22,7 @@ protected:
 public:
 	UGatherOrder();
 
-	virtual void Execute() override;
+	virtual void ExecuteOrder() override;
 
 	UFUNCTION(BlueprintCallable)
 	void SetGatherTarget(ADoodad* target);

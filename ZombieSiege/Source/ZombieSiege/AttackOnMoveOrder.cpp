@@ -13,9 +13,9 @@ UAttackOnMoveOrder::UAttackOnMoveOrder()
 	orderType = EUnitOrderType::AttackOnMove;
 }
 
-void UAttackOnMoveOrder::Execute()
+void UAttackOnMoveOrder::ExecuteOrder()
 {
-	Super::Execute();
+	Super::ExecuteOrder();
 
 	UBlackboardComponent* blackboard = GetBlackboard();
 	check(blackboard);

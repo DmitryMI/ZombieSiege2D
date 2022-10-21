@@ -34,23 +34,24 @@ void ASurvivorAiController::SetAssignedToJob(AJobBase* job)
     }
 }
 
-void ASurvivorAiController::IssueGatherOrder(AUnitBase* gatherableUnit)
+void ASurvivorAiController::IssueGatherOrder(AUnitBase* gatherableUnit, bool bQueue)
 {
     UGatherOrder* order = CreateOrder<UGatherOrder>(gatherOrderClass);
     order->SetGatherTarget(Cast<ADoodad>(gatherableUnit));
-    IssueOrder(order);
+
+    IssueOrder(order, bQueue);
 }
 
-void ASurvivorAiController::IssueBuildOrder(TSubclassOf<ABuilding> buildingClass, const FVector& location)
+void ASurvivorAiController::IssueBuildOrder(TSubclassOf<ABuilding> buildingClass, const FVector& location, bool bQueue)
 {
     UBuildOrder* order = CreateOrder<UBuildOrder>(buildOrderClass);
     order->SetParameters(buildingClass, location);
-    IssueOrder(order);
+    IssueOrder(order, bQueue);
 }
 
-void ASurvivorAiController::IssueRepairOrder(ABuilding* building)
+void ASurvivorAiController::IssueRepairOrder(ABuilding* building, bool bQueue)
 {
     URepairOrder* order = CreateOrder<URepairOrder>(repairOrderClass);
     order->SetTargetBuilding(building);
-    IssueOrder(order);
+    IssueOrder(order, bQueue);
 }

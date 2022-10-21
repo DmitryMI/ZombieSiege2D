@@ -8,9 +8,9 @@ UGatherOrder::UGatherOrder()
 	orderType = EUnitOrderType::Gather;
 }
 
-void UGatherOrder::Execute()
+void UGatherOrder::ExecuteOrder()
 {
-	Super::Execute();
+	Super::ExecuteOrder();
 
 	UBlackboardComponent* blackboard = GetBlackboard();
 

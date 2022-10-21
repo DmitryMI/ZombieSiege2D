@@ -26,5 +26,5 @@ public:
 	UFUNCTION(BlueprintCallable)
 	AUnitBase* GetTargetUnit();
 
-	virtual void Execute() override;
+	virtual void ExecuteOrder() override;
 };

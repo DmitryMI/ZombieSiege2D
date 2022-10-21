@@ -117,7 +117,7 @@ bool AGatherDoodadJob::IsValidExecutor(AUnitBase* executor)
 	check(targetDoodad);
 
 	FVector locationUnused;
-	bool hasPath = UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(GetWorld(), executor, targetDoodad, 250.0f, locationUnused);
+	bool hasPath = UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(GetWorld(), executor, targetDoodad, 75.0f, locationUnused);
 	
 	if (!hasPath)
 	{
@@ -153,42 +153,6 @@ float AGatherDoodadJob::CalculateJobSpecificPriorityMetric(AUnitBase* unit)
 
 bool AGatherDoodadJob::ShouldAssignUnemployedUnit(AUnitBase* unit)
 {
-	AZombieSiegePlayerController* pc = GetOwningPlayerController();
-	TArray<AJobBase*> jobs = pc->GetJobs();
-
-	float myMetric = CalculateJobSpecificPriorityMetric(unit);
-
-	int myPriority = GetJobPriority();
-
-	for (AJobBase* job : jobs)
-	{
-		if (job == this)
-		{
-			continue;
-		}
-
-		if (job->GetJobState() != EJobState::WaitingForExecutors)
-		{
-			continue;
-		}
-
-		int theirPriority = job->GetJobPriority();
-
-		AGatherDoodadJob* jobGather = Cast<AGatherDoodadJob>(job);
-		if (!jobGather)
-		{
-			continue;
-		}
-
-		float theirMetric = jobGather->CalculateJobSpecificPriorityMetric(unit);
-
-		bool isMyPriorityLower = myPriority < theirPriority || (myPriority == theirPriority && myMetric < theirMetric);
-		if (isMyPriorityLower)
-		{
-			return false;
-		}
-	}
-
 	return true;
 }
 

@@ -19,9 +19,9 @@ AUnitBase* UAttackUnitOrder::GetTargetUnit()
 	return targetUnit;
 }
 
-void UAttackUnitOrder::Execute()
+void UAttackUnitOrder::ExecuteOrder()
 {
-	Super::Execute();
+	Super::ExecuteOrder();
 
 	UBlackboardComponent* blackboard = GetBlackboard();
 	check(blackboard);

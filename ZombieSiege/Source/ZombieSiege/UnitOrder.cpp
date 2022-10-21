@@ -48,15 +48,15 @@ UBlackboardComponent* UUnitOrder::GetBlackboard()
 
 void UUnitOrder::FinishOrder(bool success)
 {
-	unitController->OnOrderFinished(this);
+
 }
 
 void UUnitOrder::CancelOrder()
 {
-	unitController->OnOrderFinished(this);
+
 }
 
-void UUnitOrder::Execute()
+void UUnitOrder::ExecuteOrder()
 {
 	AUnitAiController* controller = GetController();
 	check(controller);

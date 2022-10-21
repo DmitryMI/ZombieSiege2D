@@ -25,8 +25,11 @@ void UUnitHudComponent::BeginPlay()
 	}
 
 	UUnitHudWidget* unitHudWidgetInstance = Cast<UUnitHudWidget>(GetWidget());
-	check(unitHudWidgetInstance);
-	unitHudWidgetInstance->SetUnit(owner);
+	ensure(unitHudWidgetInstance);
+	if (unitHudWidgetInstance)
+	{
+		unitHudWidgetInstance->SetUnit(owner);
+	}
 	UpdateUnitHudWidget();
 }
 
@@ -43,6 +46,13 @@ void UUnitHudComponent::OnOwnerBuildingProgressChangedHandler(const FBuildingPro
 void UUnitHudComponent::UpdateUnitHudWidget()
 {
 	UUnitHudWidget* unitHudWidgetInstance = Cast<UUnitHudWidget>(GetWidget());
+
+	ensure(unitHudWidgetInstance);
+
+	if (!unitHudWidgetInstance)
+	{
+		return;
+	}
 
 	if (bHideHealthIfFull)
 	{

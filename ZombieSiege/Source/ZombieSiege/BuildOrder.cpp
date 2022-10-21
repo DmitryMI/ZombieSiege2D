@@ -8,9 +8,9 @@ UBuildOrder::UBuildOrder()
 	orderType = EUnitOrderType::Build;
 }
 
-void UBuildOrder::Execute()
+void UBuildOrder::ExecuteOrder()
 {
-	Super::Execute();
+	Super::ExecuteOrder();
 
 	GetBlackboard()->SetValueAsClass("BuildingClass", buildingClass);
 	GetBlackboard()->SetValueAsVector("Location", targetLocation);

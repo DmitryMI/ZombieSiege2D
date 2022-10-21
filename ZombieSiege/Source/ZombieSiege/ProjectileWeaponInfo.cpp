@@ -79,6 +79,7 @@ void UProjectileWeaponInfo::AttackPoint(AUnitBase* attacker, const FVector& targ
 	}
 
 	AProjectileBase* projectile = SpawnProjectile(attacker, params);
+	check(projectile);
 
 	FVector vectorToTarget = (targetPoint - projectile->GetActorLocation());
 

@@ -19,12 +19,12 @@
 #include "UnitState.h"
 #include "Macros.h"
 #include "ArmorNature.h"
+#include "AttackDispatcher.h"
 #include "AttackTestParameters.h"
 #include "GenericTeamAgentInterface.h"
 #include "UnitBase.generated.h"
 
 class AUnitBase;
-class UAttackDispatcher;
 
 UCLASS()
 class ZOMBIESIEGE_API AUnitBase : public ACharacter, public IGenericTeamAgentInterface
@@ -56,6 +56,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	EArmorNature armorNature;
+
+	UPROPERTY(EditDefaultsOnly)
+	float decayTime = 5.0f;
 
 	UPROPERTY(EditDefaultsOnly)
 	float visionRadius = 1000.0f;
@@ -104,6 +107,9 @@ private:
 
 	UPROPERTY()
 	TArray<AUnitBase*> passengers;	
+
+	UPROPERTY()
+	FTimerHandle decayTimerHandle;
 
 protected:
 
@@ -159,6 +165,9 @@ protected:
 
 	UFUNCTION()
 	virtual void OnAttackStateChanged(const FAttackDispatcherStateChangedEventArgs& args);
+
+	UFUNCTION()
+	virtual void OnDecayTimerExpiredHandler();
 
 public:
 	AUnitBase();
