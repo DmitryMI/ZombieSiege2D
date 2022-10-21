@@ -52,13 +52,6 @@ void UAttackOnMoveOrder::UnitPerceptionUpdated(AUnitBase* unit, FAIStimulus Stim
 		return;
 	}
 
-	AUnitBase* currentTarget = GetTargetUnit();
-
-	if (currentTarget == unit)
-	{
-		return;
-	}
-
 	AUnitAiController* controller = GetController();
 	UAIPerceptionComponent* perceptionComponent = controller->GetAIPerceptionComponent();
 	check(perceptionComponent);
@@ -66,33 +59,44 @@ void UAttackOnMoveOrder::UnitPerceptionUpdated(AUnitBase* unit, FAIStimulus Stim
 	UAISenseConfig* senseConfig = perceptionComponent->GetSenseConfig(Stimulus.Type);
 	if (senseConfig->IsA(UAISenseConfig_Sight::StaticClass()))
 	{
+		AUnitBase* currentTarget = GetTargetUnit();
 
-		//if (!currentTarget || controlledUnit->CanAttackTarget(currentTarget, FAttackTestParameters(false, false, true, false)))
-		FAttackTestParameters currentTargetTestFlags = FAttackTestParameters(EAttackTestFlags::Affiliation);
-		if (!currentTarget || controlledUnit->CanAttackTarget(currentTarget, currentTargetTestFlags))
+		bool canAttackCurrentTargetImmidiately = currentTarget && controlledUnit->CanAttackTarget(currentTarget, FAttackTestParameters(EAttackTestFlags::Affiliation | EAttackTestFlags::Range));
+		bool canAttackCurrentTargetLater = currentTarget && controlledUnit->CanAttackTarget(currentTarget, FAttackTestParameters(EAttackTestFlags::Affiliation));
+		bool canAttackSensedUnitImmidiately = controlledUnit->CanAttackTarget(unit, FAttackTestParameters(EAttackTestFlags::Affiliation | EAttackTestFlags::Range));
+		bool canAttackSensedUnitLater = controlledUnit->CanAttackTarget(unit, FAttackTestParameters(EAttackTestFlags::Affiliation));
+
+		if (!canAttackCurrentTargetLater)
 		{
-			FAttackTestParameters sensedTargetTestFlags = FAttackTestParameters(EAttackTestFlags::Affiliation);
-			//if (controlledUnit->CanAttackTarget(unit, FAttackTestParameters(false, false, true, false)))
-			if (controlledUnit->CanAttackTarget(unit, sensedTargetTestFlags))
+			SetTargetUnit(unit);
+		}
+		else if (!canAttackCurrentTargetImmidiately)
+		{
+			if (canAttackSensedUnitImmidiately)
 			{
 				SetTargetUnit(unit);
 			}
+			else if (canAttackSensedUnitLater)
+			{
+				// TODO Use Nav distance, not linear distance
+				float currentTargetDeltaSqr = (controlledUnit->GetActorLocation() - currentTarget->GetActorLocation()).SizeSquared2D();
+				float sensedUnitDeltaSqr = (controlledUnit->GetActorLocation() - unit->GetActorLocation()).SizeSquared2D();
+				if (sensedUnitDeltaSqr < currentTargetDeltaSqr)
+				{
+					SetTargetUnit(unit);
+				}
+			}
 		}
+
 	}
 	else if (senseConfig->IsA(UAISenseConfig_Touch::StaticClass()))
 	{
-		FAttackTestParameters touchedUnitTestFlags = FAttackTestParameters(
-			EAttackTestFlags::Range |
-			EAttackTestFlags::Affiliation |
-			EAttackTestFlags::PhysicalState
-		);
-
-		//if (controlledUnit->CanAttackTarget(unit, FAttackTestParameters(false, true, true, true)))
-		if (controlledUnit->CanAttackTarget(unit, touchedUnitTestFlags))
+		if (controlledUnit->CanAttackTarget(unit, FAttackTestParameters(false, true, true, true)))
 		{
 			SetTargetUnit(unit);
 		}
 	}
+
 }
 
 void UAttackOnMoveOrder::ControlledUnitAttacked(const FDamageReceivedEventArgs& damageEventArgs)

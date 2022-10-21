@@ -41,16 +41,8 @@ void UUnitGraphicsComponent::BeginPlay()
 		}
 	}
 	
-	TArray<USceneComponent*> children;
-	GetChildrenComponents(true, children);
-	for (USceneComponent* child : children)
-	{
-		UPaperFlipbookComponent* flipbookComponent = Cast<UPaperFlipbookComponent>(child);
-		if (flipbookComponent != nullptr)
-		{
-			flipbookRenderer = flipbookComponent;
-		}
-	}
+	flipbookRenderer = Cast<UPaperFlipbookComponent>(GetOwner()->GetComponentByClass(UPaperFlipbookComponent::StaticClass()));
+
 	if (flipbookRenderer)
 	{
 		flipbookRenderer->SetWorldRotation(FRotator(0, 0, -90));
@@ -66,8 +58,10 @@ void UUnitGraphicsComponent::UpdateFlipbook(EUnitState state, EFaceDirection dir
 		flipbook = unitGraphicsData->GetFlipbook(state, direction);
 	}
 
-	check(flipbookRenderer);
-	flipbookRenderer->SetFlipbook(flipbook);
+	if (flipbookRenderer)
+	{
+		flipbookRenderer->SetFlipbook(flipbook);
+	}
 }
 
 

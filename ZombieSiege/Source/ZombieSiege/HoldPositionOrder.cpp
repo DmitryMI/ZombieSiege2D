@@ -57,13 +57,33 @@ void UHoldPositionOrder::UnitPerceptionUpdated(AUnitBase* unit, FAIStimulus Stim
 	{
 		AUnitBase* currentTarget = GetTargetUnit();
 
-		if (!currentTarget || controlledUnit->CanAttackTarget(currentTarget, FAttackTestParameters(false, false, true, false)))
+		bool canAttackCurrentTargetImmidiately = currentTarget && controlledUnit->CanAttackTarget(currentTarget, FAttackTestParameters(EAttackTestFlags::Affiliation | EAttackTestFlags::Range));
+		bool canAttackCurrentTargetLater = currentTarget && controlledUnit->CanAttackTarget(currentTarget, FAttackTestParameters(EAttackTestFlags::Affiliation));
+		bool canAttackSensedUnitImmidiately = controlledUnit->CanAttackTarget(unit, FAttackTestParameters(EAttackTestFlags::Affiliation | EAttackTestFlags::Range));
+		bool canAttackSensedUnitLater = controlledUnit->CanAttackTarget(unit, FAttackTestParameters(EAttackTestFlags::Affiliation));
+
+		if (!canAttackCurrentTargetLater)
 		{
-			if (controlledUnit->CanAttackTarget(unit, FAttackTestParameters(false, false, true, false)))
+			SetTargetUnit(unit);
+		}
+		else if (!canAttackCurrentTargetImmidiately)
+		{
+			if (canAttackSensedUnitImmidiately)
 			{
 				SetTargetUnit(unit);
 			}
+			else if (canAttackSensedUnitLater)
+			{
+				// TODO Use Nav distance, not linear distance
+				float currentTargetDeltaSqr = (controlledUnit->GetActorLocation() - currentTarget->GetActorLocation()).SizeSquared2D();
+				float sensedUnitDeltaSqr = (controlledUnit->GetActorLocation() - unit->GetActorLocation()).SizeSquared2D();
+				if (sensedUnitDeltaSqr < currentTargetDeltaSqr)
+				{
+					SetTargetUnit(unit);
+				}
+			}
 		}
+		
 	}
 	else if (senseConfig->IsA(UAISenseConfig_Touch::StaticClass()))
 	{

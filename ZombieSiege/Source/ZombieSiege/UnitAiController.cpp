@@ -212,6 +212,11 @@ bool AUnitAiController::GetPerceivedAttackableEnemies(TArray<AUnitBase*>& outEne
     return !outEnemies.IsEmpty();
 }
 
+AUnitAiController::AUnitAiController(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer.SetDefaultSubobjectClass<UCrowdFollowingComponent>(TEXT("PathFollowingComponent")))
+{
+
+}
+
 void AUnitAiController::IssueOrder(UUnitOrder* order)
 {
     orderQueue.Empty();

@@ -9,6 +9,8 @@
 #include "GenericTeamAgentInterface.h"
 #include "Perception/AIPerceptionTypes.h"
 #include "Perception/AIPerceptionSystem.h"
+#include "Navigation/CrowdManager.h"
+#include "Navigation/CrowdFollowingComponent.h"
 #include "UnitAiController.generated.h"
 
 class UUnitOrder;
@@ -96,6 +98,8 @@ protected:
 	virtual void OnTargetPerceptionUpdatedHandler(AActor* Actor, FAIStimulus Stimulus);
 	
 public:
+
+	AUnitAiController(const FObjectInitializer& ObjectInitializer);
 
 	virtual FGenericTeamId GetGenericTeamId() const override;
 
