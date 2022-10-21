@@ -224,6 +224,7 @@ void AZombieSiegePlayerController::AddToControlledUnits(AUnitBase* unit)
 	check(!controlledUnits.Contains(unit));
 
 	unit->OnUnitDied().AddUObject(this, &AZombieSiegePlayerController::OnControlledUnitDiedHandler);
+	unit->OnUnitDestroyed().AddUObject(this, &AZombieSiegePlayerController::OnControlledUnitDestroyedHandler);
 
 	controlledUnits.Add(unit);
 }

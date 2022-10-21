@@ -7,6 +7,7 @@
 #include "AttackUnitOrder.h"
 #include "AttackOnMoveOrder.h"
 #include "WanderingOrder.h"
+#include "ZombieSiegeUtils.h"
 #include "Perception/AISense_Sight.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig.h"
@@ -25,31 +26,52 @@ void AUnitAiController::BeginPlay()
 
         PerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(this, &AUnitAiController::OnTargetPerceptionUpdatedHandler);
     }
+
+    AUnitBase* unit = Cast<AUnitBase>(GetPawn());
+    if (unit)
+    {
+        unitDiedEventDelegateHandle = unit->OnUnitDied().AddUObject(this, &AUnitAiController::UnitDiedEventHandler);
+        unitDamageReceivedEventDelegateHandle = unit->OnDamageReceived().AddUObject(this, &AUnitAiController::UnitDamageReceivedEventHandler);
+    }
 }
 
 void AUnitAiController::OnPossess(APawn* pawn)
 {
-    FPossessedPawnChangedEventArgs args;
-    args.controller = this;
-    args.possessedUnitOld = Cast<AUnitBase>(GetPawn());
+    AUnitBase* oldUnit = Cast<AUnitBase>(GetPawn());
+    AUnitBase* unit = Cast<AUnitBase>(pawn);
+   
+    Super::OnPossess(unit);
 
-    Super::OnPossess(pawn);
+    if (oldUnit && oldUnit != unit)
+    {
+        oldUnit->OnUnitDied().Remove(unitDiedEventDelegateHandle);   
+        oldUnit->OnDamageReceived().Remove(unitDamageReceivedEventDelegateHandle);
+    }
 
-    IssueHoldPositionOrder();
-    args.possessedUnitNew = Cast<AUnitBase>(pawn);
+    if (unit)
+    {
+        unitDiedEventDelegateHandle = unit->OnUnitDied().AddUObject(this, &AUnitAiController::UnitDiedEventHandler);
+        unitDamageReceivedEventDelegateHandle = unit->OnDamageReceived().AddUObject(this, &AUnitAiController::UnitDamageReceivedEventHandler);
+    }
+
+    if (unit && unit->IsAlive())
+    {
+        IssueHoldPositionOrder();
+    }
 
     if (PerceptionComponent)
     {
-        AUnitBase* unit = Cast<AUnitBase>(GetPawn());
         float sightRadius = unit->GetVisionRadius();
-
         SetPerceptionSightRadius(sightRadius);
-
         UAIPerceptionSystem* perceptionSystem = UAIPerceptionSystem::GetCurrent(GetWorld());
         perceptionSystem->UpdateListener(*GetPerceptionComponent());
     }
 
-    if (args.possessedUnitOld != args.possessedUnitNew)
+    FPossessedPawnChangedEventArgs args;
+    args.controller = this;
+    args.possessedUnitOld = oldUnit;
+    args.possessedUnitNew = unit;
+    if (oldUnit != unit)
     {
         onPossessedPawnChangedEvent.Broadcast(args);
     }
@@ -110,18 +132,9 @@ void AUnitAiController::OnTargetPerceptionUpdatedHandler(AActor* Actor, FAIStimu
         return;
     }
 
-    AUnitBase* controlledUnit = Cast<AUnitBase>(GetPawn());
-
     if (executingOrder)
     {
-        if (Stimulus.WasSuccessfullySensed())
-        {
-            executingOrder->TargetPerceptionStarted(unit);
-        }
-        else
-        {
-            executingOrder->TargetPerceptionEnded(unit);
-        }
+        executingOrder->UnitPerceptionUpdated(unit, Stimulus);
     }
 }
 
@@ -243,6 +256,36 @@ void AUnitAiController::IssueWanderingOrder(FVector aroundLocation, float radius
     IssueOrder(order);
 }
 
+void AUnitAiController::UnitDamageReceivedEventHandler(const FDamageReceivedEventArgs& args)
+{
+    AUnitBase* attackedUnit = args.target;
+    AUnitBase* attacker = args.source;
+
+    if (attackedUnit != GetPawn())
+    {
+        return;
+    }
+
+    if (executingOrder)
+    {
+        executingOrder->ControlledUnitAttacked(args);
+    }
+}
+
+void AUnitAiController::UnitDiedEventHandler(const FUnitDiedEventArgs& args)
+{
+    AUnitBase* diedUnit = args.deadUnit;
+    if (diedUnit != GetPawn())
+    {
+        return;
+    }
+
+    if (executingOrder)
+    {
+        CancelAllOrders();
+    }
+}
+
 void AUnitAiController::IssueHoldPositionOrder()
 {
     UHoldPositionOrder* order = CreateOrder<UHoldPositionOrder>(holdPositionOrderClass);
@@ -257,10 +300,17 @@ void AUnitAiController::IssueEnterPassengerCarrierOrder(AUnitBase* carrier)
 
 void AUnitAiController::CancelAllOrders()
 {
-    executingOrder->CancelOrder();
+    if (executingOrder)
+    {
+        executingOrder->CancelOrder();
+    }
     orderQueue.Empty();
 
-    IssueHoldPositionOrder();
+    AUnitBase* unit = Cast<AUnitBase>(GetPawn());
+    if (unit && unit->IsAlive())
+    {
+        IssueHoldPositionOrder();
+    }
 }
 
 void AUnitAiController::OnOrderFinished(UUnitOrder* order)
@@ -271,7 +321,11 @@ void AUnitAiController::OnOrderFinished(UUnitOrder* order)
     
     if (orderQueue.IsEmpty())
     {
-        IssueHoldPositionOrder();
+        AUnitBase* unit = Cast<AUnitBase>(GetPawn());
+        if (unit && unit->IsAlive())
+        {
+            IssueHoldPositionOrder();
+        }
     }
     else
     {

@@ -53,7 +53,7 @@ bool AProjectileBase::IsTargetLocationReached()
 
 bool AProjectileBase::IsRangeExceeded()
 {
-	float distanceSqr = (GetActorLocation() - launchLocation).Size2D();
+	float distanceSqr = (GetActorLocation() - launchLocation).SizeSquared2D();
 
 	return distanceSqr > FMath::Square(maxRange);
 }

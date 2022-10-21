@@ -132,7 +132,7 @@ bool ASurvivor::CanRepairTarget(ABuilding* target, FAttackTestParameters testPar
 		return false;
 	}
 
-	testParams.bTestAffilation = false;
+	testParams.SetAffiliationFlag(false);
 	bool superOk = AUnitBase::CanAttackTargetWithWeapon(target, repairWeapon, testParams);
 	return superOk;
 }
@@ -144,7 +144,7 @@ float ASurvivor::RepairTarget(ABuilding* target)
 
 bool ASurvivor::CanGatherTarget(ADoodad* gatherTarget, FAttackTestParameters testParams)
 {
-	testParams.bTestAffilation = false;
+	testParams.SetAffiliationFlag(false);
 	bool superOk = Super::CanAttackTargetWithWeapon(gatherTarget, gatheringWeapon, testParams);
 	return superOk;
 }

@@ -39,6 +39,11 @@ class ZOMBIESIEGE_API AUnitAiController : public AAIController
 {
 	GENERATED_BODY()
 
+private:
+	//UPROPERTY()
+	FDelegateHandle unitDiedEventDelegateHandle;
+	FDelegateHandle unitDamageReceivedEventDelegateHandle;
+
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UUnitOrder> attackUnitOrderClass;
@@ -79,6 +84,9 @@ protected:
 	UAISenseConfig_Sight* GetSightSenseConfig();
 
 	void SetPerceptionSightRadius(float radius);
+
+	virtual void UnitDiedEventHandler(const FUnitDiedEventArgs& args);
+	virtual void UnitDamageReceivedEventHandler(const FDamageReceivedEventArgs& args);
 
 	virtual void UnitEnteredPassengerCarrierEventHandler(const FUnitEnteredPassengerCarrierEventArgs& args);
 

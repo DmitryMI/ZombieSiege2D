@@ -66,7 +66,7 @@ bool ABuilding::CanAttackAnything(FAttackTestParameters testParams)
 		return false;
 	}
 
-	if (!testParams.bTestPhysicalState)
+	if (!testParams.GetPhysicalStateFlag())
 	{
 		return true;
 	}

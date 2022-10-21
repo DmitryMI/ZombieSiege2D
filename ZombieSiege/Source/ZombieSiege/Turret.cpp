@@ -32,7 +32,7 @@ bool ATurret::CanAttackAnything(FAttackTestParameters testParams)
 		return false;
 	}
 
-	if (!testParams.bTestPhysicalState)
+	if (!testParams.GetPhysicalStateFlag())
 	{
 		return true;
 	}
@@ -68,22 +68,22 @@ bool ATurret::CanAttackTarget(AUnitBase* targetUnit, FAttackTestParameters testP
 		return false;
 	}
 
-	if (testParams.bTestCooldown && IsOnCooldown())
+	if (testParams.GetCooldownFlag() && IsOnCooldown())
 	{
 		return false;
 	}
 
-	if (testParams.bTestAffilation && !UZombieSiegeUtils::AreEnemies(GetOwningUnit(), targetUnit))
+	if (testParams.GetAffiliationFlag() && !UZombieSiegeUtils::AreEnemies(GetOwningUnit(), targetUnit))
 	{
 		return false;
 	}
 
-	if (testParams.bTestPhysicalState && GetOwningUnit()->IsHidden())
+	if (testParams.GetPhysicalStateFlag() && GetOwningUnit()->IsHidden())
 	{
 		return false;
 	}
 
-	if (!testParams.bTestRange)
+	if (!testParams.GetRangeFlag())
 	{
 		return weaponInfo->CanThisWeaponEverAttackTarget(targetUnit);
 	}
@@ -98,17 +98,17 @@ bool ATurret::CanAttackPoint(const FVector& targetPoint, FAttackTestParameters t
 		return false;
 	}
 
-	if (testParams.bTestCooldown && IsOnCooldown())
+	if (testParams.GetCooldownFlag() && IsOnCooldown())
 	{
 		return false;
 	}
 
-	if (testParams.bTestPhysicalState && GetOwningUnit()->IsHidden())
+	if (testParams.GetPhysicalStateFlag() && GetOwningUnit()->IsHidden())
 	{
 		return false;
 	}
 
-	if (!testParams.bTestRange)
+	if (!testParams.GetRangeFlag())
 	{
 		return weaponInfo->CanThisWeaponEverAttackPoint();
 	}

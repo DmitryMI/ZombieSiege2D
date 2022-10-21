@@ -68,10 +68,10 @@ void UUnitOrder::Execute()
 	GetBlackboard()->SetValueAsObject("Order", this);
 }
 
-void UUnitOrder::TargetPerceptionStarted(AUnitBase* unit)
+void UUnitOrder::UnitPerceptionUpdated(AUnitBase* unit, FAIStimulus Stimulus)
 {
 }
 
-void UUnitOrder::TargetPerceptionEnded(AUnitBase* unit)
+void UUnitOrder::ControlledUnitAttacked(const FDamageReceivedEventArgs& damageEventArgs)
 {
 }

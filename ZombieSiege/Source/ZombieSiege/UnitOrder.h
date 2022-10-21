@@ -8,6 +8,8 @@
 #include "AIController.h"
 #include "UnitAiController.h"
 #include "UnitOrderType.h"
+#include "Perception/AIPerceptionTypes.h"
+#include "DamageReceivedEventArgs.h"
 #include "UnitOrder.generated.h"
 
 UCLASS(Blueprintable)
@@ -56,8 +58,8 @@ public:
 	virtual void Execute();
 
 	UFUNCTION(BlueprintCallable)
-	virtual void TargetPerceptionStarted(AUnitBase* unit);
+	virtual void UnitPerceptionUpdated(AUnitBase* unit, FAIStimulus Stimulus);
 
 	UFUNCTION(BlueprintCallable)
-	virtual void TargetPerceptionEnded(AUnitBase* unit);
+	virtual void ControlledUnitAttacked(const FDamageReceivedEventArgs& damageEventArgs);
 };

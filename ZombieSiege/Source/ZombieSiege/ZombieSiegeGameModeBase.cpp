@@ -8,17 +8,17 @@
 #include "ZombieAiController.h"
 #include "ZombieSiegeUtils.h"
 
-void AZombieSiegeGameModeBase::SpawnDebugHorde(FName unitName, int count, bool bIssueAttackOnMoveOrder)
+void AZombieSiegeGameModeBase::SpawnDebugHorde(FName unitTypeName, int count, bool bIssueAttackOnMoveOrder)
 {
 	UWorld* world = GetWorld();
 	AUnitManager* manager = AUnitManager::GetInstance(world);
 	check(manager);
 
-	TSubclassOf<AUnitBase> unitClass = manager->GetUnitClass(unitName);
+	TSubclassOf<AUnitBase> unitClass = manager->GetUnitClass(unitTypeName);
 
 	if (!unitClass)
 	{
-		UE_LOG(LogTemp, Error, TEXT("UnitClass %s is not registered!"), *unitName.ToString());
+		UE_LOG(LogTemp, Error, TEXT("UnitClass %s is not registered!"), *unitTypeName.ToString());
 		return;
 	}
 

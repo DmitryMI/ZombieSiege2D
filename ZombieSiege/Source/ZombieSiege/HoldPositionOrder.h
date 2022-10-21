@@ -32,5 +32,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetHoldLocation(const FVector& location);
 
-	virtual void TargetPerceptionStarted(AUnitBase* unit);
+	virtual void UnitPerceptionUpdated(AUnitBase* unit, FAIStimulus Stimulus) override;
+
+	virtual void ControlledUnitAttacked(const FDamageReceivedEventArgs& damageEventArgs) override;
 };

@@ -51,9 +51,10 @@ void UUnitGraphicsComponent::BeginPlay()
 			flipbookRenderer = flipbookComponent;
 		}
 	}
-	check(flipbookRenderer);
-
-	flipbookRenderer->SetWorldRotation(FRotator(0, 0, -90));
+	if (flipbookRenderer)
+	{
+		flipbookRenderer->SetWorldRotation(FRotator(0, 0, -90));
+	}
 }
 
 void UUnitGraphicsComponent::UpdateFlipbook(EUnitState state, EFaceDirection direction)

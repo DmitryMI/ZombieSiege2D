@@ -420,17 +420,17 @@ bool AUnitBase::CanAttackPointWithWeapon(const FVector& targetPoint, UWeaponInfo
 		return false;
 	}
 
-	if (testParams.bTestCooldown && IsOnCooldown())
+	if (testParams.GetCooldownFlag() && IsOnCooldown())
 	{
 		return false;
 	}
 
-	if (testParams.bTestPhysicalState && IsHidden())
+	if (testParams.GetPhysicalStateFlag() && IsHidden())
 	{
 		return false;
 	}
 
-	if (!testParams.bTestRange)
+	if (!testParams.GetRangeFlag())
 	{
 		return weapon->CanThisWeaponEverAttackPoint();
 	}
@@ -450,22 +450,22 @@ bool AUnitBase::CanAttackTargetWithWeapon(AUnitBase* targetUnit, UWeaponInfo* we
 		return false;
 	}
 
-	if (testParams.bTestCooldown && IsOnCooldown())
+	if (testParams.GetCooldownFlag() && IsOnCooldown())
 	{
 		return false;
 	}
 
-	if (testParams.bTestAffilation && !UZombieSiegeUtils::AreEnemies(this, targetUnit))
+	if (testParams.GetAffiliationFlag() && !UZombieSiegeUtils::AreEnemies(this, targetUnit))
 	{
 		return false;
 	}
 
-	if (testParams.bTestPhysicalState && IsHidden())
+	if (testParams.GetPhysicalStateFlag() && IsHidden())
 	{
 		return false;
 	}
 
-	if (!testParams.bTestRange)
+	if (!testParams.GetRangeFlag())
 	{
 		return weapon->CanThisWeaponEverAttackTarget(targetUnit);
 	}
@@ -489,6 +489,7 @@ void AUnitBase::FinishDying(const FDamageInstance& killingDamageInstance)
 
 	bIsAlive = false;
 	MakeAllPassengersLeave();
+	SetActorEnableCollision(false);
 	FUnitDiedEventArgs diedArgs(this, killingDamageInstance.source);
 	onUnitDiedEvent.Broadcast(diedArgs);
 
@@ -696,6 +697,7 @@ void AUnitBase::PreFinishDying(const FDamageInstance& killingDamageInstance)
 
 void AUnitBase::PostFinishDying(const FDamageInstance& killingDamageInstance)
 {
+	//SetActorHiddenInGame(true);
 	Destroy();
 }
 

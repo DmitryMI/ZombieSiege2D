@@ -3,6 +3,9 @@
 
 #include "HoldPositionOrder.h"
 #include "ZombieSiegeUtils.h"
+#include "Perception/AIPerceptionComponent.h"
+#include "Perception/AISenseConfig_Sight.h" 
+#include "Perception/AISenseConfig_Touch.h" 
 
 UHoldPositionOrder::UHoldPositionOrder()
 {
@@ -36,7 +39,7 @@ void UHoldPositionOrder::SetHoldLocation(const FVector& location)
 	holdLocation = location;
 }
 
-void UHoldPositionOrder::TargetPerceptionStarted(AUnitBase* unit)
+void UHoldPositionOrder::UnitPerceptionUpdated(AUnitBase* unit, FAIStimulus Stimulus)
 {
 	AUnitBase* controlledUnit = Cast<AUnitBase>(unitController->GetPawn());
 	check(controlledUnit);
@@ -45,13 +48,66 @@ void UHoldPositionOrder::TargetPerceptionStarted(AUnitBase* unit)
 		return;
 	}
 
-	AUnitBase* currentTarget = GetTargetUnit();
+	AUnitAiController* controller = GetController();
+	UAIPerceptionComponent* perceptionComponent = controller->GetAIPerceptionComponent();
+	check(perceptionComponent);
 
-	if (!currentTarget || controlledUnit->CanAttackTarget(currentTarget, FAttackTestParameters(false, false, true, false)))
+	UAISenseConfig* senseConfig = perceptionComponent->GetSenseConfig(Stimulus.Type);
+	if (senseConfig->IsA(UAISenseConfig_Sight::StaticClass()))
 	{
-		if (controlledUnit->CanAttackTarget(unit, FAttackTestParameters(false, false, true, false)))
+		AUnitBase* currentTarget = GetTargetUnit();
+
+		if (!currentTarget || controlledUnit->CanAttackTarget(currentTarget, FAttackTestParameters(false, false, true, false)))
+		{
+			if (controlledUnit->CanAttackTarget(unit, FAttackTestParameters(false, false, true, false)))
+			{
+				SetTargetUnit(unit);
+			}
+		}
+	}
+	else if (senseConfig->IsA(UAISenseConfig_Touch::StaticClass()))
+	{
+		if (controlledUnit->CanAttackTarget(unit, FAttackTestParameters(false, true, true, true)))
 		{
 			SetTargetUnit(unit);
 		}
 	}
+		
 }
+
+void UHoldPositionOrder::ControlledUnitAttacked(const FDamageReceivedEventArgs& damageEventArgs)
+{
+	AUnitBase* controlledUnit = Cast<AUnitBase>(unitController->GetPawn());
+	check(controlledUnit);
+
+	AUnitBase* attacker = damageEventArgs.source;
+	if (controlledUnit != damageEventArgs.target)
+	{
+		return;
+	}
+
+	if (!UZombieSiegeUtils::AreEnemies(controlledUnit, attacker))
+	{
+		return;
+	}
+
+	FAttackTestParameters currentTargetTestParams(EAttackTestFlags::Range);
+	AUnitBase* currentTarget = GetTargetUnit();
+
+	if (!currentTarget)
+	{
+		// No target at all -> Now the aggressor is the target
+		SetTargetUnit(attacker);
+		return;
+	}
+
+	if(controlledUnit->CanAttackTarget(currentTarget, currentTargetTestParams))
+	{
+		// We have a target and can attack it, do not change it
+		return;
+	}
+
+	// We have a target, but the we cannot attack it right now -> Now the aggressor is the target
+	SetTargetUnit(attacker);
+}
+
