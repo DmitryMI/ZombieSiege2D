@@ -634,6 +634,8 @@ void AUnitBase::BeginPlay()
 
 void AUnitBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	Super::EndPlay(EndPlayReason);
+
 	if (passengerCarrier)
 	{
 		LeavePassengerCarrier();

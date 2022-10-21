@@ -121,7 +121,7 @@ protected:
 
 	virtual void BeginPlay() override;
 
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason);
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	virtual bool ShouldBeHidden();
 
@@ -172,7 +172,7 @@ protected:
 public:
 	AUnitBase();
 
-	virtual void SetGenericTeamId(const FGenericTeamId& TeamID);
+	virtual void SetGenericTeamId(const FGenericTeamId& TeamID) override;
 
 	virtual FGenericTeamId GetGenericTeamId() const override;
 
