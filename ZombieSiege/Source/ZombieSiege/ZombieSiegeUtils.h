@@ -6,6 +6,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "UnitBase.h"
 #include "FaceDirection.h"
+#include "NavigationData.h"
 #include "ZombieSiegeUtils.generated.h"
 
 /**
@@ -290,8 +291,8 @@ public:
 		return FAttackTestParameters(bCooldown, bRange, bAffiliation, bPhysicalState);
 	}
 
-	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils", meta = (WorldContext = "WorldContextObject"))
-	static void DebugDrawPath(const UObject* WorldContextObject, UNavigationPath* path, FVector start, FVector goal, float duration);
+	//UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils", meta = (WorldContext = "WorldContextObject"))
+	static void DebugDrawPath(const UObject* WorldContextObject, FNavigationPath* navPath, FVector start, FVector goal, float duration, float zOffset = 300.0f);
 
 	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
 	static bool DoesPathHaveHighCostAreas(UNavigationPath* path);
