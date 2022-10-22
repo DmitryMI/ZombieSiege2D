@@ -61,7 +61,7 @@ bool ATurret::IsOnCooldown()
 	return attackDispatcher->IsOnCooldown();
 }
 
-bool ATurret::CanAttackTarget(AUnitBase* targetUnit, FAttackTestParameters testParams)
+bool ATurret::CanAttackTarget(AActor* targetActor, FAttackTestParameters testParams)
 {
 	if (!CanAttackAnything(testParams))
 	{
@@ -73,7 +73,7 @@ bool ATurret::CanAttackTarget(AUnitBase* targetUnit, FAttackTestParameters testP
 		return false;
 	}
 
-	if (testParams.GetAffiliationFlag() && !UZombieSiegeUtils::AreEnemies(GetOwningUnit(), targetUnit))
+	if (testParams.GetAffiliationFlag() && !UZombieSiegeUtils::AreEnemies(GetOwningUnit(), targetActor))
 	{
 		return false;
 	}
@@ -85,10 +85,10 @@ bool ATurret::CanAttackTarget(AUnitBase* targetUnit, FAttackTestParameters testP
 
 	if (!testParams.GetRangeFlag())
 	{
-		return weaponInfo->CanThisWeaponEverAttackTarget(targetUnit);
+		return weaponInfo->CanThisWeaponEverAttackTarget(targetActor);
 	}
 
-	return weaponInfo->CanAttackTarget(GetOwningUnit(), targetUnit);
+	return weaponInfo->CanAttackTarget(GetOwningUnit(), targetActor);
 }
 
 bool ATurret::CanAttackPoint(const FVector& targetPoint, FAttackTestParameters testParams)
@@ -117,14 +117,14 @@ bool ATurret::CanAttackPoint(const FVector& targetPoint, FAttackTestParameters t
 }
 
 
-bool ATurret::CanBeginAttackTarget(AUnitBase* targetUnit)
+bool ATurret::CanBeginAttackTarget(AActor* targetActor)
 {
-	if (!CanAttackTarget(targetUnit, FAttackTestParameters(true, true, false)))
+	if (!CanAttackTarget(targetActor, FAttackTestParameters(true, true, false)))
 	{
 		return false;
 	}
 
-	return attackDispatcher->CanBeginAttackTarget(GetOwningUnit(), weaponInfo, targetUnit);
+	return attackDispatcher->CanBeginAttackTarget(GetOwningUnit(), weaponInfo, targetActor);
 }
 
 bool ATurret::CanBeginAttackPoint(const FVector& targetPoint)
@@ -137,9 +137,9 @@ bool ATurret::CanBeginAttackPoint(const FVector& targetPoint)
 	return attackDispatcher->CanBeginAttackPoint(GetOwningUnit(), weaponInfo, targetPoint);
 }
 
-bool ATurret::BeginAttackTarget(AUnitBase* targetUnit)
+bool ATurret::BeginAttackTarget(AActor* targetActor)
 {
-	if (!CanBeginAttackTarget(targetUnit))
+	if (!CanBeginAttackTarget(targetActor))
 	{
 		return false;
 	}
@@ -148,7 +148,7 @@ bool ATurret::BeginAttackTarget(AUnitBase* targetUnit)
 	attackParams.projectileSpawnRelativeLocation = GetActorLocation() - GetOwningUnit()->GetActorLocation();
 	attackParams.projectileSpawnRelativeLocation.Z = 0;
 
-	return attackDispatcher->BeginAttackTarget(GetOwningUnit(), weaponInfo, targetUnit, attackParams);
+	return attackDispatcher->BeginAttackTarget(GetOwningUnit(), weaponInfo, targetActor, attackParams);
 }
 
 bool ATurret::BeginAttackPoint(const FVector& targetPoint)

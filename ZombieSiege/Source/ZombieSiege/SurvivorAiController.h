@@ -45,7 +45,7 @@ public:
 	virtual void SetAssignedToJob(AJobBase* job);
 
 	UFUNCTION(BlueprintCallable)
-	virtual void IssueGatherOrder(AUnitBase* gatherableUnit, bool bQueue = false);
+	virtual void IssueGatherOrder(ADoodad* gatherableUnit, bool bQueue = false);
 
 	UFUNCTION(BlueprintCallable)
 	virtual void IssueBuildOrder(TSubclassOf<ABuilding> buildingClass, const FVector& location, bool bQueue = false);

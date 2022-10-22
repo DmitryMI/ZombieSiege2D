@@ -7,6 +7,8 @@
 #include "UnitBase.h"
 #include "FaceDirection.h"
 #include "NavigationData.h"
+#include "Attackable.h"
+#include "GenericTeamAgentInterface.h"
 #include "ZombieSiegeUtils.generated.h"
 
 /**
@@ -255,21 +257,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils", meta = (WorldContext = "WorldContextObject"))
 	static bool GetBestLocationNearUnitToArrive(
 		const UObject* WorldContextObject,
-		AUnitBase* movingAgent,
-		AUnitBase* targetAgent,
+		AActor* movingAgent,
+		AActor* targetAgent,
 		float tolerance,
 		FVector& OutLocation);
 
 	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
 	static bool GetBestLocationNearUnitToArriveWorld(
 		UWorld* world,
-		AUnitBase* movingAgent,
-		AUnitBase* goalAgent,
+		AActor* movingAgent,
+		AActor* goalAgent,
 		float tolerance,
 		FVector& OutLocation);
 
 	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
-	static bool AreEnemies(AUnitBase* unitA, AUnitBase* unitB);
+	static bool AreEnemies(AActor* unitA, AActor* unitB);
 
 	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
 	static int GetDirectionSpriteIndex(EFaceDirection faceDirectionEnum);
@@ -286,9 +288,29 @@ public:
 	static bool GetRandomReachableLocation(const UWorld* world, const FVector& center, float radius, FVector& outRandomLocation);
 
 	UFUNCTION(BlueprintCallable)
-	static FAttackTestParameters MakeAttackTestParameters(bool bCooldown, bool bRange, bool bAffiliation, bool bPhysicalState)
+	static FAttackTestParameters MakeAttackTestParameters(bool bCooldown, bool bRange, bool bAffiliation, bool bPhysicalState, bool bReachability)
 	{
-		return FAttackTestParameters(bCooldown, bRange, bAffiliation, bPhysicalState);
+		FAttackTestParameters testParams;
+
+		testParams.SetCooldownFlag(bCooldown);
+		testParams.SetRangeFlag(bRange);
+		testParams.SetAffiliationFlag(bAffiliation);
+		testParams.SetPhysicalStateFlag(bPhysicalState);
+		testParams.SetReachabilityFlag(bReachability);
+
+		return testParams;
+	}
+
+	UFUNCTION(BlueprintCallable)
+	static void SetAttackTestFlags(FAttackTestParameters& params, EAttackTestFlags flagsToSet)
+	{
+		params.AttackTestFlags |= static_cast<uint8>(flagsToSet);
+	}
+
+	UFUNCTION(BlueprintCallable)
+	static void ClearAttackTestFlags(FAttackTestParameters& params, EAttackTestFlags flagsToSet)
+	{
+		params.AttackTestFlags &= ~static_cast<uint8>(flagsToSet);
 	}
 
 	//UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils", meta = (WorldContext = "WorldContextObject"))

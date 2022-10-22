@@ -126,7 +126,7 @@ AUnitBase* UTurretCarrierControllerComponent::GetClosestAliveAttackableEnemy()
 	AUnitAiController* controller = GetOwningController<AUnitAiController>();
 
 	TArray<AUnitBase*> enemies;
-	bool ok = controller->GetPerceivedAttackableEnemies(enemies);
+	bool ok = controller->GetPerceivedAttackableEnemies(enemies, FAttackTestParameters(EAttackTestFlags::Affiliation | EAttackTestFlags::Range));
 
 	AUnitBase* closestEnemy = UZombieSiegeUtils::GetClosestUnit(enemies, controlledUnit->GetActorLocation());
 	return closestEnemy;
@@ -138,7 +138,7 @@ void UTurretCarrierControllerComponent::SpreadTargetsAcrossTurrets()
 	AUnitAiController* controller = GetOwningController<AUnitAiController>();
 
 	TArray<AUnitBase*> enemies;
-	bool ok = controller->GetPerceivedAttackableEnemies(enemies);
+	bool ok = controller->GetPerceivedAttackableEnemies(enemies, FAttackTestParameters(EAttackTestFlags::Range));
 
 	if (enemies.IsEmpty())
 	{

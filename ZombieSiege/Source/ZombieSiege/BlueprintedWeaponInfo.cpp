@@ -8,12 +8,12 @@ void UBlueprintedWeaponInfo::BlueprintedAttackPoint_Implementation(AUnitBase* at
 	Super::AttackPoint(attacker, targetPoint);
 }
 
-void UBlueprintedWeaponInfo::BlueprintedAttackTarget_Implementation(AUnitBase* attacker, AUnitBase* target)
+void UBlueprintedWeaponInfo::BlueprintedAttackTarget_Implementation(AUnitBase* attacker, AActor* target)
 {
 	Super::AttackTarget(attacker, target);
 }
 
-void UBlueprintedWeaponInfo::BlueprintedCanAttackTarget_Implementation(AUnitBase* attacker, AUnitBase* target)
+void UBlueprintedWeaponInfo::BlueprintedCanAttackTarget_Implementation(AUnitBase* attacker, AActor* target)
 {
 	canAttackTargetReturn = Super::CanAttackTarget(attacker, target);
 }

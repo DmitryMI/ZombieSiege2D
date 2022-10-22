@@ -56,9 +56,9 @@ public:
 
 	virtual bool CanAttackPoint(const FVector& targetPoint, FAttackTestParameters testParams) override;
 
-	virtual bool CanAttackTarget(AUnitBase* target, FAttackTestParameters testParams) override;
+	virtual bool CanAttackTarget(AActor* targetActor, FAttackTestParameters testParams) override;
 
-	virtual bool BeginAttackTarget(AUnitBase* target) override;
+	virtual bool BeginAttackTarget(AActor* targetActor) override;
 
 	virtual bool BeginAttackPoint(const FVector& point) override;
 };

@@ -126,23 +126,23 @@ bool AHumanoid::CanAttackPoint(const FVector& targetPoint, FAttackTestParameters
 	return Super::CanAttackPointWithWeapon(targetPoint, weaponDefault, testParams);
 }
 
-bool AHumanoid::CanAttackTarget(AUnitBase* target, FAttackTestParameters testParams)
+bool AHumanoid::CanAttackTarget(AActor* targetAttackable, FAttackTestParameters testParams)
 {
-	return Super::CanAttackTargetWithWeapon(target, weaponDefault, testParams);
+	return Super::CanAttackTargetWithWeapon(targetAttackable, weaponDefault, testParams);
 }
 
-bool AHumanoid::BeginAttackTarget(AUnitBase* target)
+bool AHumanoid::BeginAttackTarget(AActor* targetAttackable)
 {
-	FVector vec = target->GetActorLocation() - GetActorLocation();
+	FVector vec = targetAttackable->GetActorLocation() - GetActorLocation();
 	EFaceDirection direction = GetDirectionFromVector(vec);
 	SetFacingDirection(direction);
 
-	if (!CanAttackTargetWithWeapon(target, weaponDefault, FAttackTestParameters(true, true, false)))
+	if (!CanAttackTargetWithWeapon(targetAttackable, weaponDefault, FAttackTestParameters(true, true, false)))
 	{
 		return false;
 	}
 
-	return BeginAttackTargetWithWeapon(target, weaponDefault);
+	return BeginAttackTargetWithWeapon(targetAttackable, weaponDefault);
 }
 
 bool AHumanoid::BeginAttackPoint(const FVector& point)

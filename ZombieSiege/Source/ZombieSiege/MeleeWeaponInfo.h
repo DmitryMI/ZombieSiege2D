@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "WeaponInfo.h"
+#include "Attackable.h"
 #include "MeleeWeaponInfo.generated.h"
 
 /**
@@ -16,5 +17,5 @@ class ZOMBIESIEGE_API UMeleeWeaponInfo : public UWeaponInfo
 	
 public:
 
-	virtual void AttackTarget(AUnitBase* attacker, AUnitBase* target, const FAttackParameters& params = FAttackParameters()) override;
+	virtual void AttackTarget(AUnitBase* attacker, AActor* target, const FAttackParameters& params = FAttackParameters()) override;
 };

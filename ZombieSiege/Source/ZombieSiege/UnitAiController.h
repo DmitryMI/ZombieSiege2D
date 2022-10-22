@@ -10,6 +10,7 @@
 #include "Perception/AIPerceptionTypes.h"
 #include "Perception/AIPerceptionSystem.h"
 #include "Navigation/CrowdManager.h"
+#include "AttackTestParameters.h"
 #include "Navigation/CrowdFollowingComponent.h"
 #include "UnitAiController.generated.h"
 
@@ -114,7 +115,7 @@ public:
 	bool GetPerceivedUnits(TArray<AUnitBase*>& outUnits) const;
 
 	UFUNCTION(BlueprintCallable)
-	bool GetPerceivedAttackableEnemies(TArray<AUnitBase*>& outEnemies) const;
+	bool GetPerceivedAttackableEnemies(TArray<AUnitBase*>& outEnemies, FAttackTestParameters attackTestParams) const;
 
 	UFUNCTION(BlueprintCallable)
 	void IssueOrder(UUnitOrder* order, bool bQueue);

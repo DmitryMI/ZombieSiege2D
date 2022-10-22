@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UnitClassification.h"
-#include "UnitBase.h"
+#include "Attackable.h"
 #include "ZombieSiegeUtils.h"
 #include "WeaponNature.h"
 #include "AttackParameters.h"
@@ -121,16 +121,17 @@ public:
 	/// Determines if this weapon can ever target a unit.
 	/// </summary>
 	/// <returns>True if weapon can target a unit</returns>
-	virtual bool CanThisWeaponEverAttackTarget(AUnitBase* unit) const
+	virtual bool CanThisWeaponEverAttackTarget(AActor* actor) const
 	{
-		check(unit);
+		IAttackable* attackable = Cast<IAttackable>(actor);
+		check(attackable);
 
-		if (!unit->IsAlive())
+		if (!attackable->IsAlive())
 		{
 			return false;
 		}
 
-		return unit->HasAnyClassification(static_cast<EUnitClassification>(targetClassifications));
+		return attackable->HasAnyClassification(static_cast<EUnitClassification>(targetClassifications));
 	}
 
 	UFUNCTION(BlueprintCallable)
@@ -151,14 +152,20 @@ public:
 	/// <param name="attacker">Unit that is possibly using this weapon</param>
 	/// <param name="target">Possible target unit of an attack</param>
 	/// <returns>True if an attack is possible. Always false if CanThisWeaponEverAttackTarget() is false</returns>
-	virtual bool CanAttackTarget(AUnitBase* attacker, AUnitBase* target)
+	virtual bool CanAttackTarget(AUnitBase* attacker, AActor* target)
 	{
 		if (!CanThisWeaponEverAttackTarget(target))
 		{
 			return false;
 		}
 
-		float distance = UZombieSiegeUtils::GetDistance2DBetweenSimpleCollisions(attacker, target);
+		AActor* targetActor = Cast<AActor>(target);
+		if (!targetActor)
+		{
+			return false;
+		}
+
+		float distance = UZombieSiegeUtils::GetDistance2DBetweenSimpleCollisions(attacker, targetActor);
 
 		if (distance > range)
 		{
@@ -187,7 +194,7 @@ public:
 	/// </summary>
 	/// <param name="attacker">Weapon user</param>
 	/// <param name="target">Attack target unit</param>
-	virtual void AttackTarget(AUnitBase* attacker, AUnitBase* target, const FAttackParameters& params = FAttackParameters())
+	virtual void AttackTarget(AUnitBase* attacker, AActor* target, const FAttackParameters& params = FAttackParameters())
 	{
 
 	}

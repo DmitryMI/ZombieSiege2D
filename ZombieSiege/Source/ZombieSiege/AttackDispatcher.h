@@ -54,7 +54,7 @@ private:
 	EAttackState attackState;
 
 	UPROPERTY(VisibleAnywhere)
-	AUnitBase* targetUnit;
+	AActor* targetActor;
 
 	UPROPERTY(VisibleAnywhere)
 	FVector targetPoint;
@@ -91,15 +91,15 @@ public:
 	EAttackState GetAttackState();
 	UWeaponInfo* GetWeaponInfo();
 	AUnitBase* GetOwningUnit();
-	AUnitBase* GetTargetUnit();
+	AActor* GetTargetActor();
 	FVector GetTargetPoint();
 	bool IsOnCooldown();
 
-	bool CanBeginAttackTarget(AUnitBase* owner, UWeaponInfo* weapon, AUnitBase* unit);
+	bool CanBeginAttackTarget(AUnitBase* owner, UWeaponInfo* weapon, AActor* unit);
 
 	bool CanBeginAttackPoint(AUnitBase* owner, UWeaponInfo* weapon, const FVector& point);
 
-	bool BeginAttackTarget(AUnitBase* owner, UWeaponInfo* weapon, AUnitBase* unit, const FAttackParameters& params = FAttackParameters());
+	bool BeginAttackTarget(AUnitBase* owner, UWeaponInfo* weapon, AActor* unit, const FAttackParameters& params = FAttackParameters());
 
 	bool BeginAttackPoint(AUnitBase* owner, UWeaponInfo* weapon, const FVector& point, const FAttackParameters& params = FAttackParameters());
 

@@ -55,19 +55,19 @@ public:
 	bool IsOnCooldown();
 
 	UFUNCTION(BlueprintCallable)
-	bool CanAttackTarget(AUnitBase* targetUnit, FAttackTestParameters testParams);
+	bool CanAttackTarget(AActor* targetActor, FAttackTestParameters testParams);
 
 	UFUNCTION(BlueprintCallable)
 	bool CanAttackPoint(const FVector& targetPoint, FAttackTestParameters testParams);
 
 	UFUNCTION(BlueprintCallable)
-	bool CanBeginAttackTarget(AUnitBase* targetUnit);
+	bool CanBeginAttackTarget(AActor* targetActor);
 
 	UFUNCTION(BlueprintCallable)
 	bool CanBeginAttackPoint(const FVector& targetPoint);
 
 	UFUNCTION(BlueprintCallable)
-	bool BeginAttackTarget(AUnitBase* targetUnit);
+	bool BeginAttackTarget(AActor* targetActor);
 
 	UFUNCTION(BlueprintCallable)
 	bool BeginAttackPoint(const FVector& targetPoint);

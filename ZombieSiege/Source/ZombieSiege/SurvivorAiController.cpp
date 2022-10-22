@@ -34,7 +34,7 @@ void ASurvivorAiController::SetAssignedToJob(AJobBase* job)
     }
 }
 
-void ASurvivorAiController::IssueGatherOrder(AUnitBase* gatherableUnit, bool bQueue)
+void ASurvivorAiController::IssueGatherOrder(ADoodad* gatherableUnit, bool bQueue)
 {
     UGatherOrder* order = CreateOrder<UGatherOrder>(gatherOrderClass);
     order->SetGatherTarget(Cast<ADoodad>(gatherableUnit));

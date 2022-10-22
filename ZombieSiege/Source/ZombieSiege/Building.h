@@ -55,7 +55,7 @@ public:
 
 	virtual bool CanAttackPoint(const FVector& targetPoint, FAttackTestParameters testParams) override;
 
-	virtual bool CanAttackTarget(AUnitBase* targetUnit, FAttackTestParameters testParams) override;
+	virtual bool CanAttackTarget(AActor* targetActor, FAttackTestParameters testParams) override;
 
 	virtual float ReceiveHealing(const FHealingInstance& repair) override;
 

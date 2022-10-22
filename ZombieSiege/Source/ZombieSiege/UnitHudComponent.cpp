@@ -17,6 +17,7 @@ void UUnitHudComponent::BeginPlay()
 	check(owner);
 
 	owner->OnHealthChanged().AddUObject(this, &UUnitHudComponent::OnOwnerHealthChangedHandler);
+	owner->OnUnitDestroyed().AddUObject(this, &UUnitHudComponent::OnOwnerDestroyedHandler);
 
 	ABuilding* building = Cast<ABuilding>(owner);
 	if (building)
@@ -73,6 +74,13 @@ void UUnitHudComponent::UpdateUnitHudWidget()
 	}
 
 	unitHudWidgetInstance->UpdateUnitHud();
+}
+
+void UUnitHudComponent::OnOwnerDestroyedHandler(AUnitBase* unit)
+{
+	check(GetOwner() == unit);
+
+	ReleaseResources();
 }
 
 void UUnitHudComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

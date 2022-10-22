@@ -34,9 +34,9 @@ AUnitBase* UAttackDispatcher::GetOwningUnit()
 	return owningUnit;
 }
 
-AUnitBase* UAttackDispatcher::GetTargetUnit()
+AActor* UAttackDispatcher::GetTargetActor()
 {
-	return targetUnit;
+	return targetActor;
 }
 
 FVector UAttackDispatcher::GetTargetPoint()
@@ -49,7 +49,7 @@ bool UAttackDispatcher::IsOnCooldown()
 	return attackState != EAttackState::None;
 }
 
-bool UAttackDispatcher::CanBeginAttackTarget(AUnitBase* owner, UWeaponInfo* weapon, AUnitBase* unit)
+bool UAttackDispatcher::CanBeginAttackTarget(AUnitBase* owner, UWeaponInfo* weapon, AActor* unit)
 {
 	if (!weapon)
 	{
@@ -127,16 +127,16 @@ bool UAttackDispatcher::CommitAttack()
 {
 	if (attackMode == EAttackMode::Target)
 	{
-		if (targetUnit == nullptr)
+		if (targetActor == nullptr)
 		{
 			return false;
 		}
-		if (!owningUnit->CanFinishAttackTargetWithWeapon(targetUnit, weaponInfo))
+		if (!owningUnit->CanFinishAttackTargetWithWeapon(targetActor, weaponInfo))
 		{
 			return false;
 		}
 
-		weaponInfo->AttackTarget(owningUnit, targetUnit, attackParameters);
+		weaponInfo->AttackTarget(owningUnit, targetActor, attackParameters);
 	}
 	else if (attackMode == EAttackMode::Point)
 	{
@@ -178,7 +178,7 @@ void UAttackDispatcher::ClearTimer()
 	GetWorld()->GetTimerManager().ClearTimer(attackTimerHandle);
 }
 
-bool UAttackDispatcher::BeginAttackTarget(AUnitBase* owner, UWeaponInfo* weapon, AUnitBase* unit, const FAttackParameters& params)
+bool UAttackDispatcher::BeginAttackTarget(AUnitBase* owner, UWeaponInfo* weapon, AActor* unit, const FAttackParameters& params)
 {
 	check(owner);
 	check(weapon);
@@ -191,7 +191,7 @@ bool UAttackDispatcher::BeginAttackTarget(AUnitBase* owner, UWeaponInfo* weapon,
 
 	attackParameters = params;
 	attackMode = EAttackMode::Target;
-	targetUnit = unit;
+	targetActor = unit;
 	owningUnit = owner;
 	weaponInfo = weapon;
 	
@@ -210,7 +210,7 @@ bool UAttackDispatcher::BeginAttackPoint(AUnitBase* owner, UWeaponInfo* weapon, 
 
 	attackParameters = params;
 	attackMode = EAttackMode::Point;
-	targetUnit = nullptr;
+	targetActor = nullptr;
 	targetPoint = point;
 	weaponInfo = weapon;
 
@@ -220,7 +220,7 @@ bool UAttackDispatcher::BeginAttackPoint(AUnitBase* owner, UWeaponInfo* weapon, 
 void UAttackDispatcher::CancelAttack()
 {
 	attackState = EAttackState::None;
-	targetUnit = nullptr;
+	targetActor = nullptr;
 	ClearTimer();
 }
 

@@ -31,6 +31,8 @@ protected:
 
 	virtual void UpdateUnitHudWidget();
 
+	void OnOwnerDestroyedHandler(AUnitBase* unit);
+
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

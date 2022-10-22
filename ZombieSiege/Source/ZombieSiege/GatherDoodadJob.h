@@ -17,7 +17,7 @@ class ZOMBIESIEGE_API AGatherDoodadJob : public AJobBase
 	GENERATED_BODY()
 
 protected:
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	ADoodad* targetDoodad;
 
 	virtual void FindExecutors() override;

@@ -12,6 +12,7 @@ enum class EAttackTestFlags : uint8
 	Range =			1 << 1,
 	Affiliation =	1 << 2,
 	PhysicalState = 1 << 3,
+	Reachability = 1 << 4,
 };
 
 ENUM_CLASS_FLAGS(EAttackTestFlags);
@@ -37,6 +38,8 @@ struct FAttackTestParameters
 	GENERATE_FLAG_GETTER(AttackTestFlags, EAttackTestFlags, PhysicalState);
 	GENERATE_FLAG_SETTER(AttackTestFlags, EAttackTestFlags, PhysicalState);
 
+	GENERATE_FLAG_GETTER(AttackTestFlags, EAttackTestFlags, Reachability);
+	GENERATE_FLAG_SETTER(AttackTestFlags, EAttackTestFlags, Reachability);
 
 	FAttackTestParameters(EAttackTestFlags flags)
 	{
@@ -65,5 +68,6 @@ struct FAttackTestParameters
 		SetRangeFlag(true);
 		SetAffiliationFlag(true);
 		SetPhysicalStateFlag(true);
+		SetReachabilityFlag(true);
 	}	
 };

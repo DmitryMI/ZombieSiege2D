@@ -179,7 +179,7 @@ bool AUnitAiController::GetPerceivedUnits(TArray<AUnitBase*>& outUnits) const
     return !outUnits.IsEmpty();
 }
 
-bool AUnitAiController::GetPerceivedAttackableEnemies(TArray<AUnitBase*>& outEnemies) const
+bool AUnitAiController::GetPerceivedAttackableEnemies(TArray<AUnitBase*>& outEnemies, FAttackTestParameters attackTestParams) const
 {
     if (!PerceptionComponent)
     {
@@ -208,7 +208,7 @@ bool AUnitAiController::GetPerceivedAttackableEnemies(TArray<AUnitBase*>& outEne
             continue;
         }
 
-        if (!controlledUnit->CanAttackTarget(unit, FAttackTestParameters(false, false, true, false)))
+        if (!controlledUnit->CanAttackTarget(unit, attackTestParams))
         {
             continue;
         }

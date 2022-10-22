@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "MeleeWeaponInfo.h"
+#include "Attackable.h"
 #include "BlueprintedWeaponInfo.generated.h"
 
 /**
@@ -49,7 +50,7 @@ public:
 		return Super::GetRange();
 	}
 
-	virtual bool CanThisWeaponEverAttackTarget(AUnitBase* unit) const override
+	virtual bool CanThisWeaponEverAttackTarget(AActor* unit) const override
 	{
 		return Super::CanThisWeaponEverAttackTarget(unit);
 	}
@@ -59,7 +60,7 @@ public:
 		return Super::CanThisWeaponEverAttackPoint();
 	}
 
-	virtual bool CanAttackTarget(AUnitBase* attacker, AUnitBase* target) override
+	virtual bool CanAttackTarget(AUnitBase* attacker, AActor* target) override
 	{
 		BlueprintedCanAttackTarget(attacker, target);
 		return canAttackTargetReturn;
@@ -71,7 +72,7 @@ public:
 		return canAttackPointReturn;
 	}
 
-	virtual void AttackTarget(AUnitBase* attacker, AUnitBase* target, const FAttackParameters& params = FAttackParameters()) override
+	virtual void AttackTarget(AUnitBase* attacker, AActor* target, const FAttackParameters& params = FAttackParameters()) override
 	{
 		BlueprintedAttackTarget(attacker, target);
 	}
@@ -85,10 +86,10 @@ public:
 	void BlueprintedAttackPoint(AUnitBase* attacker, const FVector& targetPoint);
 
 	UFUNCTION(BlueprintNativeEvent)
-	void BlueprintedAttackTarget(AUnitBase* attacker, AUnitBase* target);
+	void BlueprintedAttackTarget(AUnitBase* attacker, AActor* target);
 
 	UFUNCTION(BlueprintNativeEvent)
-	void BlueprintedCanAttackTarget(AUnitBase* attacker, AUnitBase* target);
+	void BlueprintedCanAttackTarget(AUnitBase* attacker, AActor* target);
 
 	UFUNCTION(BlueprintNativeEvent)
 	void BlueprintedCanAttackPoint(AUnitBase* attacker, const FVector& targetPoint);

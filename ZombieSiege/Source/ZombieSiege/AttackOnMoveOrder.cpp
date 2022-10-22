@@ -23,7 +23,7 @@ void UAttackOnMoveOrder::ExecuteOrder()
 	blackboard->SetValueAsVector("TargetLocation", targetLocation);
 
 	TArray<AUnitBase*> enemies;
-	unitController->GetPerceivedAttackableEnemies(enemies);
+	unitController->GetPerceivedAttackableEnemies(enemies, FAttackTestParameters(EAttackTestFlags::Affiliation | EAttackTestFlags::Reachability));
 	AUnitBase* closestEnemy = UZombieSiegeUtils::GetClosestUnit(enemies, unitController->GetPawn()->GetActorLocation());
 	SetTargetUnit(closestEnemy);
 }

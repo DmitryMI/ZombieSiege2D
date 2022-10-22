@@ -30,7 +30,7 @@ TMap<EResourceType, float> USurvivorRepair::CalculateRequiredResourceAmount(ABui
 	return map;
 }
 
-void USurvivorRepair::AttackTarget(AUnitBase* attacker, AUnitBase* target, const FAttackParameters& params)
+void USurvivorRepair::AttackTarget(AUnitBase* attacker, AActor* target, const FAttackParameters& params)
 {
 	if (!CanAttackTarget(attacker, target))
 	{
@@ -62,16 +62,22 @@ void USurvivorRepair::AttackTarget(AUnitBase* attacker, AUnitBase* target, const
 		}
 	}
 
-	FHealingInstance healingInstance(target, repairAmount);
+	FHealingInstance healingInstance(building, repairAmount);
 	building->ReceiveHealing(healingInstance);
 }
 
-bool USurvivorRepair::CanAttackTarget(AUnitBase* attacker, AUnitBase* target)
+bool USurvivorRepair::CanAttackTarget(AUnitBase* attacker, AActor* target)
 {
 	check(attacker);
 	check(target);
 
-	float distance = UZombieSiegeUtils::GetDistance2DBetweenSimpleCollisions(attacker, target);
+	ABuilding* building = Cast<ABuilding>(target);
+	if (!building)
+	{
+		return false;
+	}
+
+	float distance = UZombieSiegeUtils::GetDistance2DBetweenSimpleCollisions(attacker, building);
 
 	if (distance > range)
 	{
@@ -81,12 +87,6 @@ bool USurvivorRepair::CanAttackTarget(AUnitBase* attacker, AUnitBase* target)
 	AZombieSiegePlayerState* playerState = attacker->GetOwningPlayerState();
 
 	if (!playerState)
-	{
-		return false;
-	}
-
-	ABuilding* building = Cast<ABuilding>(target);
-	if (!building)
 	{
 		return false;
 	}

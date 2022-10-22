@@ -118,7 +118,7 @@ bool ABuilding::CanAttackPoint(const FVector& targetPoint, FAttackTestParameters
 	return false;
 }
 
-bool ABuilding::CanAttackTarget(AUnitBase* targetUnit, FAttackTestParameters testParams)
+bool ABuilding::CanAttackTarget(AActor* targetActor, FAttackTestParameters testParams)
 {
 	if (!CanAttackAnything(testParams))
 	{
@@ -127,7 +127,7 @@ bool ABuilding::CanAttackTarget(AUnitBase* targetUnit, FAttackTestParameters tes
 
 	for (ATurret* turret : turrets)
 	{
-		if (turret->CanAttackTarget(targetUnit, testParams))
+		if (turret->CanAttackTarget(targetActor, testParams))
 		{
 			return true;
 		}

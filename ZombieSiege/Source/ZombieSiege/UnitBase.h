@@ -22,12 +22,13 @@
 #include "AttackDispatcher.h"
 #include "AttackTestParameters.h"
 #include "GenericTeamAgentInterface.h"
+#include "Attackable.h"
 #include "UnitBase.generated.h"
 
 class AUnitBase;
 
 UCLASS()
-class ZOMBIESIEGE_API AUnitBase : public ACharacter, public IGenericTeamAgentInterface
+class ZOMBIESIEGE_API AUnitBase : public ACharacter, public IAttackable, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
@@ -160,7 +161,7 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void SetMovementComponentSpeedCap(float speedCap);
 
-	bool BeginAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon);
+	bool BeginAttackTargetWithWeapon(AActor * targetActor, UWeaponInfo* weapon);
 	bool BeginAttackPointWithWeapon(const FVector& point, UWeaponInfo* weapon);
 
 	UFUNCTION()
@@ -176,7 +177,7 @@ public:
 
 	virtual FGenericTeamId GetGenericTeamId() const override;
 
-	virtual bool CanFinishAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon);
+	virtual bool CanFinishAttackTargetWithWeapon(AActor * targetActor, UWeaponInfo* weapon);
 	virtual bool CanFinishAttackPointWithWeapon(const FVector targetPoint, UWeaponInfo* weapon);
 
 	UFUNCTION(BlueprintCallable)
@@ -246,7 +247,7 @@ public:
 	bool HasClassifications(EUnitClassification flags) const;
 
 	UFUNCTION(BlueprintCallable)
-	bool HasAnyClassification(EUnitClassification flags) const;
+	virtual bool HasAnyClassification(EUnitClassification flags) const override;
 
 	UFUNCTION(BlueprintCallable)
 	void AddClassifications(EUnitClassification flags);
@@ -319,7 +320,7 @@ public:
 	/// Check if Unit is alive 
 	/// </summary>
 	/// <returns>True if unit is alive</returns>
-	bool IsAlive() const;
+	virtual bool IsAlive() const override;
 
 	UFUNCTION(BlueprintCallable)
 	/// <summary>
@@ -363,10 +364,10 @@ public:
 	virtual bool CanAttackPoint(const FVector& targetPoint, FAttackTestParameters testParams);
 
 	UFUNCTION(BlueprintCallable)
-	virtual bool CanAttackTargetWithWeapon(AUnitBase* targetUnit, UWeaponInfo* weapon, FAttackTestParameters testParams);
+	virtual bool CanAttackTargetWithWeapon(AActor * targetUnit, UWeaponInfo* weapon, FAttackTestParameters testParams);
 
 	UFUNCTION(BlueprintCallable)
-	virtual bool CanAttackTarget(AUnitBase* targetUnit, FAttackTestParameters testParams);
+	virtual bool CanAttackTarget(AActor* targetAttackable, FAttackTestParameters testParams);
 
 	UFUNCTION(BlueprintCallable)
 	virtual float GetAttackRange();
@@ -377,7 +378,7 @@ public:
 	/// </summary>
 	/// <param name="target">Target to be damaged by this Unit</param>
 	/// <returns>True if attack was successful (regardless of actual damage amount)</returns>
-	virtual bool BeginAttackTarget(AUnitBase* targetUnit);
+	virtual bool BeginAttackTarget(AActor* targetAttackable);
 
 	UFUNCTION(BlueprintCallable)
 	virtual bool BeginAttackPoint(const FVector& point);
@@ -388,7 +389,7 @@ public:
 	/// </summary>
 	/// <param name="damage"></param>
 	/// <returns>Actual inflicted damage (after all reductions or amplifications)</returns>
-	virtual float ReceiveDamage(const FDamageInstance& damage);
+	virtual float ReceiveDamage(const FDamageInstance& damage) override;
 	
 	UFUNCTION(BlueprintCallable)
 	/// <summary>

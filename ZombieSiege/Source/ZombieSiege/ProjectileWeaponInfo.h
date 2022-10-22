@@ -40,10 +40,10 @@ protected:
 public:
 	UProjectileWeaponInfo();
 
-	virtual void AttackTarget(AUnitBase* attacker, AUnitBase* target, const FAttackParameters& params = FAttackParameters()) override;
+	virtual void AttackTarget(AUnitBase* attacker, AActor* target, const FAttackParameters& params = FAttackParameters()) override;
 	virtual void AttackPoint(AUnitBase* attacker, const FVector& targetPoint, const FAttackParameters& params = FAttackParameters()) override;
 
-	virtual bool CanAttackTarget(AUnitBase* attacker, AUnitBase* target) override;
+	virtual bool CanAttackTarget(AUnitBase* attacker, AActor* target) override;
 
 	virtual bool CanAttackPoint(AUnitBase* attacker, const FVector& targetPoint) override;
 

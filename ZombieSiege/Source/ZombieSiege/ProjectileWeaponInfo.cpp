@@ -32,7 +32,7 @@ UProjectileWeaponInfo::UProjectileWeaponInfo()
 	bCanEverAttackPoint = true;
 }
 
-void UProjectileWeaponInfo::AttackTarget(AUnitBase* attacker, AUnitBase* target, const FAttackParameters& params)
+void UProjectileWeaponInfo::AttackTarget(AUnitBase* attacker, AActor* target, const FAttackParameters& params)
 {
 	float projectileMaxSpeed;
 	if (bOverrideProjectileMaxSpeed)
@@ -44,9 +44,15 @@ void UProjectileWeaponInfo::AttackTarget(AUnitBase* attacker, AUnitBase* target,
 		projectileMaxSpeed = projectileClass.GetDefaultObject()->GetMaxSpeed();
 	}
 
-	FVector targetVelocity = target->GetVelocity();
+	AActor* targetActor = Cast<AActor>(target);
+	if (!targetActor)
+	{
+		return;
+	}
 
-	FVector targetLocation = target->GetActorLocation();
+	FVector targetVelocity = targetActor->GetVelocity();
+
+	FVector targetLocation = targetActor->GetActorLocation();
 	FVector launchLocation = attacker->GetActorLocation() + params.projectileSpawnRelativeLocation;
 	FVector projectileVelocity;
 	FVector interceptionLocation;
@@ -67,7 +73,7 @@ void UProjectileWeaponInfo::AttackTarget(AUnitBase* attacker, AUnitBase* target,
 	}
 	else
 	{
-		AttackPoint(attacker, target->GetActorLocation(), params);
+		AttackPoint(attacker, targetActor->GetActorLocation(), params);
 	}
 }
 
@@ -92,14 +98,20 @@ void UProjectileWeaponInfo::AttackPoint(AUnitBase* attacker, const FVector& targ
 	projectile->MoveTowards(targetPointMod);
 }
 
-bool UProjectileWeaponInfo::CanAttackTarget(AUnitBase* attacker, AUnitBase* target)
+bool UProjectileWeaponInfo::CanAttackTarget(AUnitBase* attacker, AActor* target)
 {
 	if (!CanThisWeaponEverAttackTarget(target))
 	{
 		return false;
 	}
 
-	return CanAttackPoint(attacker, target->GetActorLocation());
+	AActor* targetActor = Cast<AActor>(target);
+	if (!targetActor)
+	{
+		return false;
+	}
+
+	return CanAttackPoint(attacker, targetActor->GetActorLocation());
 }
 
 bool UProjectileWeaponInfo::CanAttackPoint(AUnitBase* attacker, const FVector& targetPoint)

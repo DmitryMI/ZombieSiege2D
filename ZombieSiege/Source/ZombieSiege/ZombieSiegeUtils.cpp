@@ -8,7 +8,7 @@
 #include "NavMesh/RecastNavMesh.h"
 #include "Kismet/KismetSystemLibrary.h"
 
-#define DRAW_DEBUG_PATH 1
+#define DRAW_DEBUG_PATH 0
 
 // This is the reason of HUGE lags during dynamic NavMesh generation.
 // UNavigationPath objects are not desroyed immideatly after GetBestLocationNearUnitToArrive() returns
@@ -350,8 +350,8 @@ void UZombieSiegeUtils::DebugDrawPath(const UObject* WorldContextObject, FNaviga
 
 bool UZombieSiegeUtils::GetBestLocationNearUnitToArrive(
 	const UObject* WorldContextObject,
-	AUnitBase* movingAgent,
-	AUnitBase* targetAgent,
+	AActor* movingAgent,
+	AActor* targetAgent,
 	float tolerance,
 	FVector& OutLocation)
 {
@@ -362,13 +362,11 @@ bool UZombieSiegeUtils::GetBestLocationNearUnitToArrive(
 
 bool UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(
 	UWorld* world,
-	AUnitBase* movingAgent,
-	AUnitBase* goalAgent,
+	AActor* movingAgent,
+	AActor* goalAgent,
 	float tolerance,
 	FVector& OutLocation)
 {
-	//return true;
-
 	const float MaxPolygonCost = 1000000.0f;
 
 	check(world);
@@ -485,12 +483,15 @@ bool UZombieSiegeUtils::DoesPathHaveHighCostAreas(UNavigationPath* path)
 
 
 
-bool UZombieSiegeUtils::AreEnemies(AUnitBase* unitA, AUnitBase* unitB)
+bool UZombieSiegeUtils::AreEnemies(AActor* unitA, AActor* unitB)
 {
-	check(unitA);
-	check(unitB);
+	IGenericTeamAgentInterface* agentA = Cast<IGenericTeamAgentInterface>(unitA);
+	IGenericTeamAgentInterface* agentB = Cast<IGenericTeamAgentInterface>(unitB);
 
-	return FGenericTeamId::GetAttitude(unitA->GetGenericTeamId(), unitB->GetGenericTeamId()) == ETeamAttitude::Hostile;
+	check(agentA);
+	check(agentB);
+
+	return FGenericTeamId::GetAttitude(agentA->GetGenericTeamId(), agentB->GetGenericTeamId()) == ETeamAttitude::Hostile;
 }
 
 int UZombieSiegeUtils::GetDirectionSpriteIndex(EFaceDirection faceDirectionEnum)

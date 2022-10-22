@@ -12,9 +12,9 @@ FGenericTeamId AUnitBase::GetGenericTeamId() const
 	return unitTeamId;
 }
 
-bool AUnitBase::CanFinishAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon)
+bool AUnitBase::CanFinishAttackTargetWithWeapon(AActor* targetActor, UWeaponInfo* weapon)
 {
-	return CanAttackTargetWithWeapon(target, weapon, FAttackTestParameters(false, true, false));
+	return CanAttackTargetWithWeapon(targetActor, weapon, FAttackTestParameters(false, true, false));
 }
 
 bool AUnitBase::CanFinishAttackPointWithWeapon(const FVector targetPoint, UWeaponInfo* weapon)
@@ -443,7 +443,7 @@ bool AUnitBase::CanAttackPoint(const FVector& targetPoint, FAttackTestParameters
 	return false;
 }
 
-bool AUnitBase::CanAttackTargetWithWeapon(AUnitBase* targetUnit, UWeaponInfo* weapon, FAttackTestParameters testParams)
+bool AUnitBase::CanAttackTargetWithWeapon(AActor* targetUnit, UWeaponInfo* weapon, FAttackTestParameters testParams)
 {
 	if (weapon == nullptr)
 	{
@@ -465,6 +465,17 @@ bool AUnitBase::CanAttackTargetWithWeapon(AUnitBase* targetUnit, UWeaponInfo* we
 		return false;
 	}
 
+	if (testParams.GetReachabilityFlag())
+	{
+		float attackRange = weapon->GetRange();
+		FVector unused;
+		bool reachable = UZombieSiegeUtils::GetBestLocationNearUnitToArrive(this, this, targetUnit, attackRange, unused);
+		if (!reachable)
+		{
+			return false;
+		}
+	}
+
 	if (!testParams.GetRangeFlag())
 	{
 		return weapon->CanThisWeaponEverAttackTarget(targetUnit);
@@ -473,7 +484,8 @@ bool AUnitBase::CanAttackTargetWithWeapon(AUnitBase* targetUnit, UWeaponInfo* we
 	return weapon->CanAttackTarget(this, targetUnit);
 }
 
-bool AUnitBase::CanAttackTarget(AUnitBase* targetUnit, FAttackTestParameters testParams)
+
+bool AUnitBase::CanAttackTarget(AActor* targetUnit, FAttackTestParameters testParams)
 {
 	return false;
 }
@@ -508,16 +520,16 @@ void AUnitBase::SetMovementComponentSpeedCap(float speedCap)
 	}
 }
 
-bool AUnitBase::BeginAttackTargetWithWeapon(AUnitBase* target, UWeaponInfo* weapon)
+bool AUnitBase::BeginAttackTargetWithWeapon(AActor* targetActor, UWeaponInfo* weapon)
 {
 	check(attackDispatcher);
 
-	if (!CanAttackTargetWithWeapon(target, weapon, FAttackTestParameters(true, true, false)))
+	if (!CanAttackTargetWithWeapon(targetActor, weapon, FAttackTestParameters(true, true, false)))
 	{
 		return false;
 	}
 
-	return attackDispatcher->BeginAttackTarget(this, weapon, target);
+	return attackDispatcher->BeginAttackTarget(this, weapon, targetActor);
 }
 
 bool AUnitBase::BeginAttackPointWithWeapon(const FVector& point, UWeaponInfo* weapon)
@@ -587,7 +599,7 @@ EFaceDirection AUnitBase::GetFacingDirection()
 }
 
 
-bool AUnitBase::BeginAttackTarget(AUnitBase* target)
+bool AUnitBase::BeginAttackTarget(AActor* target)
 {
 	return false;
 }
@@ -634,8 +646,6 @@ void AUnitBase::BeginPlay()
 
 void AUnitBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	Super::EndPlay(EndPlayReason);
-
 	if (passengerCarrier)
 	{
 		LeavePassengerCarrier();
@@ -648,6 +658,8 @@ void AUnitBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	}
 
 	onUnitDestroyedEvent.Broadcast(this);
+
+	Super::EndPlay(EndPlayReason);
 }
 
 bool AUnitBase::ShouldBeHidden()
