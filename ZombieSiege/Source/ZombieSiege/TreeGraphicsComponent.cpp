@@ -130,7 +130,12 @@ void UTreeGraphicsComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 void UTreeGraphicsComponent::SetIsTransparent(bool bIsTransparent)
 {
-	check(treeSpriteComponent);
+	ensure(treeSpriteComponent);
+
+	if (!treeSpriteComponent)
+	{
+		return;
+	}
 
 	FLinearColor color;
 	if (bIsTransparent)

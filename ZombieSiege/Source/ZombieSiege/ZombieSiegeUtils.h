@@ -289,6 +289,12 @@ public:
 	{
 		return FAttackTestParameters(bCooldown, bRange, bAffiliation, bPhysicalState);
 	}
+
+	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils", meta = (WorldContext = "WorldContextObject"))
+	static void DebugDrawPath(const UObject* WorldContextObject, UNavigationPath* path, FVector start, FVector goal, float duration);
+
+	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
+	static bool DoesPathHaveHighCostAreas(UNavigationPath* path);
 };
 
 

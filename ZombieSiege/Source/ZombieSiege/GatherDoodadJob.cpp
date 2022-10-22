@@ -117,7 +117,7 @@ bool AGatherDoodadJob::IsValidExecutor(AUnitBase* executor)
 	check(targetDoodad);
 
 	FVector locationUnused;
-	bool hasPath = UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(GetWorld(), executor, targetDoodad, 75.0f, locationUnused);
+	bool hasPath = UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(GetWorld(), executor, targetDoodad, 50.0f, locationUnused);
 	
 	if (!hasPath)
 	{

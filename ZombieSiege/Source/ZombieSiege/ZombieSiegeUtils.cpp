@@ -4,6 +4,8 @@
 #include "ZombieSiegeUtils.h"
 #include "NavigationPath.h"
 #include "NavigationSystem.h"
+#include "NavMesh/NavMeshPath.h"
+#include "NavMesh/RecastNavMesh.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 
@@ -247,6 +249,112 @@ bool UZombieSiegeUtils::GetFirstPointCloseToGoal(FVector goalLocation, float rea
 	return false;
 }
 
+void UZombieSiegeUtils::DebugDrawPath(const UObject* WorldContextObject, UNavigationPath* path, FVector start, FVector goal, float duration)
+{
+	const uint8 depthPriority = 0;
+	const FVector drawingOffset = FVector(0, 0, 300.0f);
+	const float maxCost = 1000000.0f;
+
+	UWorld* world = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+
+	float pathCost = path->GetPathCost();
+	UE_LOG(LogTemp, Display, TEXT("[DebugDrawPath] Overall Path Cost: %3.2f"), pathCost);
+
+	DrawDebugCrosshairs(world, goal + drawingOffset, FRotator::ZeroRotator, 1.0f, FColor::Red, false, duration, depthPriority);
+	DrawDebugCone(world, start + drawingOffset, FVector::DownVector, 10.f, 30.0f, 10.0f, 6, FColor::Red, false, duration, depthPriority, 2.0f);
+
+	FNavigationPath* navPath = path->GetPath().Get();
+	FNavMeshPath* navMeshPath = (FNavMeshPath*)(navPath);
+
+	if (!navMeshPath)
+	{
+		return;
+	}
+
+	auto points = navMeshPath->GetPathPoints();
+
+	if (points.Num() == 0)
+	{
+		return;
+	}
+
+	FNavPathPoint lastPoint = points[0];
+
+	for (int i = 1; i < points.Num(); i++)
+	{
+		DrawDebugDirectionalArrow(world, lastPoint.Location + drawingOffset, points[i].Location + drawingOffset, 100.0f, FColor::Green, false, duration, depthPriority, 2.0f);
+		lastPoint = points[i];
+	}
+
+	TArray<uint64> corridorNodes = navMeshPath->PathCorridor;
+	TArray<double> corridorCost = navMeshPath->PathCorridorCost;
+	TArray<FNavigationPortalEdge> corridorEdges = navMeshPath->GetPathCorridorEdges();
+
+	if (corridorEdges.Num() == 0)
+	{
+		return;
+	}
+
+	FNavigationPortalEdge lastEdge = corridorEdges[0];
+
+	for (int i = 1; i < corridorEdges.Num(); i++)
+	{
+		float costRatio = FMath::Clamp((float)corridorCost[i] / maxCost, 0.0f, 1.0f);
+
+		float red = FMath::Lerp(0, 255, costRatio);
+		float blue = FMath::Lerp(255, 0, costRatio);
+		float green = 0.0f;
+
+		FColor lineColor(red, green, blue, 255);
+		
+		FNavigationPortalEdge edge = corridorEdges[i];
+		DrawDebugLine(world, lastEdge.Left + drawingOffset, edge.Left + drawingOffset, lineColor, false, duration, depthPriority, 2.0f);
+		DrawDebugLine(world, lastEdge.Right + drawingOffset, edge.Right + drawingOffset, lineColor, false, duration, depthPriority, 2.0f);
+		DrawDebugLine(world, edge.Left + drawingOffset, edge.Right + drawingOffset, FColor::Black, false, duration, depthPriority, 1.0f);
+
+		TArray<FVector> verts = { lastEdge.Left + drawingOffset, lastEdge.Right + drawingOffset, edge.Right + drawingOffset, edge.Left + drawingOffset };
+		TArray<int32> indices = { 0, 1, 2, 2, 3, 0 };
+
+		FVector center = (lastEdge.Left + lastEdge.Right + edge.Right + edge.Left) / 4.0f;
+
+		DrawDebugString(world, center + drawingOffset, FString::Printf(TEXT("%3.2f"), corridorCost[i]), nullptr, FColor::White, duration, false, 1.0f);
+
+		FColor meshColor = FColor(red, green, blue, 100);
+
+		DrawDebugMesh(world, verts, indices, meshColor, false, duration, depthPriority);
+
+		lastEdge = edge;
+	}
+
+	uint64 goalPolyIndex = corridorNodes.Last();
+
+	UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(world);
+	ARecastNavMesh* navData = Cast<ARecastNavMesh>(NavSys->MainNavData.Get());
+	check(navData);
+
+	TArray<FNavigationPortalEdge> goalPolyEdges;
+	verify(navData->GetPolyEdges(goalPolyIndex, goalPolyEdges));
+	
+	float goalAreaCost = (float)corridorCost.Last();
+
+	float goalAreaCostRatio = FMath::Clamp(goalAreaCost / maxCost, 0.0f, 1.0f);
+
+	float goalRed = FMath::Lerp(0, 255, goalAreaCostRatio);
+	float goalBlue = FMath::Lerp(255, 0, goalAreaCostRatio);
+	float goalGreen = 0.0f;
+
+	FColor goalPolyColor = FColor(goalRed, goalGreen, goalBlue, 100);
+
+	for (int i = 1; i < goalPolyEdges.Num(); i++)
+	{
+		DrawDebugLine(world, goalPolyEdges[i].Left + drawingOffset, goalPolyEdges[i - 1].Left + drawingOffset, goalPolyColor, false, duration, depthPriority, 2.0f);
+		DrawDebugLine(world, goalPolyEdges[i].Right + drawingOffset, goalPolyEdges[i - 1].Right + drawingOffset, goalPolyColor, false, duration, depthPriority, 2.0f);
+	}
+	DrawDebugLine(world, goalPolyEdges[0].Left + drawingOffset, goalPolyEdges.Last().Left + drawingOffset, goalPolyColor, false, duration, depthPriority, 2.0f);
+	DrawDebugLine(world, goalPolyEdges[0].Right + drawingOffset, goalPolyEdges.Last().Right + drawingOffset, goalPolyColor, false, duration, depthPriority, 2.0f);
+}
+
+
 bool UZombieSiegeUtils::GetBestLocationNearUnitToArrive(
 	const UObject* WorldContextObject,
 	AUnitBase* movingAgent,
@@ -266,6 +374,8 @@ bool UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(
 	float tolerance,
 	FVector& OutLocation)
 {
+	const float MaxPolygonCost = 1000000.0f;
+
 	check(world);
 	check(goalAgent);
 	check(movingAgent);
@@ -284,51 +394,64 @@ bool UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(
 	FVector targetActorLocation = goalAgent->GetActorLocation();
 
 	UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(world);
+	UNavigationPath* pathToActor = NavSys->FindPathToActorSynchronously(world, movingActorLocation, goalAgent, tolerance, movingAgent);
 
-	//UNavigationPath* navPath = FindPathBetweenLocationsWorld(world, movingActorLocation, targetActorLocation, movingAgent);
-	//UNavigationPath* pathToActor = NavSys->FindPathToActorSynchronously(world, movingActorLocation, goalAgent, tolerance, movingAgent);
-	UNavigationPath* pathToActor = NavSys->FindPathToLocationSynchronously(world, movingActorLocation, targetActorLocation, movingAgent);
-	//pathToActor->EnableDebugDrawing(true, FLinearColor::Red);
-	//GEngine->DeferredCommands.Add(TEXT("pause"));
-
-	bool bPathToActorInvalid = !pathToActor->IsValid();
-	if (pathToActor == nullptr || bPathToActorInvalid)
+	if (!pathToActor || !pathToActor->IsValid())
 	{
-		// Try to find path to a random point near the target instead
+		return false;
+	}
 
-		FNavLocation randomPoint;
-		bool foundPoint = NavSys->GetRandomPointInNavigableRadius(targetActorLocation, useReachabilityRadius, randomPoint);
+	DebugDrawPath(world, pathToActor, movingActorLocation, targetActorLocation, 0.5f);
+	
+	FNavigationPath* navPath = pathToActor->GetPath().Get();
+	FNavMeshPath* navMeshPath = (FNavMeshPath*)(navPath);
+	check(navMeshPath);
 
-		if (!foundPoint)
+	ARecastNavMesh* navData = Cast<ARecastNavMesh>(NavSys->MainNavData.Get());
+	check(navData);
+
+	TArray<uint64> corridor = navMeshPath->PathCorridor;
+	TArray<double> corridorCosts = navMeshPath->PathCorridorCost;
+	for (int i = 0; i < corridor.Num() - 1; i++)
+	{
+		uint64 polyId = corridor[i];
+		/*
+		uint32 areaId = navData->GetPolyAreaID(polyId);
+		const UClass* areaClass = navData->GetAreaClass(areaId);
+		UNavArea* areaDefaultObject = Cast<UNavArea>(areaClass->GetDefaultObject());
+		float areaCost = areaDefaultObject->DefaultCost;
+		if (areaCost >= 1000000.0f)
 		{
 			return false;
 		}
-
-		UNavigationPath* pathToRandomPoint = FindPathBetweenLocationsWorld(world, movingActorLocation, randomPoint.Location, movingAgent);
-		//pathToRandomPoint->EnableDebugDrawing(true, FLinearColor::Green);
-		bool pathToRandomPointInvalid = !pathToRandomPoint->IsValid();
-		if (pathToRandomPoint == nullptr || pathToRandomPointInvalid)
+		*/
+		float areaCost = corridorCosts[i];
+		if (areaCost >= MaxPolygonCost)
 		{
 			return false;
-		}		
-
-		bool hasPoint = GetFirstPointCloseToGoal(targetActorLocation, useReachabilityRadius, pathToRandomPoint, OutLocation);
-
-		return hasPoint;
+		}
 	}
-	else if (pathToActor->IsPartial())
-	{
-		bool hasPoint = GetFirstPointCloseToGoal(targetActorLocation, useReachabilityRadius, pathToActor, OutLocation);
 
-		return hasPoint;
-	}
-	else // Path is valid and is not partial
+	uint64 goalPolyId = corridor.Last();
+	float goalPolyCost = corridorCosts.Last();
+	if (goalPolyCost < MaxPolygonCost)
 	{
 		OutLocation = pathToActor->PathPoints.Last();
 		return true;
 	}
-
+	
+	FVector lastAccessiblePoint = pathToActor->PathPoints[pathToActor->PathPoints.Num() - 2];
+	float distanceSqr = (targetActorLocation - lastAccessiblePoint).SizeSquared2D();
+	bool closeEnough = FMath::Square(useReachabilityRadius) > distanceSqr;
+	return closeEnough;
 }
+
+bool UZombieSiegeUtils::DoesPathHaveHighCostAreas(UNavigationPath* path)
+{
+	return false;
+}
+
+
 
 bool UZombieSiegeUtils::AreEnemies(AUnitBase* unitA, AUnitBase* unitB)
 {
