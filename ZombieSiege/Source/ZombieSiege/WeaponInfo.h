@@ -131,6 +131,11 @@ public:
 			return false;
 		}
 
+		if (actor->IsHidden())
+		{
+			return false;
+		}
+
 		return attackable->HasAnyClassification(static_cast<EUnitClassification>(targetClassifications));
 	}
 
