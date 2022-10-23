@@ -170,6 +170,13 @@ protected:
 	UFUNCTION()
 	virtual void OnDecayTimerExpiredHandler();
 
+	virtual void PostAddPassenger(AUnitBase* passenger);
+	virtual void PostRemovePassenger(AUnitBase* passenger);
+
+#if WITH_EDITOR  
+	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
+
 public:
 	AUnitBase();
 
@@ -212,6 +219,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	AUnitBase* GetPassengerCarrier() const;
+
+	const TArray<AUnitBase*>& GetPassengers();
 
 	UFUNCTION(BlueprintCallable)
 	void SetPassengerCarrier(AUnitBase* carrier);

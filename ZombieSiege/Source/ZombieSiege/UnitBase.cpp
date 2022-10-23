@@ -68,6 +68,11 @@ AUnitBase* AUnitBase::GetPassengerCarrier() const
 	return passengerCarrier;
 }
 
+const TArray<AUnitBase*>& AUnitBase::GetPassengers()
+{
+	return passengers;
+}
+
 void AUnitBase::SetPassengerCarrier(AUnitBase* carrier)
 {
 	if (carrier == passengerCarrier)
@@ -142,11 +147,17 @@ int AUnitBase::GetFreePassengerSeats() const
 
 void AUnitBase::AddPassenger(AUnitBase* passenger)
 {
-	check(HasClassifications(EUnitClassification::PassengerCarrier));
+	//check(HasClassifications(EUnitClassification::PassengerCarrier));
 
 	check(GetFreePassengerSeats() > 0);
 
 	passengers.Add(passenger);
+
+	PostAddPassenger(passenger);
+}
+
+void AUnitBase::PostAddPassenger(AUnitBase* passenger)
+{
 }
 
 void AUnitBase::RemovePassenger(AUnitBase* passenger)
@@ -154,7 +165,31 @@ void AUnitBase::RemovePassenger(AUnitBase* passenger)
 	check(HasClassifications(EUnitClassification::PassengerCarrier));
 
 	passengers.Remove(passenger);
+
+	PostRemovePassenger(passenger);
 }
+
+void AUnitBase::PostRemovePassenger(AUnitBase* passenger)
+{
+}
+
+#if WITH_EDITOR  
+void AUnitBase::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
+{
+	FString propName;
+	PropertyChangedEvent.Property->GetName(propName);
+	if (propName == "health")
+	{
+		SetHealth(health);
+	}
+	else if (propName == "maxHealth")
+	{
+		SetMaxHealth(maxHealth);
+	}
+
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+}
+#endif
 
 void AUnitBase::MakeAllPassengersLeave()
 {
@@ -372,14 +407,6 @@ void AUnitBase::SetHealth(float healthValue)
 		health = healthValue;
 
 		onHealthChangedEvent.Broadcast(args);
-
-		/*
-		if (FMath::IsNearlyZero(health))
-		{
-			FDamageInstance emptyDamage;
-			BeginDying(emptyDamage);
-		}
-		*/
 	}
 }
 

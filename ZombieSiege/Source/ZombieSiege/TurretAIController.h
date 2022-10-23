@@ -36,6 +36,10 @@ protected:
 	UFUNCTION()
 	virtual void OnTargetPerceptionUpdatedHandler(AActor* Actor, FAIStimulus Stimulus);
 
+#if WITH_EDITOR  
+	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
+
 public:
 
 	virtual FGenericTeamId GetGenericTeamId() const override;
@@ -54,8 +58,4 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetTargetUnit(AUnitBase* target);
-
-#if WITH_EDITOR  
-	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
-#endif
 };

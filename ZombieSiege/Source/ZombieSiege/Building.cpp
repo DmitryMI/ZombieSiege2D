@@ -20,6 +20,7 @@ void ABuilding::BeginPlay()
 	{
 		SetUnitState(EUnitState::Birth);
 		SetBuildingProgress(0);
+		SetHealth(unbuiltInitialHealth);
 	}
 
 	weaponDefault = AWeaponManager::GetInstance(GetWorld())->GetWeaponInfo(weaponDefaultName);
@@ -41,8 +42,8 @@ void ABuilding::BeginPlay()
 			turretLocation.Z = 0;
 			turret->SetActorRelativeLocation(turretLocation);
 
-			// TODO Active only when seat is occupied
-			turret->SetTurrectActive(IsFullyBuilt());
+			bool hasEnoughPassengers = GetPassengers().Num() > i;
+			turret->SetTurrectActive(IsFullyBuilt() && hasEnoughPassengers);
 
 			turrets.Add(turret);
 		}
@@ -275,6 +276,28 @@ bool ABuilding::CanBeBuiltBy(AZombieSiegePlayerController* playerController) con
 bool ABuilding::CanBeBuilt(UWorld* world, const FVector& location, AZombieSiegePlayerController* playerController, AUnitBase* builder)
 {
 	return CanBeBuiltBy(playerController) && CanBeBuiltAt(world, location, builder);
+}
+
+void ABuilding::PostAddPassenger(AUnitBase* passenger)
+{
+	UpdateTurretsActiveState();
+}
+
+void ABuilding::PostRemovePassenger(AUnitBase* passenger)
+{
+	UpdateTurretsActiveState();
+}
+
+void ABuilding::UpdateTurretsActiveState()
+{
+	int passengersNum = GetPassengers().Num();
+
+	for (int i = 0; i < passengersNum; i++)
+	{
+		ATurret* turret = turrets[i];
+		bool hasEnoughPassengers = GetPassengers().Num() > i;
+		turret->SetTurrectActive(IsFullyBuilt() && hasEnoughPassengers);
+	}
 }
 
 void ABuilding::SetIsBuiltOnSpawn(bool isBuiltOnSpawn)

@@ -32,6 +32,9 @@ private:
 	UPROPERTY(EditAnywhere)
 	bool bIsBuiltOnSpawn = false;
 
+	UPROPERTY(EditDefaultsOnly)
+	float unbuiltInitialHealth = 100.0f;
+
 	UPROPERTY(VisibleAnywhere)
 	float buildingProgress = 0.0f;
 
@@ -47,6 +50,12 @@ protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	virtual bool CanAttackAnything(FAttackTestParameters testParams);
+
+	virtual void PostAddPassenger(AUnitBase* passenger) override;
+
+	virtual void PostRemovePassenger(AUnitBase* passenger) override;
+
+	virtual void UpdateTurretsActiveState();
 
 public:
 	ABuilding();
@@ -98,6 +107,7 @@ public:
 
 	virtual bool CanBeBuilt(UWorld* world, const FVector& location, AZombieSiegePlayerController* playerController, AUnitBase* builder = nullptr);
 
+	
 private:
 	FOnBuildingProgressChanged onBuildingProgressChangedEvent;
 };

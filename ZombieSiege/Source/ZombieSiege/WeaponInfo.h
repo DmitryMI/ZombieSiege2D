@@ -118,7 +118,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	/// <summary>
-	/// Determines if this weapon can ever target a unit.
+	/// Determines if this weapon can target a unit without checking attack range
 	/// </summary>
 	/// <returns>True if weapon can target a unit</returns>
 	virtual bool CanThisWeaponEverAttackTarget(AActor* actor) const
