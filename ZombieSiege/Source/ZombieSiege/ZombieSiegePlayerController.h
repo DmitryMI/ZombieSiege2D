@@ -114,4 +114,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Exec)
 	void ShowGameUi(bool bShow);
+
+	UFUNCTION(BlueprintCallable, Exec)
+	void DebugAlert(bool bEnabled);
 };

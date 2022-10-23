@@ -3,10 +3,10 @@
 
 #include "UnitAiController.h"
 #include "UnitOrder.h"
-#include "HoldPositionOrder.h"
+#include "EnterPassengerCarrierOrder.h"
 #include "AttackUnitOrder.h"
-#include "AttackOnMoveOrder.h"
 #include "WanderingOrder.h"
+#include "AreaScanningAttackOrder.h"
 #include "ZombieSiegeUtils.h"
 #include "BrainComponent.h"
 #include "Perception/AISense_Sight.h"
@@ -269,7 +269,7 @@ void AUnitAiController::IssueAttackUnitOrder(AUnitBase* attackTarget, bool bQueu
 
 void AUnitAiController::IssueAttackOnMoveOrder(const FVector& location, bool bQueue)
 {
-    UAttackOnMoveOrder* order = CreateOrder<UAttackOnMoveOrder>(attackOnMoveOrderClass);
+    UAreaScanningAttackOrder* order = CreateOrder<UAreaScanningAttackOrder>(attackOnMoveOrderClass);
     order->SetTargetLocation(location);
     IssueOrder(order, bQueue);
 }
@@ -313,14 +313,16 @@ void AUnitAiController::UnitDiedEventHandler(const FUnitDiedEventArgs& args)
 
 void AUnitAiController::IssueHoldPositionOrder()
 {
-    UHoldPositionOrder* order = CreateOrder<UHoldPositionOrder>(holdPositionOrderClass);
-    order->SetHoldLocation(GetPawn()->GetActorLocation());
+    UAreaScanningAttackOrder* order = CreateOrder<UAreaScanningAttackOrder>(holdPositionOrderClass);
+    order->SetTargetLocation(GetPawn()->GetActorLocation());
     IssueOrder(order, false);
 }
 
 void AUnitAiController::IssueEnterPassengerCarrierOrder(AUnitBase* carrier, bool bQueue)
 {
-    
+    UEnterPassengerCarrierOrder* order = CreateOrder<UEnterPassengerCarrierOrder>(enterPassengerCarrierOrderClass);
+    order->SetTargetUnit(carrier);
+    IssueOrder(order, false);
 }
 
 void AUnitAiController::CancelAllOrders()

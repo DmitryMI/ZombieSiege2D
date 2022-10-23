@@ -173,6 +173,30 @@ protected:
 	virtual void PostAddPassenger(AUnitBase* passenger);
 	virtual void PostRemovePassenger(AUnitBase* passenger);
 
+	UFUNCTION(BlueprintCallable)
+	/// <summary>
+	/// Adds a passenger to the array.
+	/// Should only be used internally. To make a unit enter a Carrier, call EnterPassengerCarrier() on that unit.
+	/// </summary>
+	/// <param name="passenger">Passenger entering this carrier</param>
+	void AddPassenger(AUnitBase* passenger);
+
+	UFUNCTION(BlueprintCallable)
+	/// <summary>
+	/// Removes a passenger from the array.
+	/// Should only be used internally. To make a unit leave a Carrier, call LeavePassengerCarrier() on that unit.
+	/// </summary>
+	/// <param name="passenger">Passenger leaving this carrier</param>
+	void RemovePassenger(AUnitBase* passenger);
+
+	UFUNCTION(BlueprintCallable)
+	/// <summary>
+	/// Sets the current passenger carrier.
+	/// Should only be used internally. To make this unit enter/leave a Carrier, call EnterPassengerCarrier/LeavePassengerCarrier
+	/// </summary>
+	/// <param name="carrier"></param>
+	void SetPassengerCarrier(AUnitBase* carrier);
+
 #if WITH_EDITOR  
 	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
@@ -220,10 +244,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	AUnitBase* GetPassengerCarrier() const;
 
+	UFUNCTION(BlueprintCallable)
 	const TArray<AUnitBase*>& GetPassengers();
 
 	UFUNCTION(BlueprintCallable)
-	void SetPassengerCarrier(AUnitBase* carrier);
+	bool CanEnterPassengerCarrier(AUnitBase* carrier);
 
 	UFUNCTION(BlueprintCallable)
 	bool EnterPassengerCarrier(AUnitBase* carrier);
@@ -239,12 +264,6 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	int GetFreePassengerSeats() const;
-
-	UFUNCTION(BlueprintCallable)
-	void AddPassenger(AUnitBase* passenger);
-
-	UFUNCTION(BlueprintCallable)
-	void RemovePassenger(AUnitBase* passenger);
 
 	UFUNCTION(BlueprintCallable)
 	void MakeAllPassengersLeave();
@@ -406,6 +425,11 @@ public:
 	/// </summary>
 	virtual float ReceiveHealing(const FHealingInstance& healing);
 
+	UFUNCTION(BlueprintCallable)
+	virtual void SetUnitHidden(bool bIsHidden);
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool IsUnitHidden();
 
 	DECLARE_EVENT_OneParam(AUnitBase, FOnDamagedReceivedEvent, const FDamageReceivedEventArgs&);
 

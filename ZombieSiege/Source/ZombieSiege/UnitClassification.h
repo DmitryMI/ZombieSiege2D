@@ -12,7 +12,6 @@ enum class EUnitClassification : uint8
 	Building = 1 << 1,
 	Mechanical = 1 << 2,
 	DestructibleDoodad = 1 << 3,
-	PassengerCarrier = 1 << 4,
 };
 
 ENUM_CLASS_FLAGS(EUnitClassification);

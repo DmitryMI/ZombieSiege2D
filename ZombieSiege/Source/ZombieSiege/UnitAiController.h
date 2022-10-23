@@ -16,6 +16,10 @@
 
 class UUnitOrder;
 class UAISenseConfig_Sight;
+class UAreaScanningAttackOrder;
+class UAttackUnitOrder;
+class UWanderingOrder;
+class UEnterPassengerCarrierOrder;
 
 UENUM(BlueprintType)
 enum class EOrderResult : uint8
@@ -56,25 +60,34 @@ private:
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UUnitOrder> attackUnitOrderClass;
+	TSubclassOf<UAttackUnitOrder> attackUnitOrderClass;
 
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UUnitOrder> attackOnMoveOrderClass;
+	TSubclassOf<UAreaScanningAttackOrder> attackOnMoveOrderClass;
 
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UUnitOrder> holdPositionOrderClass;
+	TSubclassOf<UAreaScanningAttackOrder> holdPositionOrderClass;
 
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UUnitOrder> wandererOrderClass;
+	TSubclassOf<UWanderingOrder> wandererOrderClass;
 
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UUnitOrder> enterPassengerCarrierOrderClass;
+	TSubclassOf<UEnterPassengerCarrierOrder> enterPassengerCarrierOrderClass;
 
 	UPROPERTY(EditAnywhere)
 	TArray<UUnitOrder*> orderQueue;
 
 	UPROPERTY(EditAnywhere)
 	UUnitOrder* executingOrder;
+
+	template<typename T>
+	T* CreateOrder(TSubclassOf<T> clazz)
+	{
+		check(clazz);
+		T* order = NewObject<T>(this, clazz);
+		order->SetController(this);
+		return order;
+	}
 
 	template<typename T>
 	T* CreateOrder(TSubclassOf<UUnitOrder> clazz)

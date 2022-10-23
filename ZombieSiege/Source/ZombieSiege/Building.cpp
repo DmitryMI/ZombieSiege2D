@@ -292,7 +292,7 @@ void ABuilding::UpdateTurretsActiveState()
 {
 	int passengersNum = GetPassengers().Num();
 
-	for (int i = 0; i < passengersNum; i++)
+	for (int i = 0; i < passengersNum && i < turrets.Num(); i++)
 	{
 		ATurret* turret = turrets[i];
 		bool hasEnoughPassengers = GetPassengers().Num() > i;

@@ -9,6 +9,8 @@
 #include "BuildingPlacementMarker.h"
 #include "ZombieSiegeUtils.h"
 #include "Camera/CameraComponent.h"
+#include "Survivor.h"
+#include "SurvivorAiController.h"
 
 DEFINE_LOG_CATEGORY(LogZombieSiegePlayerController);
 
@@ -287,6 +289,75 @@ void AZombieSiegePlayerController::ShowGameUi(bool bShow)
 	UE_LOG(LogZombieSiegePlayerController, Warning, TEXT("Exec ShowGameUi(%d) called"), bShow);
 
 	ShowGameUiInternal(bShow);
+}
+
+void AZombieSiegePlayerController::DebugAlert(bool bEnabled)
+{
+	if (!bEnabled)
+	{
+		for (AUnitBase* unit : controlledUnits)
+		{
+			ABuilding* building = Cast<ABuilding>(unit);
+			if (building)
+			{
+				building->MakeAllPassengersLeave();
+			}
+		}
+
+		return;
+	}
+
+	TMap<ABuilding*, int> buildingSeatsMap;
+	for (AUnitBase* unit : controlledUnits)
+	{
+		ABuilding* building = Cast<ABuilding>(unit);
+		if (building)
+		{
+			buildingSeatsMap.Add(building, building->GetFreePassengerSeats());
+		}
+	}	
+
+	if (buildingSeatsMap.Num() == 0)
+	{
+		UE_LOG(LogZombieSiegePlayerController, Warning, TEXT("[DebugAlert] Alert triggered, but player has no buildings!"));
+		return;
+	}
+
+	for (AUnitBase* unit : controlledUnits)
+	{
+		ASurvivor* survivor = Cast<ASurvivor>(unit);
+		if (!survivor)
+		{
+			continue;
+		}
+		ASurvivorAiController* controller = survivor->GetController<ASurvivorAiController>();
+		if (!controller)
+		{
+			continue;
+		}
+
+		ABuilding* buildingToEnter = nullptr;
+
+		for (auto& buildingSeatsPair : buildingSeatsMap)
+		{
+			if (buildingSeatsPair.Value > 0)
+			{
+				buildingToEnter = buildingSeatsPair.Key;
+				break;
+			}
+		}
+
+		if (buildingToEnter)
+		{
+			buildingSeatsMap[buildingToEnter]--;
+			controller->IssueEnterPassengerCarrierOrder(buildingToEnter);
+		}
+		else
+		{
+			UE_LOG(LogZombieSiegePlayerController, Warning, TEXT("[DebugAlert] Not enough seats! %s will be left outside."), *survivor->GetName());
+		}
+		
+	}
 }
 
 bool AZombieSiegePlayerController::DeprojectMouseOnTerrain(FVector& deprojectedLocation)

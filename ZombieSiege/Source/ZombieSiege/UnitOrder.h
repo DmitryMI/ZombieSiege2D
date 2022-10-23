@@ -12,10 +12,23 @@
 #include "DamageReceivedEventArgs.h"
 #include "UnitOrder.generated.h"
 
+UENUM(BlueprintType)
+enum class EOrderState : uint8
+{
+	Created,
+	Queued,
+	Executing,
+	Finished
+};
+
 UCLASS(Blueprintable)
 class ZOMBIESIEGE_API UUnitOrder : public UObject
 {
 	GENERATED_BODY()
+
+private:
+	UPROPERTY(VisibleAnywhere)
+	EOrderState orderState;
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
@@ -30,6 +43,9 @@ protected:
 public:
 	UUnitOrder();
 	~UUnitOrder();
+
+	UFUNCTION(BlueprintCallable)
+	EOrderState GetOrderState();
 
 	UFUNCTION(BlueprintCallable)
 	EUnitOrderType GetOrderType();

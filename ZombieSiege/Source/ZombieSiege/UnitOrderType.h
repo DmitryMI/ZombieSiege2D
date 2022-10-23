@@ -16,5 +16,6 @@ enum class EUnitOrderType : uint8
 	Wander,
 	Repair,
 	Build,
-	Gather
+	Gather,
+	EnterPassengerCarrier,
 };

@@ -11,6 +11,11 @@ UUnitOrder::~UUnitOrder()
 {
 }
 
+EOrderState UUnitOrder::GetOrderState()
+{
+	return orderState;
+}
+
 EUnitOrderType UUnitOrder::GetOrderType()
 {
 	return orderType;
@@ -58,6 +63,8 @@ void UUnitOrder::CancelOrder()
 
 void UUnitOrder::ExecuteOrder()
 {
+	check(orderState == EOrderState::Created || orderState == EOrderState::Queued);
+
 	AUnitAiController* controller = GetController();
 	check(controller);
 
@@ -66,6 +73,8 @@ void UUnitOrder::ExecuteOrder()
 	check(treeRunOk);
 
 	GetBlackboard()->SetValueAsObject("Order", this);
+
+	orderState = EOrderState::Executing;
 }
 
 void UUnitOrder::UnitPerceptionUpdated(AUnitBase* unit, FAIStimulus Stimulus)

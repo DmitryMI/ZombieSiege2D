@@ -44,6 +44,9 @@ void AZombieSiegeGameModeBase::SpawnDebugHorde(FName unitTypeName, int count, bo
 
 	float radius = FMath::Min(viewportWidth, viewportHeight);
 
+	int playerUnitIterator = 0;
+	FAttackTestParameters attackTestParams(EAttackTestFlags::Affiliation | EAttackTestFlags::Reachability);
+
 	for (int i = 0; i < count; i++)
 	{
 	
@@ -69,12 +72,29 @@ void AZombieSiegeGameModeBase::SpawnDebugHorde(FName unitTypeName, int count, bo
 			if (controller && bIssueAttackOnMoveOrder)
 			{
 				TArray<AUnitBase*> localPlayerUnits = localPlayerContoller->GetControlledUnits();
+				AUnitBase* attackTarget = nullptr;
 
-				if (localPlayerUnits.Num() != 0)
+				for (; playerUnitIterator < localPlayerUnits.Num(); playerUnitIterator++)
 				{
-					AUnitBase* randomPlayersUnit = localPlayerUnits[FMath::RandRange(0, localPlayerUnits.Num() - 1)];
-					check(randomPlayersUnit);
-					controller->IssueAttackOnMoveOrder(randomPlayersUnit->GetActorLocation());
+					if (spawnedUnit->CanAttackTarget(localPlayerUnits[playerUnitIterator], attackTestParams))
+					{
+						attackTarget = localPlayerUnits[playerUnitIterator];
+						break;
+					}
+				}
+
+				if (playerUnitIterator >= localPlayerUnits.Num())
+				{
+					playerUnitIterator = 0;
+				}
+
+				if (attackTarget)
+				{
+					controller->IssueAttackOnMoveOrder(attackTarget->GetActorLocation());
+				}
+				else
+				{
+					UE_LOG(LogTemp, Error, TEXT("[SpawnDebugHorde] Local player has no attackable units!"));
 				}
 			}
 			else if(!controller)

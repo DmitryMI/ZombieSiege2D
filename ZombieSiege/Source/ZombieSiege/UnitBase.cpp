@@ -73,58 +73,89 @@ const TArray<AUnitBase*>& AUnitBase::GetPassengers()
 	return passengers;
 }
 
-void AUnitBase::SetPassengerCarrier(AUnitBase* carrier)
+bool AUnitBase::CanEnterPassengerCarrier(AUnitBase* carrier)
 {
-	if (carrier == passengerCarrier)
+	if (!carrier)
 	{
-		return;
+		return false;
 	}
 
-	passengerCarrier = carrier;
-
-	if (passengerCarrier)
+	if (this->GetTotalPassengerSeats() != 0)
 	{
-		check(carrier->HasClassifications(EUnitClassification::PassengerCarrier));
-		check(!this->HasClassifications(EUnitClassification::PassengerCarrier));
-
-		SetActorHiddenInGame(true);
+		return false;
 	}
-	else
-	{
-		bool shouldBeHidden = ShouldBeHidden();
-		SetActorHiddenInGame(shouldBeHidden);
-	}
-}
 
-bool AUnitBase::EnterPassengerCarrier(AUnitBase* carrier)
-{
-	check(carrier);
-
-	check(carrier->HasClassifications(EUnitClassification::PassengerCarrier));
-	check(!this->HasClassifications(EUnitClassification::PassengerCarrier));
-	
-	float distSqr2D = (carrier->GetActorLocation() - GetActorLocation()).Size2D();
+	float distSqr2D = UZombieSiegeUtils::GetDistance2DBetweenSimpleCollisions(this, carrier);
 
 	if (distSqr2D > FMath::Square(enterPassengerCarrierRadius))
 	{
 		return false;
 	}
 
-	if (carrier->GetFreePassengerSeats() > 0)
+	return carrier->GetFreePassengerSeats() > 0;
+}
+
+void AUnitBase::SetPassengerCarrier(AUnitBase* carrier)
+{
+	if (carrier == passengerCarrier)
 	{
-		carrier->AddPassenger(this);
-		SetPassengerCarrier(carrier);
-		return true;
+		return;
+	}
+	AUnitBase* oldCarrier = passengerCarrier;
+	passengerCarrier = carrier;
+
+	if (passengerCarrier)
+	{
+		check(GetTotalPassengerSeats() == 0);
+
+		SetUnitHidden(true);
+
+		FAttachmentTransformRules attachmentRules(EAttachmentRule::KeepRelative, false);
+		AttachToActor(passengerCarrier, attachmentRules);
 	}
 	else
 	{
+		check(oldCarrier);
+
+		FDetachmentTransformRules detachmentRules(EDetachmentRule::KeepRelative, false);
+		DetachFromActor(detachmentRules);
+
+		FVector center = oldCarrier->GetActorLocation();
+		float radius = oldCarrier->GetSimpleCollisionRadius() + enterPassengerCarrierRadius;
+		FVector location;
+		bool hasPoint = UZombieSiegeUtils::GetRandomReachableLocation(GetWorld(), center, radius, location);
+		if (hasPoint)
+		{
+			SetActorLocation(location);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("[UniBase: SetPassengerCarrier] Cannot find a point to dispatch a passenger!"));
+		}
+
+		SetUnitHidden(false);
+	}
+}
+
+bool AUnitBase::EnterPassengerCarrier(AUnitBase* carrier)
+{
+	if (!CanEnterPassengerCarrier(carrier))
+	{
 		return false;
 	}
+
+	carrier->AddPassenger(this);
+	SetPassengerCarrier(carrier);
+
+	return true;
 }
 
 void AUnitBase::LeavePassengerCarrier()
 {
-	check(passengerCarrier);
+	if (!passengerCarrier)
+	{
+		return;
+	}
 
 	passengerCarrier->RemovePassenger(this);
 	SetPassengerCarrier(nullptr);
@@ -162,7 +193,7 @@ void AUnitBase::PostAddPassenger(AUnitBase* passenger)
 
 void AUnitBase::RemovePassenger(AUnitBase* passenger)
 {
-	check(HasClassifications(EUnitClassification::PassengerCarrier));
+	//check(HasClassifications(EUnitClassification::PassengerCarrier));
 
 	passengers.Remove(passenger);
 
@@ -193,7 +224,8 @@ void AUnitBase::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyCha
 
 void AUnitBase::MakeAllPassengersLeave()
 {
-	for (AUnitBase* passenger : passengers)
+	TArray<AUnitBase*> passengersCopy = passengers;
+	for (AUnitBase* passenger : passengersCopy)
 	{
 		passenger->LeavePassengerCarrier();
 	}
@@ -551,7 +583,10 @@ bool AUnitBase::BeginAttackTargetWithWeapon(AActor* targetActor, UWeaponInfo* we
 {
 	check(attackDispatcher);
 
-	if (!CanAttackTargetWithWeapon(targetActor, weapon, FAttackTestParameters(true, true, false)))
+	//FAttackTestParameters testParams(true, true, false);
+	FAttackTestParameters testParams(EAttackTestFlags::Cooldown | EAttackTestFlags::Range | EAttackTestFlags::PhysicalState);
+
+	if (!CanAttackTargetWithWeapon(targetActor, weapon, testParams))
 	{
 		return false;
 	}
@@ -812,6 +847,30 @@ float AUnitBase::ReceiveHealing(const FHealingInstance& healing)
 
 
 	return GetHealth() - healthOld;
+}
+
+void AUnitBase::SetUnitHidden(bool bIsHidden)
+{
+	SetActorHiddenInGame(bIsHidden);
+	SetActorEnableCollision(!bIsHidden);
+
+	if (bIsHidden)
+	{
+		movementComponent->GravityScale = 0.0f;
+		movementComponent->MaxFlySpeed = 0;
+		movementComponent->MaxWalkSpeed = 0;
+	}
+	else
+	{
+		movementComponent->GravityScale = 1.0f;
+		movementComponent->MaxFlySpeed = GetMaxSpeed();
+		movementComponent->MaxWalkSpeed = GetMaxSpeed();
+	}
+}
+
+bool AUnitBase::IsUnitHidden()
+{
+	return IsHidden();
 }
 
 
