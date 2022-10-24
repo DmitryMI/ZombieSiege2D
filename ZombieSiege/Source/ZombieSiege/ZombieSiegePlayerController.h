@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "UnitDiedEventArgs.h"
+#include "ZombieSiegeHUD.h"
+#include "GenericTeamAgentInterface.h"
 #include "ZombieSiegePlayerController.generated.h"
 
 class ABuilding;
@@ -14,24 +16,32 @@ class ADoodad;
 class AGatherDoodadJob;
 class ABuildingJob;
 class ABuildingPlacementMarker;
+class AZombieSiegePlayerState;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogZombieSiegePlayerController, Log, All);
+
+UENUM(BlueprintType)
+enum class EControllerState : uint8
+{
+	None,
+	BuildingPlacement,
+	SelectingUnits,
+};
 
 /**
  * 
  */
 UCLASS()
-class ZOMBIESIEGE_API AZombieSiegePlayerController : public APlayerController
+class ZOMBIESIEGE_API AZombieSiegePlayerController : public APlayerController, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
 private:
 	
-
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "DefaultPreferences|Camera")
 	float cameraDefaultHeight = 1000;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "DefaultPreferences|Camera")
 	float cameraDefaultSpeed = 1000;
 
 	UPROPERTY(EditDefaultsOnly, Category = "DefaultPreferences|Camera")
@@ -44,6 +54,9 @@ private:
 	float cameraDefaultZoomSpeed = 15000.0f;
 
 	UPROPERTY(EditDefaultsOnly)
+	float selectionMouseDeltaThreshold = 5.0f;	
+
+	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ABuildingPlacementMarker> buildingPlacementMarkerClass;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -54,9 +67,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TArray<TSubclassOf<AUnitBase>> buildables;
-	
+
 	UPROPERTY(VisibleAnywhere)
-	TArray<AUnitBase*> controlledUnits;
+	TArray<AUnitBase*> selectedUnits;
 
 	UPROPERTY(VisibleAnywhere)
 	TArray<AJobBase*> jobs;
@@ -70,9 +83,25 @@ private:
 	void OnSelectActionDoubleClick();
 	void OnCommandActionReleased();
 
+	void OnMouseMoveX(float dx);
+	void OnMouseMoveY(float dy);
+	void OnMouseMove(const FVector2D& delta);
+
 	ABuildingPlacementMarker* buildingPlacementMarker;
 
+	EControllerState controllerState;
+
+	FVector2D mouseMoveAxisAccumulator;
+
+	bool bSelectActionPressed;
+	FVector2D selectActionPressedPosition;
+
+	bool bCommandActionPressed;
+	FVector2D commandActionPressedPosition;
+
 protected:
+	virtual void BeginPlay() override;
+
 	virtual void SetupInputComponent() override;
 
 	void OnDoodadSelectDoubleClicked(ADoodad* doodad);
@@ -84,12 +113,25 @@ protected:
 
 	bool DeprojectMouseOnTerrain(FVector& deprojectedLocation);
 
-	virtual void OnControlledUnitDiedHandler(const FUnitDiedEventArgs& args);
-	virtual void OnControlledUnitDestroyedHandler(AUnitBase* unit);
+	void OnControlledUnitDiedHandler(AZombieSiegePlayerState* sender, const FUnitDiedEventArgs& args);
+
+	void SelectUnitsInsideSelectionBox();
 
 public:
 
 	virtual void Tick(float deltaSeconds) override;
+
+	virtual void SetGenericTeamId(const FGenericTeamId& TeamID) override;
+
+	virtual FGenericTeamId GetGenericTeamId() const override;
+
+	UFUNCTION(BlueprintCallable)
+	void AddUnitToSelection(AUnitBase* unit);
+
+	UFUNCTION(BlueprintCallable)
+	void RemoveUnitFromSelection(AUnitBase* unit);
+
+	void ClearSelection();
 
 	UFUNCTION(BlueprintCallable)
 	void AddToControlledUnits(AUnitBase* unit);
@@ -117,4 +159,46 @@ public:
 
 	UFUNCTION(BlueprintCallable, Exec)
 	void DebugAlert(bool bEnabled);
+
+	
+	template<typename T, typename S>
+	bool GetActorsInSelectionBox(const TArray<T*>& searchSet, TArray<S*>& outActors)
+	{
+		AZombieSiegeHUD* hud = GetHUD<AZombieSiegeHUD>();
+		check(hud);
+
+		if (controllerState != EControllerState::SelectingUnits)
+		{
+			return false;
+		}
+
+		for (T* actor : searchSet)
+		{
+			FBox2D selectionBox = hud->GetSelectionBox();
+
+			FVector location = actor->GetActorLocation();
+			FVector2D projectedScreen;
+			bool projectionOk = ProjectWorldLocationToScreen(location, projectedScreen);
+
+			if (!projectionOk)
+			{
+				return false;
+			}
+
+			if (!selectionBox.IsInside(projectedScreen))
+			{
+				continue;
+			}
+
+			S* actorCast = Cast<S>(actor);
+			if (!actorCast)
+			{
+				continue;
+			}
+
+			outActors.Add(actorCast);
+		}
+
+		return outActors.Num() > 0;
+	}
 };

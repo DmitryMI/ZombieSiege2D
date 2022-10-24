@@ -35,6 +35,8 @@ private:
 protected:
 	virtual void BeginPlay() override;
 
+	virtual void PostSetManualModeEnabled(bool bIsEnabled) override;
+
 public:
 	virtual void Tick(float deltaTime) override;
 

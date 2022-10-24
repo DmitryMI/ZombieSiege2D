@@ -7,7 +7,7 @@
 #include "UnitGraphicsManager.h"
 #include "UnitState.h"
 
-UUnitGraphicsComponent::UUnitGraphicsComponent()
+UUnitGraphicsComponent::UUnitGraphicsComponent() : Super()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 }
@@ -40,13 +40,8 @@ void UUnitGraphicsComponent::BeginPlay()
 			UE_LOG(LogTemp, Error, TEXT("Failed to setup graphics for %s"), *ownerName);
 		}
 	}
-	
-	flipbookRenderer = Cast<UPaperFlipbookComponent>(GetOwner()->GetComponentByClass(UPaperFlipbookComponent::StaticClass()));
 
-	if (flipbookRenderer)
-	{
-		flipbookRenderer->SetWorldRotation(FRotator(0, 0, -90));
-	}
+	//SetWorldRotation(FRotator(0, 0, -90));	
 }
 
 void UUnitGraphicsComponent::UpdateFlipbook(EUnitState state, EFaceDirection direction)
@@ -58,16 +53,18 @@ void UUnitGraphicsComponent::UpdateFlipbook(EUnitState state, EFaceDirection dir
 		flipbook = unitGraphicsData->GetFlipbook(state, direction);
 	}
 
-	if (flipbookRenderer)
-	{
-		flipbookRenderer->SetFlipbook(flipbook);
-	}
+	SetFlipbook(flipbook);
 }
 
 
 void UUnitGraphicsComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (!GetWorld()->IsGameWorld())
+	{
+		return;
+	}
 
 	if (bAutoUpdateFlipbook && minimalFlipbookAutoUpdateInterval <= flipbookAutoUpdateIntervalCounter)
 	{

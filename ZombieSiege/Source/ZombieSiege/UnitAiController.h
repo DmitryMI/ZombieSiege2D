@@ -20,6 +20,7 @@ class UAreaScanningAttackOrder;
 class UAttackUnitOrder;
 class UWanderingOrder;
 class UEnterPassengerCarrierOrder;
+class UMoveOrder;
 
 UENUM(BlueprintType)
 enum class EOrderResult : uint8
@@ -58,9 +59,15 @@ private:
 	FDelegateHandle unitDiedEventDelegateHandle;
 	FDelegateHandle unitDamageReceivedEventDelegateHandle;
 
+	UPROPERTY(EditAnywhere)
+	bool bIsManualModeEnabled = false;
+
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UAttackUnitOrder> attackUnitOrderClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UMoveOrder> moveOrderClass;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UAreaScanningAttackOrder> attackOnMoveOrderClass;
@@ -117,6 +124,8 @@ protected:
 
 	UFUNCTION()
 	virtual void OnTargetPerceptionUpdatedHandler(AActor* Actor, FAIStimulus Stimulus);
+
+	virtual void PostSetManualModeEnabled(bool bIsEnabled);
 	
 public:
 
@@ -159,6 +168,16 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void ReportOrderFinished(UUnitOrder* order, EOrderResult result);
+
+	UFUNCTION(BlueprintCallable)
+	bool IsManualModeEnabled();
+
+	UFUNCTION(BlueprintCallable)
+	void SetManualModeEnabled(bool bEnabled);
+
+	virtual bool HandleTargetActorCommandAction(AActor* targetActor);
+
+	virtual bool HandleTargetPointCommandAction(const FVector targetPoint);
 
 	DECLARE_EVENT_OneParam(AUnitAiController, FOnOrderExecutionStartedEvent, const FOrderExecutionStartedEventArgs&);
 	FOnOrderExecutionStartedEvent& OnOrderExecutionStarted() { return onOrderExecutionStartedEvent; }

@@ -27,6 +27,11 @@ bool AJobBase::IsValidExecutor(AUnitBase* unit)
 		return false;
 	}
 
+	if (controller->IsManualModeEnabled())
+	{
+		return false;
+	}
+
 	return true;
 }
 

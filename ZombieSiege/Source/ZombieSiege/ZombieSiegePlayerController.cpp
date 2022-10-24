@@ -11,6 +11,9 @@
 #include "Camera/CameraComponent.h"
 #include "Survivor.h"
 #include "SurvivorAiController.h"
+#include "GameFramework/HUD.h"
+#include "ZombieSiegePlayerState.h"
+#include "SelectionIndicatorComponent.h"
 
 DEFINE_LOG_CATEGORY(LogZombieSiegePlayerController);
 
@@ -76,12 +79,27 @@ void AZombieSiegePlayerController::OnCameraZoom(float value)
 
 void AZombieSiegePlayerController::OnSelectActionPressed()
 {
+	bool mouseOk = GetMousePosition(selectActionPressedPosition.X, selectActionPressedPosition.Y);
+	if (mouseOk)
+	{
+		bSelectActionPressed = true;
+	}
 }
 
 void AZombieSiegePlayerController::OnSelectActionReleased()
 {
-	if (buildingPlacementMarker)
+	bSelectActionPressed = false;
+
+	if (controllerState == EControllerState::None)
 	{
+		ClearSelection();
+	}
+	else if (controllerState == EControllerState::BuildingPlacement)
+	{
+		if (!buildingPlacementMarker)
+		{
+			return;
+		}
 		if (buildingPlacementMarker->CanBeBuiltLater())
 		{
 			ABuildingJob* job = ABuildingJob::FromExistingMarker(GetWorld(), buildingPlacementMarker, buildingJobClass);
@@ -95,6 +113,16 @@ void AZombieSiegePlayerController::OnSelectActionReleased()
 		}
 
 		buildingPlacementMarker = nullptr;
+	}
+	else if (controllerState == EControllerState::SelectingUnits)
+	{
+		SelectUnitsInsideSelectionBox();
+
+		AZombieSiegeHUD* hud = GetHUD<AZombieSiegeHUD>();
+		check(hud);
+		hud->EndSelection();
+
+		controllerState = EControllerState::None;
 	}
 }
 
@@ -124,11 +152,81 @@ void AZombieSiegePlayerController::OnSelectActionDoubleClick()
 
 void AZombieSiegePlayerController::OnCommandActionReleased()
 {
-	if (buildingPlacementMarker)
+	if (controllerState == EControllerState::None)
 	{
+		float mouseX = 0;
+		float mouseY = 0;
+		bool mouseOk = GetMousePosition(mouseX, mouseY);
+		if (!mouseOk)
+		{
+			return;
+		}
+		AActor* commandTargetActor = GetActorUnderScreenPoint(mouseX, mouseY);
+
+		if (commandTargetActor)
+		{
+			for (AUnitBase* unit : selectedUnits)
+			{
+				AUnitAiController* controller = unit->GetController<AUnitAiController>();
+				if (!controller)
+				{
+					continue;
+				}
+
+				controller->HandleTargetActorCommandAction(commandTargetActor);
+			}
+		}
+		else
+		{
+			FVector location;
+			bool deprojected = DeprojectMouseOnTerrain(location);
+			if (deprojected)
+			{
+				for (AUnitBase* unit : selectedUnits)
+				{
+					AUnitAiController* controller = unit->GetController<AUnitAiController>();
+					if (!controller)
+					{
+						continue;
+					}
+
+					controller->HandleTargetPointCommandAction(location);
+				}
+			}
+		}
+
+		
+	}
+	else if (controllerState == EControllerState::BuildingPlacement)
+	{
+		check(buildingPlacementMarker);
+
 		buildingPlacementMarker->Destroy();
 		buildingPlacementMarker = nullptr;
 	}
+	else
+	{
+
+	}
+}
+
+void AZombieSiegePlayerController::OnMouseMoveX(float dx)
+{
+	mouseMoveAxisAccumulator.X = dx;
+}
+
+void AZombieSiegePlayerController::OnMouseMoveY(float dy)
+{
+	mouseMoveAxisAccumulator.X = dy;
+}
+
+
+void AZombieSiegePlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+	AZombieSiegePlayerState* playerState = GetPlayerState<AZombieSiegePlayerState>();
+
+	playerState->OnControlledUnitDied().AddUObject(this, &AZombieSiegePlayerController::OnControlledUnitDiedHandler);
 }
 
 void AZombieSiegePlayerController::SetupInputComponent()
@@ -138,12 +236,16 @@ void AZombieSiegePlayerController::SetupInputComponent()
 	this->InputComponent->BindAxis("CameraVertical", this, &AZombieSiegePlayerController::OnCameraVertical);
 	this->InputComponent->BindAxis("CameraHorizontal", this, &AZombieSiegePlayerController::OnCameraHorizontal);
 	this->InputComponent->BindAxis("CameraZoom", this, &AZombieSiegePlayerController::OnCameraZoom);
+	this->InputComponent->BindAxis("MouseMoveX", this, &AZombieSiegePlayerController::OnMouseMoveX);
+	this->InputComponent->BindAxis("MouseMoveY", this, &AZombieSiegePlayerController::OnMouseMoveY);
 
 	this->InputComponent->BindAction("Select", EInputEvent::IE_Pressed, this, &AZombieSiegePlayerController::OnSelectActionPressed);
 	this->InputComponent->BindAction("Select", EInputEvent::IE_Released, this, &AZombieSiegePlayerController::OnSelectActionReleased);
 	this->InputComponent->BindAction("Select", EInputEvent::IE_DoubleClick, this, &AZombieSiegePlayerController::OnSelectActionDoubleClick);
 
 	this->InputComponent->BindAction("Command", EInputEvent::IE_Released, this, &AZombieSiegePlayerController::OnCommandActionReleased);
+
+
 }
 
 void AZombieSiegePlayerController::OnDoodadSelectDoubleClicked(ADoodad* doodad)
@@ -221,26 +323,20 @@ void AZombieSiegePlayerController::ShowGameUiInternal_Implementation(bool bShow)
 
 void AZombieSiegePlayerController::AddToControlledUnits(AUnitBase* unit)
 {
-	check(unit);
-
-	check(!controlledUnits.Contains(unit));
-
-	unit->OnUnitDied().AddUObject(this, &AZombieSiegePlayerController::OnControlledUnitDiedHandler);
-	unit->OnUnitDestroyed().AddUObject(this, &AZombieSiegePlayerController::OnControlledUnitDestroyedHandler);
-
-	controlledUnits.Add(unit);
+	AZombieSiegePlayerState* playerState = GetPlayerState<AZombieSiegePlayerState>();
+	playerState->AddToControlledUnits(unit);
 }
 
 void AZombieSiegePlayerController::RemoveFromControlledUnits(AUnitBase* unit)
 {
-	check(unit);
-
-	controlledUnits.Remove(unit);
+	AZombieSiegePlayerState* playerState = GetPlayerState<AZombieSiegePlayerState>();
+	playerState->RemoveFromControlledUnits(unit);
 }
 
 const TArray<AUnitBase*>& AZombieSiegePlayerController::GetControlledUnits()
 {
-	return controlledUnits;
+	AZombieSiegePlayerState* playerState = GetPlayerState<AZombieSiegePlayerState>();
+	return playerState->GetControlledUnits();
 }
 
 void AZombieSiegePlayerController::RemoveJob(AJobBase* job)
@@ -253,13 +349,36 @@ const TArray<AJobBase*> AZombieSiegePlayerController::GetJobs()
 	return jobs;
 }
 
+void AZombieSiegePlayerController::SelectUnitsInsideSelectionBox()
+{
+	AZombieSiegeHUD* hud = GetHUD<AZombieSiegeHUD>();
+	check(hud);
+
+	const TArray<AUnitBase*> controlledUnits = GetControlledUnits();
+	TArray<AUnitBase*> unitInBox;
+	unitInBox.Reserve(controlledUnits.Num());
+
+	GetActorsInSelectionBox(controlledUnits, unitInBox);
+
+	for (AUnitBase* unit : unitInBox)
+	{
+		AddUnitToSelection(unit);
+	}
+}
+
 const TArray<TSubclassOf<AUnitBase>>& AZombieSiegePlayerController::GetBuildableUnits()
 {
 	return buildables;
 }
 
+
 void AZombieSiegePlayerController::BeginBuildingJobPlacement(TSubclassOf<ABuilding> buildingClass)
 {
+	if (controllerState != EControllerState::None)
+	{
+		return;
+	}
+
 	if (buildingPlacementMarker)
 	{
 		// Already busy with another building placement
@@ -270,6 +389,7 @@ void AZombieSiegePlayerController::BeginBuildingJobPlacement(TSubclassOf<ABuildi
 
 	if (DeprojectMouseOnTerrain(deprojected))
 	{
+		controllerState = EControllerState::BuildingPlacement;
 
 		buildingPlacementMarker = GetWorld()->SpawnActor<ABuildingPlacementMarker>(
 			buildingPlacementMarkerClass,
@@ -295,7 +415,7 @@ void AZombieSiegePlayerController::DebugAlert(bool bEnabled)
 {
 	if (!bEnabled)
 	{
-		for (AUnitBase* unit : controlledUnits)
+		for (AUnitBase* unit : GetControlledUnits())
 		{
 			ABuilding* building = Cast<ABuilding>(unit);
 			if (building)
@@ -308,7 +428,7 @@ void AZombieSiegePlayerController::DebugAlert(bool bEnabled)
 	}
 
 	TMap<ABuilding*, int> buildingSeatsMap;
-	for (AUnitBase* unit : controlledUnits)
+	for (AUnitBase* unit : GetControlledUnits())
 	{
 		ABuilding* building = Cast<ABuilding>(unit);
 		if (building)
@@ -323,7 +443,7 @@ void AZombieSiegePlayerController::DebugAlert(bool bEnabled)
 		return;
 	}
 
-	for (AUnitBase* unit : controlledUnits)
+	for (AUnitBase* unit : GetControlledUnits())
 	{
 		ASurvivor* survivor = Cast<ASurvivor>(unit);
 		if (!survivor)
@@ -360,6 +480,50 @@ void AZombieSiegePlayerController::DebugAlert(bool bEnabled)
 	}
 }
 
+void AZombieSiegePlayerController::AddUnitToSelection(AUnitBase* unit)
+{
+	checkSlow(!selectedUnits.Contains(unit));
+
+	USelectionIndicatorComponent* indicator = Cast<USelectionIndicatorComponent>(unit->GetComponentByClass(USelectionIndicatorComponent::StaticClass()));
+	if (!indicator)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Unit %s has no USelectionIndicatorComponent"), *unit->GetName());
+		return;
+	}
+	
+	selectedUnits.Add(unit);
+
+	ETeamAttitude::Type attitude = FGenericTeamId::GetAttitude(this, unit);
+	
+	indicator->SetIsSelected(true, attitude);
+}
+
+void AZombieSiegePlayerController::RemoveUnitFromSelection(AUnitBase* unit)
+{
+	checkSlow(selectedUnits.Contains(unit));
+
+	selectedUnits.Remove(unit);
+
+	USelectionIndicatorComponent* indicator = Cast<USelectionIndicatorComponent>(unit->GetComponentByClass(USelectionIndicatorComponent::StaticClass()));
+	if (!indicator)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Unit %s has no USelectionIndicatorComponent"), *unit->GetName());
+		return;
+	}
+
+	indicator->SetIsSelected(false, ETeamAttitude::Neutral);
+}
+
+void AZombieSiegePlayerController::ClearSelection()
+{
+	TArray<AUnitBase*> selectionCopy = selectedUnits;
+
+	for (AUnitBase* unit : selectionCopy)
+	{
+		RemoveUnitFromSelection(unit);
+	}
+}
+
 bool AZombieSiegePlayerController::DeprojectMouseOnTerrain(FVector& deprojectedLocation)
 {
 	FVector worldLocation;
@@ -376,29 +540,91 @@ bool AZombieSiegePlayerController::DeprojectMouseOnTerrain(FVector& deprojectedL
 	return true;
 }
 
-void AZombieSiegePlayerController::OnControlledUnitDiedHandler(const FUnitDiedEventArgs& args)
+void AZombieSiegePlayerController::OnControlledUnitDiedHandler(AZombieSiegePlayerState* sender, const FUnitDiedEventArgs& args)
 {
-	
+	check(sender == GetPlayerState<AZombieSiegePlayerState>());
+
+
 }
 
-void AZombieSiegePlayerController::OnControlledUnitDestroyedHandler(AUnitBase* unit)
+void AZombieSiegePlayerController::OnMouseMove(const FVector2D& delta)
 {
-	check(unit);
+	if (delta.IsNearlyZero())
+	{
+		return;
+	}
 
-	RemoveFromControlledUnits(unit);
+	if (controllerState == EControllerState::None)
+	{
+		if (bSelectActionPressed)
+		{
+			FVector2D mousePosition;
+			if (!GetMousePosition(mousePosition.X, mousePosition.Y))
+			{
+				return;
+			}
+
+			float mouseDeltaSqr = (mousePosition - selectActionPressedPosition).SizeSquared();
+			if (mouseDeltaSqr >= selectionMouseDeltaThreshold)
+			{
+				AZombieSiegeHUD* hud = GetHUD<AZombieSiegeHUD>();
+				check(hud);
+
+				FVector2D boxStart;
+				GetMousePosition(boxStart.X, boxStart.Y);
+				hud->BeginSelection(boxStart);
+				controllerState = EControllerState::SelectingUnits;
+				return;
+			}
+		}
+	}
+	else if (controllerState == EControllerState::BuildingPlacement)
+	{
+		if (!buildingPlacementMarker)
+		{
+			controllerState = EControllerState::None;
+			return;
+		}
+		FVector deprojected;
+		if (DeprojectMouseOnTerrain(deprojected))
+		{
+			buildingPlacementMarker->SetActorLocation(deprojected);
+		}
+	}
+	else if (controllerState == EControllerState::SelectingUnits)
+	{
+		AZombieSiegeHUD* hud = GetHUD<AZombieSiegeHUD>();
+		check(hud);
+
+		FVector2D boxEnd;
+		GetMousePosition(boxEnd.X, boxEnd.Y);
+		hud->UpdateSelection(boxEnd);
+	}
+	else
+	{
+		
+	}
+}
+
+void AZombieSiegePlayerController::SetGenericTeamId(const FGenericTeamId& TeamID)
+{
+	AZombieSiegePlayerState* playerState = GetPlayerState<AZombieSiegePlayerState>();
+	check(playerState);
+
+	playerState->SetGenericTeamId(TeamID);
+}
+
+FGenericTeamId AZombieSiegePlayerController::GetGenericTeamId() const
+{
+	AZombieSiegePlayerState* playerState = GetPlayerState<AZombieSiegePlayerState>();
+	check(playerState);
+
+	return playerState->GetGenericTeamId();
 }
 
 void AZombieSiegePlayerController::Tick(float deltaSeconds)
 {
 	Super::Tick(deltaSeconds);
 
-	if (buildingPlacementMarker)
-	{
-		FVector deprojected;
-
-		if (DeprojectMouseOnTerrain(deprojected))
-		{
-			buildingPlacementMarker->SetActorLocation(deprojected);
-		}
-	}
+	OnMouseMove(mouseMoveAxisAccumulator);
 }

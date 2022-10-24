@@ -7,11 +7,36 @@
 #include "GatherOrder.h"
 #include "BuildOrder.h"
 #include "RepairOrder.h"
+#include "JobBase.h"
 
 
 void ASurvivorAiController::BeginPlay()
 {
     Super::BeginPlay();
+}
+
+void ASurvivorAiController::PostSetManualModeEnabled(bool bIsEnabled)
+{
+    if (!bIsEnabled)
+    {
+        return;
+    }
+
+    if (!assignedToJob)
+    {
+        return;
+    }
+
+    AUnitBase* survivor = Cast<AUnitBase>(GetPawn());
+    if (!survivor)
+    {
+        return;
+    }
+
+    assignedToJob->UnassignExecutor(survivor);
+    
+    // The job must set assignedToJob to nullptr during UnassignExecutor() call
+    check(assignedToJob == nullptr);
 }
 
 void ASurvivorAiController::Tick(float deltaTime)

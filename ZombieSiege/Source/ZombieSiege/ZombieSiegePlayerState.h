@@ -6,13 +6,17 @@
 #include "GameFramework/PlayerState.h"
 #include "ResourceType.h"
 #include "Macros.h"
+#include "UnitDiedEventArgs.h"
+#include "GenericTeamAgentInterface.h"
 #include "ZombieSiegePlayerState.generated.h"
+
+class AUnitBase;
 
 /**
  * 
  */
 UCLASS()
-class ZOMBIESIEGE_API AZombieSiegePlayerState : public APlayerState
+class ZOMBIESIEGE_API AZombieSiegePlayerState : public APlayerState, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
@@ -20,8 +24,15 @@ private:
 	UPROPERTY(EditAnywhere)
 	TMap<EResourceType, float> storedResources;
 
+	UPROPERTY(EditDefaultsOnly)
+	uint8 playerTeamId = 0;
+
 	UPROPERTY(VisibleAnywhere)
-	uint8 playerTeamId;
+	TArray<AUnitBase*> controlledUnits;
+
+protected:
+	virtual void OnControlledUnitDiedHandler(const FUnitDiedEventArgs& args);
+	virtual void OnControlledUnitDestroyedHandler(AUnitBase* unit);
 	
 public:
 	UFUNCTION(BlueprintCallable)
@@ -65,8 +76,23 @@ public:
 	void SetStoredResourceAmount(EResourceType type, float amount);
 
 	UFUNCTION(BlueprintCallable)
-	uint8 GetPlayerTeamId();
+	virtual void SetGenericTeamId(const FGenericTeamId& TeamID) override { playerTeamId = TeamID.GetId(); };
 
 	UFUNCTION(BlueprintCallable)
-	void SetPlayerTeamId(uint8 team);
+	virtual FGenericTeamId GetGenericTeamId() const override{ return FGenericTeamId(playerTeamId); }
+
+	UFUNCTION(BlueprintCallable)
+	void AddToControlledUnits(AUnitBase* unit);
+
+	UFUNCTION(BlueprintCallable)
+	void RemoveFromControlledUnits(AUnitBase* unit);
+
+	UFUNCTION(BlueprintCallable)
+	const TArray<AUnitBase*>& GetControlledUnits();
+
+	DECLARE_EVENT_TwoParams(AZombieSiegePlayerState, FOnControlledUnitDiedProxyEvent, AZombieSiegePlayerState*, const FUnitDiedEventArgs& args)
+	FOnControlledUnitDiedProxyEvent& OnControlledUnitDied() { return onControlledUnitDiedProxyEvent; }
+
+private:
+	FOnControlledUnitDiedProxyEvent onControlledUnitDiedProxyEvent;
 };

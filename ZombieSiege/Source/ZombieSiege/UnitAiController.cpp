@@ -13,6 +13,8 @@
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig.h"
 #include "Perception/AISenseConfig_Sight.h" 
+#include "Doodad.h"
+#include "MoveOrder.h"
 
 
 void AUnitAiController::BeginPlay()
@@ -224,6 +226,67 @@ AUnitAiController::AUnitAiController(const FObjectInitializer& ObjectInitializer
 
 }
 
+void AUnitAiController::PostSetManualModeEnabled(bool bEnabled)
+{
+
+}
+
+void AUnitAiController::SetManualModeEnabled(bool bEnabled)
+{
+    if (bIsManualModeEnabled == bEnabled)
+    {
+        return;
+    }
+
+    bIsManualModeEnabled = bEnabled;
+
+    PostSetManualModeEnabled(bEnabled);
+}
+
+bool AUnitAiController::IsManualModeEnabled()
+{
+    return bIsManualModeEnabled;
+}
+
+bool AUnitAiController::HandleTargetActorCommandAction(AActor* targetActor)
+{
+    if (bIsManualModeEnabled)
+    {
+        SetManualModeEnabled(false);
+    }
+
+    AUnitBase* targetUnit = Cast<AUnitBase>(targetActor);
+    if (targetUnit)
+    {
+        ETeamAttitude::Type attitude = FGenericTeamId::GetAttitude(this, targetActor);
+        switch (attitude)
+        {
+        case ETeamAttitude::Friendly:
+        case ETeamAttitude::Neutral:
+            IssueMoveOrder(targetActor->GetActorLocation());
+            return true;
+            break;
+        case ETeamAttitude::Hostile:
+            IssueAttackUnitOrder(targetUnit);
+            return true;
+            break;
+        }
+    }    
+
+    return false;
+}
+
+bool AUnitAiController::HandleTargetPointCommandAction(const FVector targetPoint)
+{
+    if (bIsManualModeEnabled)
+    {
+        SetManualModeEnabled(false);
+    }
+
+    IssueMoveOrder(targetPoint);
+    return true;
+}
+
 void AUnitAiController::IssueOrder(UUnitOrder* order, bool bQueue)
 {
     if (bQueue)
@@ -258,10 +321,23 @@ void AUnitAiController::QueueOrder(UUnitOrder* order)
 
 void AUnitAiController::IssueMoveOrder(const FVector& moveToLocation, bool bQueue)
 {
+    if (!moveOrderClass)
+    {
+        return;
+    }
+
+    UMoveOrder* order = CreateOrder<UMoveOrder>(moveOrderClass);
+    order->SetTargetLocation(moveToLocation);
+    IssueOrder(order, bQueue);
 }
 
 void AUnitAiController::IssueAttackUnitOrder(AUnitBase* attackTarget, bool bQueue)
 {
+    if (!attackUnitOrderClass)
+    {
+        return;
+    }
+
     UAttackUnitOrder* order = CreateOrder<UAttackUnitOrder>(attackUnitOrderClass);
     order->SetTargetUnit(attackTarget);
     IssueOrder(order, bQueue);
@@ -269,6 +345,11 @@ void AUnitAiController::IssueAttackUnitOrder(AUnitBase* attackTarget, bool bQueu
 
 void AUnitAiController::IssueAttackOnMoveOrder(const FVector& location, bool bQueue)
 {
+    if (!attackOnMoveOrderClass)
+    {
+        return;
+    }
+
     UAreaScanningAttackOrder* order = CreateOrder<UAreaScanningAttackOrder>(attackOnMoveOrderClass);
     order->SetTargetLocation(location);
     IssueOrder(order, bQueue);
@@ -276,6 +357,11 @@ void AUnitAiController::IssueAttackOnMoveOrder(const FVector& location, bool bQu
 
 void AUnitAiController::IssueWanderingOrder(FVector aroundLocation, float radius, float standingDuration)
 {
+    if (!wandererOrderClass)
+    {
+        return;
+    }
+
     UWanderingOrder* order = CreateOrder<UWanderingOrder>(wandererOrderClass);
     order->SetParameters(aroundLocation, radius, standingDuration);
     IssueOrder(order, false);

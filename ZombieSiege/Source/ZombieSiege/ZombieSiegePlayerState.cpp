@@ -2,6 +2,7 @@
 
 
 #include "ZombieSiegePlayerState.h"
+#include "UnitBase.h"
 
 #define CHECK_RESOURCE_VALID(resourceType) check(resourceType != EResourceType::RESOURCETYPE_MAX);
 
@@ -92,12 +93,38 @@ void AZombieSiegePlayerState::SetStoredResourceAmount(EResourceType type, float 
 	}
 }
 
-uint8 AZombieSiegePlayerState::GetPlayerTeamId()
+
+void AZombieSiegePlayerState::AddToControlledUnits(AUnitBase* unit)
 {
-	return playerTeamId;
+	check(unit);
+	check(!controlledUnits.Contains(unit));
+
+	unit->OnUnitDied().AddUObject(this, &AZombieSiegePlayerState::OnControlledUnitDiedHandler);
+	unit->OnUnitDestroyed().AddUObject(this, &AZombieSiegePlayerState::OnControlledUnitDestroyedHandler);
+		
+	controlledUnits.Add(unit);
 }
 
-void AZombieSiegePlayerState::SetPlayerTeamId(uint8 team)
+void AZombieSiegePlayerState::RemoveFromControlledUnits(AUnitBase* unit)
 {
-	playerTeamId = team;
+	check(unit);
+
+	controlledUnits.Remove(unit);
+}
+
+const TArray<AUnitBase*>& AZombieSiegePlayerState::GetControlledUnits()
+{
+	return controlledUnits;
+}
+
+void AZombieSiegePlayerState::OnControlledUnitDiedHandler(const FUnitDiedEventArgs& args)
+{
+	onControlledUnitDiedProxyEvent.Broadcast( this, args);
+}
+
+void AZombieSiegePlayerState::OnControlledUnitDestroyedHandler(AUnitBase* unit)
+{
+	check(unit);
+
+	RemoveFromControlledUnits(unit);
 }

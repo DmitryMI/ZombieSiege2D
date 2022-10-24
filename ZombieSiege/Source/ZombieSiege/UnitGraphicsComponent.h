@@ -12,7 +12,7 @@
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class ZOMBIESIEGE_API UUnitGraphicsComponent : public USceneComponent
+class ZOMBIESIEGE_API UUnitGraphicsComponent : public UPaperFlipbookComponent
 {
 	GENERATED_BODY()
 
@@ -39,9 +39,6 @@ private:
 	float flipbookAutoUpdateIntervalCounter = 0.0f;
 
 protected:
-
-	UPROPERTY(Transient)
-	UPaperFlipbookComponent* flipbookRenderer;
 
 	virtual void BeginPlay() override;
 

@@ -326,11 +326,7 @@ void AUnitBase::SetOwningPlayer(AZombieSiegePlayerController* controller)
 
 	if (owningPlayerController)
 	{
-		AZombieSiegePlayerState* playerState = controller->GetPlayerState<AZombieSiegePlayerState>();
-		if (playerState)
-		{
-			teamId = playerState->GetPlayerTeamId();
-		}
+		teamId = owningPlayerController->GetGenericTeamId().GetId();
 	}
 	
 	unitTeam = FGenericTeamId(teamId);
