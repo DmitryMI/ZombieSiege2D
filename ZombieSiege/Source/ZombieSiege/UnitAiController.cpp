@@ -328,9 +328,19 @@ void AUnitAiController::IssueMoveOrder(const FVector& moveToLocation, bool bQueu
         return;
     }
 
-    UMoveOrder* order = CreateOrder<UMoveOrder>(moveOrderClass);
-    order->SetTargetLocation(moveToLocation);
-    IssueOrder(order, bQueue);
+    UMoveOrder* executingMoveOrder = Cast<UMoveOrder>(executingOrder);
+
+    if (executingMoveOrder)
+    {
+        UE_LOG(LogTemp, Display, TEXT("[IssueMoveOrder] Optimized: adjusted current MoveOrder to new target location %s."), *moveToLocation.ToString());
+        executingMoveOrder->SetTargetLocation(moveToLocation);
+    }
+    else
+    {
+        UMoveOrder* order = CreateOrder<UMoveOrder>(moveOrderClass);
+        order->SetTargetLocation(moveToLocation);
+        IssueOrder(order, bQueue);
+    }
 }
 
 void AUnitAiController::IssueAttackUnitOrder(AUnitBase* attackTarget, bool bQueue)
