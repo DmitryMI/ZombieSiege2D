@@ -29,3 +29,9 @@ void UMoveOrder::SetTargetLocation(const FVector& location)
 		GetBlackboard()->SetValueAsVector("TargetLocation", targetLocation);
 	}
 }
+
+FString UMoveOrder::ToString()
+{
+	FString str = FString::Printf(TEXT("%s(TargetLocation: %s)"), *Super::ToString(), *GetTargetLocation().ToString());
+	return str;
+}

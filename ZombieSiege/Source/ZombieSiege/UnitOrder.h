@@ -78,4 +78,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void ControlledUnitAttacked(const FDamageReceivedEventArgs& damageEventArgs);
+
+	UFUNCTION(BlueprintCallable)
+	virtual FString ToString();
 };

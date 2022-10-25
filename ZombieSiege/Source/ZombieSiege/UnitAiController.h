@@ -175,9 +175,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetManualModeEnabled(bool bEnabled);
 
-	virtual bool HandleTargetActorCommandAction(AActor* targetActor);
+	virtual bool HandleTargetActorCommandAction(AActor* targetActor, bool bQueue);
 
-	virtual bool HandleTargetPointCommandAction(const FVector targetPoint);
+	virtual bool HandleTargetPointCommandAction(const FVector targetPoint, bool bQueue);
 
 	DECLARE_EVENT_OneParam(AUnitAiController, FOnOrderExecutionStartedEvent, const FOrderExecutionStartedEventArgs&);
 	FOnOrderExecutionStartedEvent& OnOrderExecutionStarted() { return onOrderExecutionStartedEvent; }

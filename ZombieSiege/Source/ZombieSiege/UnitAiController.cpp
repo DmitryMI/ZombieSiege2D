@@ -15,6 +15,7 @@
 #include "Perception/AISenseConfig_Sight.h" 
 #include "Doodad.h"
 #include "MoveOrder.h"
+#include "EnumUtils.h"
 
 
 void AUnitAiController::BeginPlay()
@@ -120,7 +121,7 @@ void AUnitAiController::UnitEnteredPassengerCarrierEventHandler(const FUnitEnter
 
 void AUnitAiController::ExecuteOrder(UUnitOrder* order)
 {
-    UE_LOG(LogTemp, Display, TEXT("Unit %s (%s) executes order %s"), *GetPawn()->GetName(), *GetName(), *order->GetName());
+    UE_LOG(LogTemp, Display, TEXT("Unit %s (%s) executes order %s"), *GetPawn()->GetName(), *GetName(), *order->ToString());
 
     if (BrainComponent)
     {
@@ -248,7 +249,7 @@ bool AUnitAiController::IsManualModeEnabled()
     return bIsManualModeEnabled;
 }
 
-bool AUnitAiController::HandleTargetActorCommandAction(AActor* targetActor)
+bool AUnitAiController::HandleTargetActorCommandAction(AActor* targetActor, bool bQueue)
 {
     if (bIsManualModeEnabled)
     {
@@ -263,11 +264,11 @@ bool AUnitAiController::HandleTargetActorCommandAction(AActor* targetActor)
         {
         case ETeamAttitude::Friendly:
         case ETeamAttitude::Neutral:
-            IssueMoveOrder(targetActor->GetActorLocation());
+            IssueMoveOrder(targetActor->GetActorLocation(), bQueue);
             return true;
             break;
         case ETeamAttitude::Hostile:
-            IssueAttackUnitOrder(targetUnit);
+            IssueAttackUnitOrder(targetUnit, bQueue);
             return true;
             break;
         }
@@ -276,14 +277,14 @@ bool AUnitAiController::HandleTargetActorCommandAction(AActor* targetActor)
     return false;
 }
 
-bool AUnitAiController::HandleTargetPointCommandAction(const FVector targetPoint)
+bool AUnitAiController::HandleTargetPointCommandAction(const FVector targetPoint, bool bQueue)
 {
     if (bIsManualModeEnabled)
     {
         SetManualModeEnabled(false);
     }
 
-    IssueMoveOrder(targetPoint);
+    IssueMoveOrder(targetPoint, bQueue);
     return true;
 }
 
@@ -315,6 +316,7 @@ void AUnitAiController::QueueOrder(UUnitOrder* order)
     }
     else
     {
+        UE_LOG(LogTemp, Display, TEXT("Unit %s (%s) queued order %s"), *GetPawn()->GetName(), *GetName(), *order->ToString());
         orderQueue.Add(order);
     }
 }
@@ -437,7 +439,8 @@ void AUnitAiController::ReportOrderFinished(UUnitOrder* order, EOrderResult resu
 {
     check(executingOrder == order);
 
-    UE_LOG(LogTemp, Display, TEXT("Unit %s (%s) finished order %s with result %d"), *GetPawn()->GetName(), *GetName(), *order->GetName(), (int)result);
+    FString resultStr = UEnumUtils::GetOrderResultName(result);
+    UE_LOG(LogTemp, Display, TEXT("Unit %s (%s) finished order %s with result %s"), *GetPawn()->GetName(), *GetName(), *order->ToString(), *resultStr);
 
     switch (result)
     {
@@ -472,7 +475,7 @@ void AUnitAiController::ReportOrderFinished(UUnitOrder* order, EOrderResult resu
     else
     {
         nextOrder = orderQueue[0];
-        orderQueue.Remove(0);
+        orderQueue.RemoveAt(0);
         check(nextOrder);
         executingOrder = nextOrder;
 

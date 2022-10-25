@@ -12,15 +12,27 @@ void UGatherOrder::ExecuteOrder()
 {
 	Super::ExecuteOrder();
 
-	UBlackboardComponent* blackboard = GetBlackboard();
-
-	check(blackboard);
-
-	blackboard->SetValueAsObject("GatheringTarget", gatherTarget);
+	SetGatherTarget(gatherTarget);
 }
 
 void UGatherOrder::SetGatherTarget(ADoodad* target)
 {
 	check(target);
 	gatherTarget = target;
+
+	if (GetOrderState() == EOrderState::Executing)
+	{
+		GetBlackboard()->SetValueAsObject("GatheringTarget", gatherTarget);
+	}
+}
+
+ADoodad* UGatherOrder::GetGatherTarget()
+{
+	return Cast<ADoodad>(GetBlackboard()->GetValueAsObject("GatheringTarget"));
+}
+
+FString UGatherOrder::ToString()
+{
+	FString str = FString::Printf(TEXT("%s(GatherTarget: %s)"), *Super::ToString(), *GetGatherTarget()->GetName());
+	return str;
 }

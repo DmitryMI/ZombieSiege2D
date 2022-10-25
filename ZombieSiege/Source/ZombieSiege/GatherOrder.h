@@ -26,4 +26,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetGatherTarget(ADoodad* target);
+
+	UFUNCTION(BlueprintCallable)
+	ADoodad* GetGatherTarget();
+
+	virtual FString ToString() override;
 };

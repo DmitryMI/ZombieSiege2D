@@ -80,3 +80,16 @@ void ASurvivorAiController::IssueRepairOrder(ABuilding* building, bool bQueue)
     order->SetTargetBuilding(building);
     IssueOrder(order, bQueue);
 }
+
+bool ASurvivorAiController::HandleTargetActorCommandAction(AActor* targetActor, bool bQueue)
+{
+    ADoodad* doodad = Cast<ADoodad>(targetActor);
+
+    if (doodad)
+    {
+        IssueGatherOrder(doodad, bQueue);
+        return true;
+    }
+
+    return Super::HandleTargetActorCommandAction(targetActor, bQueue);
+}

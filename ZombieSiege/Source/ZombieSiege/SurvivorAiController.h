@@ -55,5 +55,5 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void IssueRepairOrder(ABuilding* building, bool bQueue = false);
 
-	
+	virtual bool HandleTargetActorCommandAction(AActor* targetActor, bool bQueue) override;
 };

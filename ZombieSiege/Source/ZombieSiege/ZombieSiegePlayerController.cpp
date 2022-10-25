@@ -173,7 +173,7 @@ void AZombieSiegePlayerController::OnCommandActionReleased()
 					continue;
 				}
 
-				controller->HandleTargetActorCommandAction(commandTargetActor);
+				controller->HandleTargetActorCommandAction(commandTargetActor, bQueueOrderActionPressed);
 			}
 		}
 		else
@@ -190,7 +190,7 @@ void AZombieSiegePlayerController::OnCommandActionReleased()
 						continue;
 					}
 
-					controller->HandleTargetPointCommandAction(location);
+					controller->HandleTargetPointCommandAction(location, bQueueOrderActionPressed);
 				}
 			}
 		}
@@ -208,6 +208,16 @@ void AZombieSiegePlayerController::OnCommandActionReleased()
 	{
 
 	}
+}
+
+void AZombieSiegePlayerController::OnQueueOrderActionPressed()
+{
+	bQueueOrderActionPressed = true;
+}
+
+void AZombieSiegePlayerController::OnQueueOrderActionReleased()
+{
+	bQueueOrderActionPressed = false;
 }
 
 void AZombieSiegePlayerController::OnMouseMoveX(float dx)
@@ -245,7 +255,8 @@ void AZombieSiegePlayerController::SetupInputComponent()
 
 	this->InputComponent->BindAction("Command", EInputEvent::IE_Released, this, &AZombieSiegePlayerController::OnCommandActionReleased);
 
-
+	this->InputComponent->BindAction("QueueOrder", EInputEvent::IE_Pressed, this, &AZombieSiegePlayerController::OnQueueOrderActionPressed);
+	this->InputComponent->BindAction("QueueOrder", EInputEvent::IE_Released, this, &AZombieSiegePlayerController::OnQueueOrderActionReleased);
 }
 
 void AZombieSiegePlayerController::OnDoodadSelectDoubleClicked(ADoodad* doodad)

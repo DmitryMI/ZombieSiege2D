@@ -84,3 +84,8 @@ void UUnitOrder::UnitPerceptionUpdated(AUnitBase* unit, FAIStimulus Stimulus)
 void UUnitOrder::ControlledUnitAttacked(const FDamageReceivedEventArgs& damageEventArgs)
 {
 }
+
+FString UUnitOrder::ToString()
+{
+	return GetName();
+}

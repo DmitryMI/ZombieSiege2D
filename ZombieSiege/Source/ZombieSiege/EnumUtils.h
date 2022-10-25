@@ -6,6 +6,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "FaceDirection.h"
 #include "UnitState.h"
+#include "UnitOrder.h"
 #include "EnumUtils.generated.h"
 
 /**
@@ -35,4 +36,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "EnumUtils")
 	static FString GetFaceDirectionName(EFaceDirection direction);
+
+	UFUNCTION(BlueprintCallable, Category = "EnumUtils")
+	static FString GetOrderResultName(EOrderResult value);
 };

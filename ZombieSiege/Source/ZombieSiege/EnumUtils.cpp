@@ -2,6 +2,7 @@
 
 
 #include "EnumUtils.h"
+#include "Kismet/GameplayStatics.h"
 
 EFaceDirection UEnumUtils::GetNextFaceDirection(EFaceDirection direction)
 {
@@ -106,5 +107,22 @@ FString UEnumUtils::GetFaceDirectionName(EFaceDirection direction)
 	default:
 		return "Multiple";
 	}
+}
+
+FString UEnumUtils::GetOrderResultName(EOrderResult value)
+{
+	switch (value)
+	{
+	case EOrderResult::Success:
+		return "Success";
+	case EOrderResult::Fail:
+		return "Fail";
+	case EOrderResult::Abort:
+		return "Abort";
+	default:
+		checkNoEntry();
+	}
+
+	return "ERROR";
 }
 

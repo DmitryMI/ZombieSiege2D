@@ -27,4 +27,5 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void SetTargetLocation(const FVector& location);
 
+	virtual FString ToString() override;
 };
