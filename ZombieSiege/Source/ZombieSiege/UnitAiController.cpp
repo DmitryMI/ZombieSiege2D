@@ -256,6 +256,9 @@ bool AUnitAiController::HandleTargetActorCommandAction(AActor* targetActor, bool
         SetManualModeEnabled(false);
     }
 
+    AUnitBase* controlledUnit = GetPawn<AUnitBase>();
+    check(controlledUnit);
+
     AUnitBase* targetUnit = Cast<AUnitBase>(targetActor);
     if (targetUnit)
     {
@@ -263,6 +266,11 @@ bool AUnitAiController::HandleTargetActorCommandAction(AActor* targetActor, bool
         switch (attitude)
         {
         case ETeamAttitude::Friendly:
+            if (targetUnit->GetFreePassengerSeats() > 0 && controlledUnit->GetTotalPassengerSeats() == 0)
+            {
+                IssueEnterPassengerCarrierOrder(targetUnit, bQueue);
+                return true;
+            }
         case ETeamAttitude::Neutral:
             IssueMoveOrder(targetActor->GetActorLocation(), bQueue);
             return true;
@@ -330,9 +338,11 @@ void AUnitAiController::IssueMoveOrder(const FVector& moveToLocation, bool bQueu
 
     UMoveOrder* executingMoveOrder = Cast<UMoveOrder>(executingOrder);
 
-    if (executingMoveOrder)
+    if (executingMoveOrder && !bQueue)
     {
         UE_LOG(LogTemp, Display, TEXT("[IssueMoveOrder] Optimized: adjusted current MoveOrder to new target location %s."), *moveToLocation.ToString());
+        
+        orderQueue.Empty();
         executingMoveOrder->SetTargetLocation(moveToLocation);
     }
     else
@@ -420,7 +430,7 @@ void AUnitAiController::IssueEnterPassengerCarrierOrder(AUnitBase* carrier, bool
 {
     UEnterPassengerCarrierOrder* order = CreateOrder<UEnterPassengerCarrierOrder>(enterPassengerCarrierOrderClass);
     order->SetTargetUnit(carrier);
-    IssueOrder(order, false);
+    IssueOrder(order, bQueue);
 }
 
 void AUnitAiController::CancelAllOrders()
@@ -450,7 +460,14 @@ void AUnitAiController::ReportOrderFinished(UUnitOrder* order, EOrderResult resu
     check(executingOrder == order);
 
     FString resultStr = UEnumUtils::GetOrderResultName(result);
-    UE_LOG(LogTemp, Display, TEXT("Unit %s (%s) finished order %s with result %s"), *GetPawn()->GetName(), *GetName(), *order->ToString(), *resultStr);
+    UE_LOG(LogTemp, Display,
+        TEXT("Unit %s (%s) finished order %s with result %s. Queue size: %d"),
+        *GetPawn()->GetName(),
+        *GetName(),
+        *order->ToString(),
+        *resultStr,
+        orderQueue.Num()
+        );
 
     switch (result)
     {

@@ -14,6 +14,7 @@
 #include "GameFramework/HUD.h"
 #include "ZombieSiegePlayerState.h"
 #include "SelectionIndicatorComponent.h"
+#include "EnumUtils.h"
 
 DEFINE_LOG_CATEGORY(LogZombieSiegePlayerController);
 
@@ -116,6 +117,11 @@ void AZombieSiegePlayerController::OnSelectActionReleased()
 	}
 	else if (controllerState == EControllerState::SelectingUnits)
 	{
+		if (!bAddToSelectionActionPressed)
+		{
+			ClearSelection();
+		}
+
 		SelectUnitsInsideSelectionBox();
 
 		AZombieSiegeHUD* hud = GetHUD<AZombieSiegeHUD>();
@@ -220,6 +226,16 @@ void AZombieSiegePlayerController::OnQueueOrderActionReleased()
 	bQueueOrderActionPressed = false;
 }
 
+void AZombieSiegePlayerController::OnAddToSelectionActionPressed()
+{
+	bAddToSelectionActionPressed = true;
+}
+
+void AZombieSiegePlayerController::OnAddToSelectionActionReleased()
+{
+	bAddToSelectionActionPressed = false;
+}
+
 void AZombieSiegePlayerController::OnMouseMoveX(float dx)
 {
 	mouseMoveAxisAccumulator.X = dx;
@@ -257,6 +273,10 @@ void AZombieSiegePlayerController::SetupInputComponent()
 
 	this->InputComponent->BindAction("QueueOrder", EInputEvent::IE_Pressed, this, &AZombieSiegePlayerController::OnQueueOrderActionPressed);
 	this->InputComponent->BindAction("QueueOrder", EInputEvent::IE_Released, this, &AZombieSiegePlayerController::OnQueueOrderActionReleased);
+	
+	this->InputComponent->BindAction("AddToSelection", EInputEvent::IE_Pressed, this, &AZombieSiegePlayerController::OnAddToSelectionActionPressed);
+	this->InputComponent->BindAction("AddToSelection", EInputEvent::IE_Released, this, &AZombieSiegePlayerController::OnAddToSelectionActionReleased);
+
 }
 
 void AZombieSiegePlayerController::OnDoodadSelectDoubleClicked(ADoodad* doodad)
@@ -493,7 +513,10 @@ void AZombieSiegePlayerController::DebugAlert(bool bEnabled)
 
 void AZombieSiegePlayerController::AddUnitToSelection(AUnitBase* unit)
 {
-	checkSlow(!selectedUnits.Contains(unit));
+	if (selectedUnits.Contains(unit))
+	{
+		return;
+	}
 
 	USelectionIndicatorComponent* indicator = Cast<USelectionIndicatorComponent>(unit->GetComponentByClass(USelectionIndicatorComponent::StaticClass()));
 	if (!indicator)
@@ -502,18 +525,22 @@ void AZombieSiegePlayerController::AddUnitToSelection(AUnitBase* unit)
 		return;
 	}
 	
-	selectedUnits.Add(unit);
+	selectedUnits.Add(unit);	
 
 	ETeamAttitude::Type attitude = FGenericTeamId::GetAttitude(this, unit);
 	
 	indicator->SetIsSelected(true, attitude);
+
+	FString attitudeStr = UEnumUtils::GetTeamAttitudeName(attitude);
+	UE_LOG(LogTemp, Display, TEXT("[AddUnitToSelection] Unit %s selected as %s"), *unit->GetName(), *attitudeStr);
 }
 
 void AZombieSiegePlayerController::RemoveUnitFromSelection(AUnitBase* unit)
 {
-	checkSlow(selectedUnits.Contains(unit));
-
-	selectedUnits.Remove(unit);
+	if (selectedUnits.Remove(unit) == 0)
+	{
+		return;
+	}
 
 	USelectionIndicatorComponent* indicator = Cast<USelectionIndicatorComponent>(unit->GetComponentByClass(USelectionIndicatorComponent::StaticClass()));
 	if (!indicator)
@@ -523,6 +550,8 @@ void AZombieSiegePlayerController::RemoveUnitFromSelection(AUnitBase* unit)
 	}
 
 	indicator->SetIsSelected(false, ETeamAttitude::Neutral);
+
+	UE_LOG(LogTemp, Display, TEXT("[AddUnitToSelection] Unit %s deselected"), *unit->GetName());
 }
 
 void AZombieSiegePlayerController::ClearSelection()

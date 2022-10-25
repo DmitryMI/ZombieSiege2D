@@ -126,3 +126,20 @@ FString UEnumUtils::GetOrderResultName(EOrderResult value)
 	return "ERROR";
 }
 
+FString UEnumUtils::GetTeamAttitudeName(ETeamAttitude::Type attitude)
+{
+	switch (attitude)
+	{
+	case ETeamAttitude::Friendly:
+		return "Friendly";
+	case ETeamAttitude::Hostile:
+		return "Hostile";
+	case ETeamAttitude::Neutral:
+		return "Neutral";
+	default:
+		checkNoEntry();
+	}
+
+	return "ERROR";
+}
+

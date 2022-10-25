@@ -39,4 +39,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "EnumUtils")
 	static FString GetOrderResultName(EOrderResult value);
+
+	static FString GetTeamAttitudeName(ETeamAttitude::Type attitude);
 };

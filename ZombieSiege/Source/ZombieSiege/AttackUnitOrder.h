@@ -27,4 +27,6 @@ public:
 	AUnitBase* GetTargetUnit();
 
 	virtual void ExecuteOrder() override;
+
+	virtual FString ToString() override;
 };

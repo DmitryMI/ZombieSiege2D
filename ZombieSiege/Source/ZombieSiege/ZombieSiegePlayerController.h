@@ -87,6 +87,9 @@ private:
 	void OnQueueOrderActionPressed();
 	void OnQueueOrderActionReleased();
 
+	void OnAddToSelectionActionPressed();
+	void OnAddToSelectionActionReleased();
+
 	void OnMouseMoveX(float dx);
 	void OnMouseMoveY(float dy);
 	void OnMouseMove(const FVector2D& delta);
@@ -104,6 +107,7 @@ private:
 	FVector2D commandActionPressedPosition;
 
 	bool bQueueOrderActionPressed = false;
+	bool bAddToSelectionActionPressed = false;
 
 protected:
 	virtual void BeginPlay() override;
