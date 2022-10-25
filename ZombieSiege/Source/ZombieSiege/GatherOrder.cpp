@@ -28,11 +28,21 @@ void UGatherOrder::SetGatherTarget(ADoodad* target)
 
 ADoodad* UGatherOrder::GetGatherTarget()
 {
-	return Cast<ADoodad>(GetBlackboard()->GetValueAsObject("GatheringTarget"));
+	if (GetOrderState() == EOrderState::Executing)
+	{
+		gatherTarget = Cast<ADoodad>(GetBlackboard()->GetValueAsObject("GatheringTarget"));
+	}
+	return gatherTarget;
 }
 
 FString UGatherOrder::ToString()
 {
-	FString str = FString::Printf(TEXT("%s(GatherTarget: %s)"), *Super::ToString(), *GetGatherTarget()->GetName());
+	FString doodadName = "NULL";
+	ADoodad* doodad = GetGatherTarget();
+	if (doodad)
+	{
+		doodadName = GetGatherTarget()->GetName();
+	}
+	FString str = FString::Printf(TEXT("%s(GatherTarget: %s)"), *Super::ToString(), *doodadName);
 	return str;
 }
