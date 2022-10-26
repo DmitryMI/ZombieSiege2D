@@ -67,6 +67,14 @@ void AUnitAiController::AvoidanceUpdateGroup()
     detourComponent->SetAvoidanceGroup(groupFlags);
 }
 
+void AUnitAiController::AvoidanceUpdateIgnoredGroups()
+{
+}
+
+void AUnitAiController::AvoidanceUpdateAvoidedGroups()
+{
+}
+
 void AUnitAiController::BeginPlay()
 {
     Super::BeginPlay();
@@ -283,10 +291,6 @@ AUnitAiController::AUnitAiController(const FObjectInitializer& ObjectInitializer
 void AUnitAiController::PostSetManualModeEnabled(bool bEnabled)
 {
 
-}
-
-void AUnitAiController::AvoidanceUpdateGroup()
-{
 }
 
 void AUnitAiController::SetManualModeEnabled(bool bEnabled)
