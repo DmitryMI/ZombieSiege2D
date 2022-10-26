@@ -266,6 +266,9 @@ public:
 	int GetFreePassengerSeats() const;
 
 	UFUNCTION(BlueprintCallable)
+	virtual bool CanBeEnteredByPassenger(AUnitBase* passenger) const;
+
+	UFUNCTION(BlueprintCallable)
 	void MakeAllPassengersLeave();
 
 	UFUNCTION(BlueprintCallable)

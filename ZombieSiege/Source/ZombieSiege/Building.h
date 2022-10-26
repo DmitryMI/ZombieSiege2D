@@ -70,6 +70,8 @@ public:
 
 	virtual void FinishDying(const FDamageInstance& killingDamage) override;
 
+	virtual bool CanBeEnteredByPassenger(AUnitBase* passenger) const override;
+
 	UFUNCTION(BlueprintCallable)
 	float GetBuildingProgressFraction() const;
 	

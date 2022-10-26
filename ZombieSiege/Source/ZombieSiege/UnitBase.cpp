@@ -85,6 +85,11 @@ bool AUnitBase::CanEnterPassengerCarrier(AUnitBase* carrier)
 		return false;
 	}
 
+	if (!carrier->CanBeEnteredByPassenger(this))
+	{
+		return false;
+	}
+
 	float distSqr2D = UZombieSiegeUtils::GetDistance2DBetweenSimpleCollisions(this, carrier);
 
 	if (distSqr2D > FMath::Square(enterPassengerCarrierRadius))
@@ -92,7 +97,7 @@ bool AUnitBase::CanEnterPassengerCarrier(AUnitBase* carrier)
 		return false;
 	}
 
-	return carrier->GetFreePassengerSeats() > 0;
+	return true;
 }
 
 void AUnitBase::SetPassengerCarrier(AUnitBase* carrier)
@@ -174,6 +179,16 @@ int AUnitBase::GetOccupiedPassengerSeats() const
 int AUnitBase::GetFreePassengerSeats() const
 {
 	return GetTotalPassengerSeats() - GetOccupiedPassengerSeats();
+}
+
+bool AUnitBase::CanBeEnteredByPassenger(AUnitBase* passenger) const
+{
+	if (GetFreePassengerSeats() == 0)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 void AUnitBase::AddPassenger(AUnitBase* passenger)

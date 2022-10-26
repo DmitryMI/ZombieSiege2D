@@ -182,6 +182,10 @@ public:
 
 		for (T* actor : searchSet)
 		{
+			if (!actor)
+			{
+				continue;
+			}
 			FBox2D selectionBox = hud->GetSelectionBox();
 
 			FVector location = actor->GetActorLocation();

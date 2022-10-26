@@ -159,6 +159,21 @@ void ABuilding::FinishDying(const FDamageInstance& killingDamage)
 	Super::FinishDying(killingDamage);
 }
 
+bool ABuilding::CanBeEnteredByPassenger(AUnitBase* passenger) const
+{
+	if (!Super::CanBeEnteredByPassenger(passenger))
+	{
+		return false;
+	}
+
+	if (!IsFullyBuilt())
+	{
+		return false;
+	}
+
+	return true;
+}
+
 float ABuilding::GetBuildingProgressFraction() const
 {
 	return buildingProgress / GetMaxHealth();
@@ -190,11 +205,7 @@ void ABuilding::SetBuildingProgress(float progress)
 			buildingProgress = GetMaxHealth();
 			SetUnitState(EUnitState::None);
 			
-			for (ATurret* turret : GetTurrets())
-			{
-				turret->SetTurrectActive(true);
-			}
-			
+			UpdateTurretsActiveState();
 		}
 		else if (GetUnitState() != EUnitState::Birth && buildingProgress < GetMaxHealth())
 		{
