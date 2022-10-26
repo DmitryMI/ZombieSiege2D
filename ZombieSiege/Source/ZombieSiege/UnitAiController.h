@@ -58,6 +58,8 @@ private:
 	//UPROPERTY()
 	FDelegateHandle unitDiedEventDelegateHandle;
 	FDelegateHandle unitDamageReceivedEventDelegateHandle;
+	FDelegateHandle unitHiddenStateChangedDelegateHandle;
+	FDelegateHandle unitOwningPlayerChangedDelegateHandle;
 
 	UPROPERTY(EditAnywhere)
 	bool bIsManualModeEnabled = false;
@@ -115,9 +117,13 @@ protected:
 
 	void SetPerceptionSightRadius(float radius);
 
+	void RegisterEventHandlers(AUnitBase* unit);
+	void UnregisterEventHandlers(AUnitBase* unit);
+
 	virtual void UnitDiedEventHandler(const FUnitDiedEventArgs& args);
 	virtual void UnitDamageReceivedEventHandler(const FDamageReceivedEventArgs& args);
-
+	virtual void UnitHiddenStateChangedEventHandler(AUnitBase* sender, bool bIsHidden);
+	virtual void UnitOwningPlayerChangedEventHandler(AUnitBase* sender, AZombieSiegePlayerController* controllerOld, AZombieSiegePlayerController* controllerNew);
 	virtual void UnitEnteredPassengerCarrierEventHandler(const FUnitEnteredPassengerCarrierEventArgs& args);
 
 	void ExecuteOrder(UUnitOrder* order);
@@ -127,12 +133,13 @@ protected:
 
 	virtual void PostSetManualModeEnabled(bool bIsEnabled);
 
+	void AvoidanceUpdateAll(bool bUpdateAgent = true);
 
-	virtual void AvoidanceUpdateGroup();
+	virtual void AvoidanceUpdateGroup(bool bUpdateAgent = true);
 
-	virtual void AvoidanceUpdateIgnoredGroups();
+	virtual void AvoidanceUpdateIgnoredGroups(bool bUpdateAgent = true);
 
-	virtual void AvoidanceUpdateAvoidedGroups();
+	virtual void AvoidanceUpdateAvoidedGroups(bool bUpdateAgent = true);
 	
 public:
 

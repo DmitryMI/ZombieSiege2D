@@ -318,6 +318,27 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
 	static bool DoesPathHaveHighCostAreas(UNavigationPath* path);
+
+	template<typename T>
+	static FString ToBitString(T value)
+	{
+		const int bitsize = sizeof(T) * 8;
+		FString result;
+
+		for (int i = bitsize - 1; i >= 0; i--)
+		{
+			if (value & (1 << i))
+			{
+				result.AppendChar('1');
+			}
+			else
+			{
+				result.AppendChar('0');
+			}
+		}
+
+		return result;
+	}
 };
 
 

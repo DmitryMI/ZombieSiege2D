@@ -304,6 +304,8 @@ AZombieSiegePlayerController* AUnitBase::GetOwningPlayerController() const
 
 void AUnitBase::SetOwningPlayer(AZombieSiegePlayerController* controller)
 {
+	AZombieSiegePlayerController* oldController = owningPlayerController;
+
 	if (controller == owningPlayerController)
 	{
 		return;
@@ -331,6 +333,8 @@ void AUnitBase::SetOwningPlayer(AZombieSiegePlayerController* controller)
 	
 	unitTeam = FGenericTeamId(teamId);
 	SetGenericTeamId(unitTeam);
+
+	onOwningPlayerChangedEvent.Broadcast(this, oldController, owningPlayerController);
 }
 
 void AUnitBase::SetMaxSpeed(float speedArg)
@@ -847,7 +851,12 @@ float AUnitBase::ReceiveHealing(const FHealingInstance& healing)
 
 void AUnitBase::SetUnitHidden(bool bIsHidden)
 {
-	const float zOffset = 10000.0f;
+	if (IsUnitHidden() == bIsHidden)
+	{
+		return;
+	}
+
+	const float zOffset = -10000.0f;
 
 	FVector actorLocation = GetActorLocation();
 	if (bIsHidden)
@@ -872,6 +881,7 @@ void AUnitBase::SetUnitHidden(bool bIsHidden)
 	SetActorHiddenInGame(bIsHidden);
 	SetActorEnableCollision(!bIsHidden);
 
+	onUnitHiddenStateChangedEvent.Broadcast(this, bIsHidden);
 }
 
 bool AUnitBase::IsUnitHidden()
