@@ -90,15 +90,13 @@ private:
 	void OnAddToSelectionActionPressed();
 	void OnAddToSelectionActionReleased();
 
-	void OnMouseMoveX(float dx);
-	void OnMouseMoveY(float dy);
 	void OnMouseMove(const FVector2D& delta);
 
 	ABuildingPlacementMarker* buildingPlacementMarker;
 
 	EControllerState controllerState;
 
-	FVector2D mouseMoveAxisAccumulator;
+	FVector2D mouseLastTickPosition;
 
 	bool bSelectActionPressed;
 	FVector2D selectActionPressedPosition;

@@ -32,10 +32,22 @@
 #define AVOIDANCE_UNIT_STATIONARY_FLAG      (1 << (AVOIDANCE_TEAMS_MAX + 2))
 #define AVOIDANCE_UNIT_HIDDEN_FLAG          (1 << (AVOIDANCE_TEAMS_MAX + 3))
 
-void AUnitAiController::AvoidanceUpdateGroup()
+void AUnitAiController::AvoidanceUpdateAll(bool bUpdateAgent)
 {
-    UCrowdFollowingComponent* detourComponent = Cast<UCrowdFollowingComponent>(GetPathFollowingComponent());
+    AvoidanceUpdateGroup(false);
+    AvoidanceUpdateAvoidedGroups(false);
+    AvoidanceUpdateIgnoredGroups(false);
 
+    if (bUpdateAgent)
+    {
+        UCrowdFollowingComponent* detourComponent = Cast<UCrowdFollowingComponent>(GetPathFollowingComponent());
+        check(detourComponent);
+        detourComponent->UpdateCrowdAgentParams();
+    }
+}
+
+void AUnitAiController::AvoidanceUpdateGroup(bool bUpdateAgent)
+{
     uint32 groupFlags = 0;
     uint32 teamId = GetGenericTeamId().GetId();
 
@@ -64,15 +76,90 @@ void AUnitAiController::AvoidanceUpdateGroup()
         groupFlags |= AVOIDANCE_UNIT_HIDDEN_FLAG;
     }
 
-    detourComponent->SetAvoidanceGroup(groupFlags);
+    UE_LOG(
+        LogTemp,
+        Display,
+        TEXT("[UnitAiController] %s (%s): avoidance group set to %s"),
+        *GetPawn()->GetName(),
+        *GetName(),
+        *UZombieSiegeUtils::ToBitString(groupFlags)
+    );
+
+    UCrowdFollowingComponent* detourComponent = Cast<UCrowdFollowingComponent>(GetPathFollowingComponent());
+    detourComponent->SetAvoidanceGroup(groupFlags, bUpdateAgent);
 }
 
-void AUnitAiController::AvoidanceUpdateIgnoredGroups()
+void AUnitAiController::AvoidanceUpdateIgnoredGroups(bool bUpdateAgent)
 {
+    uint32 ignoredGroups = 0;
+
+    uint32 myTeamId = GetGenericTeamId().GetId();
+
+    for (uint32 teamId = 0; teamId < AVOIDANCE_TEAMS_MAX; teamId++)
+    {
+        ETeamAttitude::Type attitude = FGenericTeamId::GetAttitude(myTeamId, teamId);
+        if (attitude == ETeamAttitude::Neutral)
+        {
+            // Ignore neutrals
+            ignoredGroups |= (1 << teamId);
+        }
+        else if (attitude == ETeamAttitude::Hostile)
+        {
+            // Ignore enemies
+            ignoredGroups |= (1 << teamId);
+        }
+    }
+
+    // Also ignore neutral passive and neutral aggressive
+    ignoredGroups |= AVOIDANCE_TEAM_NEUTRAL_AGGRESSIVE;
+    ignoredGroups |= AVOIDANCE_TEAM_NEUTRAL_PASSIVE;
+
+    // Ignore hidden and stationary units
+    ignoredGroups |= AVOIDANCE_UNIT_HIDDEN_FLAG;
+    ignoredGroups |= AVOIDANCE_UNIT_STATIONARY_FLAG;
+
+    UE_LOG(
+        LogTemp,
+        Display,
+        TEXT("[UnitAiController] %s (%s): avoidance ignored groups set to %s"),
+        *GetPawn()->GetName(),
+        *GetName(),
+        *UZombieSiegeUtils::ToBitString(ignoredGroups)
+    );
+
+    UCrowdFollowingComponent* detourComponent = Cast<UCrowdFollowingComponent>(GetPathFollowingComponent());
+    check(detourComponent);
+    detourComponent->SetGroupsToIgnore(ignoredGroups, bUpdateAgent);
 }
 
-void AUnitAiController::AvoidanceUpdateAvoidedGroups()
+void AUnitAiController::AvoidanceUpdateAvoidedGroups(bool bUpdateAgent)
 {
+    uint32 avoidedGroups = 0;
+
+    uint32 myTeamId = GetGenericTeamId().GetId();
+
+    for (uint32 teamId = 0; teamId < AVOIDANCE_TEAMS_MAX; teamId++)
+    {
+        ETeamAttitude::Type attitude = FGenericTeamId::GetAttitude(myTeamId, teamId);
+        if (attitude == ETeamAttitude::Friendly)
+        {
+            // Avoid friends
+            avoidedGroups |= (1 << teamId);
+        }
+    }
+
+    UE_LOG(
+        LogTemp,
+        Display,
+        TEXT("[UnitAiController] %s (%s): avoidance considered groups set to %s"),
+        *GetPawn()->GetName(),
+        *GetName(),
+        *UZombieSiegeUtils::ToBitString(avoidedGroups)
+    );
+
+    UCrowdFollowingComponent* detourComponent = Cast<UCrowdFollowingComponent>(GetPathFollowingComponent());
+    check(detourComponent);
+    detourComponent->SetGroupsToAvoid(avoidedGroups, bUpdateAgent);
 }
 
 void AUnitAiController::BeginPlay()
@@ -94,10 +181,6 @@ void AUnitAiController::BeginPlay()
         unitDiedEventDelegateHandle = unit->OnUnitDied().AddUObject(this, &AUnitAiController::UnitDiedEventHandler);
         unitDamageReceivedEventDelegateHandle = unit->OnDamageReceived().AddUObject(this, &AUnitAiController::UnitDamageReceivedEventHandler);
     }
-
-    UCrowdFollowingComponent* detourComponent = Cast<UCrowdFollowingComponent>(GetPathFollowingComponent());
-    check(detourComponent);
-    detourComponent->SetCrowdSlowdownAtGoal(false, true);
 }
 
 void AUnitAiController::OnPossess(APawn* pawn)
@@ -109,14 +192,12 @@ void AUnitAiController::OnPossess(APawn* pawn)
 
     if (oldUnit && oldUnit != unit)
     {
-        oldUnit->OnUnitDied().Remove(unitDiedEventDelegateHandle);   
-        oldUnit->OnDamageReceived().Remove(unitDamageReceivedEventDelegateHandle);
+        UnregisterEventHandlers(oldUnit);
     }
 
     if (unit)
     {
-        unitDiedEventDelegateHandle = unit->OnUnitDied().AddUObject(this, &AUnitAiController::UnitDiedEventHandler);
-        unitDamageReceivedEventDelegateHandle = unit->OnDamageReceived().AddUObject(this, &AUnitAiController::UnitDamageReceivedEventHandler);
+        RegisterEventHandlers(unit);
     }
 
     if (unit && unit->IsAlive())
@@ -140,6 +221,12 @@ void AUnitAiController::OnPossess(APawn* pawn)
     {
         onPossessedPawnChangedEvent.Broadcast(args);
     }
+
+    UCrowdFollowingComponent* detourComponent = Cast<UCrowdFollowingComponent>(GetPathFollowingComponent());
+    check(detourComponent);
+    detourComponent->SetCrowdSlowdownAtGoal(false, true);
+
+    AvoidanceUpdateAll(true);
 }
 
 void AUnitAiController::OnUnPossess()
@@ -178,6 +265,34 @@ void AUnitAiController::UnitEnteredPassengerCarrierEventHandler(const FUnitEnter
     {
         CancelAllOrders();
     }
+}
+
+void AUnitAiController::UnitOwningPlayerChangedEventHandler(AUnitBase* sender, AZombieSiegePlayerController* controllerOld, AZombieSiegePlayerController* controllerNew)
+{
+    check(sender == GetPawn());
+
+    AvoidanceUpdateAll();
+}
+
+void AUnitAiController::RegisterEventHandlers(AUnitBase* unit)
+{
+    unitDiedEventDelegateHandle = unit->OnUnitDied().AddUObject(this, &AUnitAiController::UnitDiedEventHandler);
+    unitDamageReceivedEventDelegateHandle = unit->OnDamageReceived().AddUObject(this, &AUnitAiController::UnitDamageReceivedEventHandler);
+    unitHiddenStateChangedDelegateHandle = unit->OnUnitHiddenStateChanged().AddUObject(this, &AUnitAiController::UnitHiddenStateChangedEventHandler);
+    unitOwningPlayerChangedDelegateHandle = unit->OnOwningPlayerChanged().AddUObject(this, &AUnitAiController::UnitOwningPlayerChangedEventHandler);
+}
+
+void AUnitAiController::UnregisterEventHandlers(AUnitBase* unit)
+{
+    unit->OnUnitDied().Remove(unitDiedEventDelegateHandle);
+    unit->OnDamageReceived().Remove(unitDamageReceivedEventDelegateHandle);
+    unit->OnUnitHiddenStateChanged().Remove(unitHiddenStateChangedDelegateHandle);
+    unit->OnOwningPlayerChanged().Remove(unitOwningPlayerChangedDelegateHandle);
+}
+
+void AUnitAiController::UnitHiddenStateChangedEventHandler(AUnitBase* sender, bool bIsHidden)
+{
+    AvoidanceUpdateGroup(true);
 }
 
 void AUnitAiController::ExecuteOrder(UUnitOrder* order)

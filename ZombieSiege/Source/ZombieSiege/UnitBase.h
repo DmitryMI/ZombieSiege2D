@@ -459,6 +459,7 @@ public:
 	DECLARE_EVENT_OneParam(AUnitBase, FOnUnitDestroyedEvent, AUnitBase*);
 	FOnUnitDestroyedEvent& OnUnitDestroyed() { return onUnitDestroyedEvent; }
 
+	// TODO Add Sender parameter!
 	DECLARE_EVENT_TwoParams(AUnitBase, FOnUnitStateChangedEvent, EUnitState stateOld, EUnitState stateNew);
 	FOnUnitStateChangedEvent& OnUnitStateChanged() { return onUnitStateChangedEvent; }
 	
@@ -467,6 +468,13 @@ public:
 
 	DECLARE_EVENT_OneParam(AUnitBase, FOnUnitEnteredPassengerCarrierEvent, const FUnitEnteredPassengerCarrierEventArgs&);
 	FOnUnitEnteredPassengerCarrierEvent& OnUnitEnteredPassengerCarrier() { return onUnitEnteredPassengerCarrierEvent; }
+
+	DECLARE_EVENT_TwoParams(AUnitBase, FOnUnitHiddenStateChangedEvent, AUnitBase*, bool);
+	FOnUnitHiddenStateChangedEvent& OnUnitHiddenStateChanged() { return onUnitHiddenStateChangedEvent; }
+
+	DECLARE_EVENT_ThreeParams(AUnitBase, FOnOwningPlayerChangedEvent, AUnitBase*, AZombieSiegePlayerController*, AZombieSiegePlayerController*);
+	FOnOwningPlayerChangedEvent& OnOwningPlayerChanged() { return onOwningPlayerChangedEvent; }
+
 private:
 	FOnHealthChangedEvent onHealthChangedEvent;
 	FOnUnitStateChangedEvent onUnitStateChangedEvent;
@@ -475,4 +483,6 @@ private:
 	FOnUnitDiedEvent onUnitDiedEvent;
 	FOnUnitEnteredPassengerCarrierEvent onUnitEnteredPassengerCarrierEvent;
 	FOnUnitDestroyedEvent onUnitDestroyedEvent;
+	FOnUnitHiddenStateChangedEvent onUnitHiddenStateChangedEvent;
+	FOnOwningPlayerChangedEvent onOwningPlayerChangedEvent;
 };
