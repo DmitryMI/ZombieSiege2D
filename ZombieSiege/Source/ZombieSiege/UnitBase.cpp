@@ -120,6 +120,8 @@ void AUnitBase::SetPassengerCarrier(AUnitBase* carrier)
 		FDetachmentTransformRules detachmentRules(EDetachmentRule::KeepRelative, false);
 		DetachFromActor(detachmentRules);
 
+		SetUnitHidden(false);
+
 		FVector center = oldCarrier->GetActorLocation();
 		float radius = oldCarrier->GetSimpleCollisionRadius() + enterPassengerCarrierRadius;
 		FVector location;
@@ -132,8 +134,6 @@ void AUnitBase::SetPassengerCarrier(AUnitBase* carrier)
 		{
 			UE_LOG(LogTemp, Error, TEXT("[UniBase: SetPassengerCarrier] Cannot find a point to dispatch a passenger!"));
 		}
-
-		SetUnitHidden(false);
 	}
 }
 
