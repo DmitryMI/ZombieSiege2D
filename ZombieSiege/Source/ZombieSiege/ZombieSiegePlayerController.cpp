@@ -236,17 +236,6 @@ void AZombieSiegePlayerController::OnAddToSelectionActionReleased()
 	bAddToSelectionActionPressed = false;
 }
 
-void AZombieSiegePlayerController::OnMouseMoveX(float dx)
-{
-	mouseMoveAxisAccumulator.X = dx;
-}
-
-void AZombieSiegePlayerController::OnMouseMoveY(float dy)
-{
-	mouseMoveAxisAccumulator.X = dy;
-}
-
-
 void AZombieSiegePlayerController::BeginPlay()
 {
 	Super::BeginPlay();
@@ -262,8 +251,6 @@ void AZombieSiegePlayerController::SetupInputComponent()
 	this->InputComponent->BindAxis("CameraVertical", this, &AZombieSiegePlayerController::OnCameraVertical);
 	this->InputComponent->BindAxis("CameraHorizontal", this, &AZombieSiegePlayerController::OnCameraHorizontal);
 	this->InputComponent->BindAxis("CameraZoom", this, &AZombieSiegePlayerController::OnCameraZoom);
-	this->InputComponent->BindAxis("MouseMoveX", this, &AZombieSiegePlayerController::OnMouseMoveX);
-	this->InputComponent->BindAxis("MouseMoveY", this, &AZombieSiegePlayerController::OnMouseMoveY);
 
 	this->InputComponent->BindAction("Select", EInputEvent::IE_Pressed, this, &AZombieSiegePlayerController::OnSelectActionPressed);
 	this->InputComponent->BindAction("Select", EInputEvent::IE_Released, this, &AZombieSiegePlayerController::OnSelectActionReleased);
@@ -666,5 +653,12 @@ void AZombieSiegePlayerController::Tick(float deltaSeconds)
 {
 	Super::Tick(deltaSeconds);
 
-	OnMouseMove(mouseMoveAxisAccumulator);
+	FVector2D mousePosition;
+	bool mouseOk = GetMousePosition(mousePosition.X, mousePosition.Y);
+
+	FVector2D delta = mousePosition - mouseLastTickPosition;
+
+	OnMouseMove(delta);
+
+	mouseLastTickPosition = mousePosition;
 }
