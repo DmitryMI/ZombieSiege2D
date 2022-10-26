@@ -847,21 +847,31 @@ float AUnitBase::ReceiveHealing(const FHealingInstance& healing)
 
 void AUnitBase::SetUnitHidden(bool bIsHidden)
 {
-	SetActorHiddenInGame(bIsHidden);
-	SetActorEnableCollision(!bIsHidden);
+	const float zOffset = 10000.0f;
 
+	FVector actorLocation = GetActorLocation();
 	if (bIsHidden)
 	{
+		actorLocation.Z += zOffset;
+		
 		movementComponent->GravityScale = 0.0f;
 		movementComponent->MaxFlySpeed = 0;
 		movementComponent->MaxWalkSpeed = 0;
 	}
 	else
 	{
+		actorLocation.Z -= zOffset;
+
 		movementComponent->GravityScale = 1.0f;
 		movementComponent->MaxFlySpeed = GetMaxSpeed();
 		movementComponent->MaxWalkSpeed = GetMaxSpeed();
 	}
+
+	SetActorLocation(actorLocation);
+
+	SetActorHiddenInGame(bIsHidden);
+	SetActorEnableCollision(!bIsHidden);
+
 }
 
 bool AUnitBase::IsUnitHidden()

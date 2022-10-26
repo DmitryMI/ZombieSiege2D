@@ -16,7 +16,56 @@
 #include "Doodad.h"
 #include "MoveOrder.h"
 #include "EnumUtils.h"
+#include "Macros.h"
 
+// Avoidance Mask
+// |        Flags     |      Command      |
+// 0000 0000 0000 0000 0000 0000 0000 0000
+//                  ||
+//                  | \ Stationary Object flag
+//                   \  Hidden Unit flag
+//     
+
+#define AVOIDANCE_TEAMS_MAX                 14
+#define AVOIDANCE_TEAM_NEUTRAL_PASSIVE      (1 << (AVOIDANCE_TEAMS_MAX + 0))
+#define AVOIDANCE_TEAM_NEUTRAL_AGGRESSIVE   (1 << (AVOIDANCE_TEAMS_MAX + 1))
+#define AVOIDANCE_UNIT_STATIONARY_FLAG      (1 << (AVOIDANCE_TEAMS_MAX + 2))
+#define AVOIDANCE_UNIT_HIDDEN_FLAG          (1 << (AVOIDANCE_TEAMS_MAX + 3))
+
+void AUnitAiController::AvoidanceUpdateGroup()
+{
+    UCrowdFollowingComponent* detourComponent = Cast<UCrowdFollowingComponent>(GetPathFollowingComponent());
+
+    uint32 groupFlags = 0;
+    uint32 teamId = GetGenericTeamId().GetId();
+
+    if (teamId == TEAM_NEUTRAL_PASSIVE)
+    {
+        groupFlags |= AVOIDANCE_TEAM_NEUTRAL_PASSIVE;
+    }
+    else if (teamId == TEAM_NEUTRAL_AGGRESSIVE)
+    {
+        groupFlags |= AVOIDANCE_TEAM_NEUTRAL_AGGRESSIVE;
+    }
+    else
+    {
+        check(teamId < AVOIDANCE_TEAMS_MAX);
+        groupFlags |= 1 << teamId;
+    }
+
+    AUnitBase* controlledUnit = GetPawn<AUnitBase>();
+    if (controlledUnit->HasClassifications(EUnitClassification::Building))
+    {
+        groupFlags |= AVOIDANCE_UNIT_STATIONARY_FLAG;
+    }
+
+    if (controlledUnit->IsUnitHidden())
+    {
+        groupFlags |= AVOIDANCE_UNIT_HIDDEN_FLAG;
+    }
+
+    detourComponent->SetAvoidanceGroup(groupFlags);
+}
 
 void AUnitAiController::BeginPlay()
 {
@@ -37,6 +86,10 @@ void AUnitAiController::BeginPlay()
         unitDiedEventDelegateHandle = unit->OnUnitDied().AddUObject(this, &AUnitAiController::UnitDiedEventHandler);
         unitDamageReceivedEventDelegateHandle = unit->OnDamageReceived().AddUObject(this, &AUnitAiController::UnitDamageReceivedEventHandler);
     }
+
+    UCrowdFollowingComponent* detourComponent = Cast<UCrowdFollowingComponent>(GetPathFollowingComponent());
+    check(detourComponent);
+    detourComponent->SetCrowdSlowdownAtGoal(false, true);
 }
 
 void AUnitAiController::OnPossess(APawn* pawn)
@@ -230,6 +283,10 @@ AUnitAiController::AUnitAiController(const FObjectInitializer& ObjectInitializer
 void AUnitAiController::PostSetManualModeEnabled(bool bEnabled)
 {
 
+}
+
+void AUnitAiController::AvoidanceUpdateGroup()
+{
 }
 
 void AUnitAiController::SetManualModeEnabled(bool bEnabled)

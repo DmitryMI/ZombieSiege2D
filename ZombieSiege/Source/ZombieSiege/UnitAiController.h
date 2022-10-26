@@ -126,6 +126,13 @@ protected:
 	virtual void OnTargetPerceptionUpdatedHandler(AActor* Actor, FAIStimulus Stimulus);
 
 	virtual void PostSetManualModeEnabled(bool bIsEnabled);
+
+
+	virtual void AvoidanceUpdateGroup();
+
+	virtual void AvoidanceUpdateIgnoredGroups();
+
+	virtual void AvoidanceUpdateAvoidedGroups();
 	
 public:
 
