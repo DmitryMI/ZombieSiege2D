@@ -99,7 +99,7 @@ void AZombieSiegeGameModeBase::SpawnDebugHorde(FName unitTypeName, int count, bo
 			}
 			else if(!controller)
 			{
-				UE_LOG(LogTemp, Error, TEXT("Unit has no AIController attached!"), *randomPoint.ToString());
+				UE_LOG(LogTemp, Error, TEXT("Unit %s has no AIController attached!"), *spawnedUnit->GetName());
 			}
 			
 		}
