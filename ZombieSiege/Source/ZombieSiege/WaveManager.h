@@ -66,7 +66,7 @@ protected:
 
 	AUnitBase* SpawnUnit(TSubclassOf<AUnitBase> unitClass);
 
-	void IssueOrders(AUnitBase* unit);
+	bool IssueOrders(AUnitBase* unit);
 
 public:	
 	// Called every frame

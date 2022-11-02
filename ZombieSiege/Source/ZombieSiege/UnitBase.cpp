@@ -219,6 +219,44 @@ void AUnitBase::PostRemovePassenger(AUnitBase* passenger)
 {
 }
 
+void AUnitBase::OnHealthRegenerationTimerElapsed()
+{
+	float regenerationAmount = healthRegenerationPerSecond * healthRegenerationInterval;
+	
+	if (regenerationAmount < 0)
+	{
+		if (!IsAlive())
+		{
+			return;
+		}
+
+		float damage = -regenerationAmount;
+		FDamageInstance negativeRegenerationDamageInstance(this, damage, nullptr);
+		ReceiveDamage(negativeRegenerationDamageInstance);
+	}
+	else if(regenerationAmount > 0)
+	{
+		float healthDelta = GetMaxHealth() - GetHealth();
+
+		if (FMath::IsNearlyZero(healthDelta))
+		{
+			return;
+		}
+
+		if (regenerationAmount > healthDelta)
+		{
+			regenerationAmount = healthDelta;
+		}
+
+		FHealingInstance regenerationInstance(this, regenerationAmount);
+		ReceiveHealing(regenerationInstance);
+	}
+	else
+	{
+		// Do nothing for Zero regeneration
+	}
+}
+
 #if WITH_EDITOR  
 void AUnitBase::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
 {
@@ -487,6 +525,16 @@ float AUnitBase::GetMaxHealth() const
 	return maxHealth;
 }
 
+float AUnitBase::GetHealthRegenerationPerSecond() const
+{
+	return healthRegenerationPerSecond;
+}
+
+void AUnitBase::SetHealthRegenerationPerSecond(float value)
+{
+	healthRegenerationPerSecond = value;
+}
+
 bool AUnitBase::CanAttackPointWithWeapon(const FVector& targetPoint, UWeaponInfo* weapon, FAttackTestParameters testParams)
 {
 	if (weapon == nullptr)
@@ -718,7 +766,16 @@ void AUnitBase::BeginPlay()
 		attackDispatcher->OnAttackDispatcherStateChanged().AddUObject(this, &AUnitBase::OnAttackStateChanged);
 	}
 
-	
+	check(healthRegenerationInterval >= 0);
+
+	GetWorld()->GetTimerManager().SetTimer(
+		healthRegenerationTimerHandle,		
+		this,
+		&AUnitBase::OnHealthRegenerationTimerElapsed,
+		healthRegenerationInterval,
+		true,
+		healthRegenerationInterval
+	);
 }
 
 void AUnitBase::EndPlay(const EEndPlayReason::Type EndPlayReason)

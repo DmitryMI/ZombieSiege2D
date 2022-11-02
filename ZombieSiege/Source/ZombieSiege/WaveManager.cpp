@@ -55,6 +55,9 @@ void AWaveManager::SpawnWaveInternal(float waveStrength)
 
 	FString message = "";
 
+	const int maxErrors = 3;
+	int errorCounter = 0;
+
 	for (auto& waveClassPair : waveClasses)
 	{
 		FName name = waveClassPair.Key;
@@ -74,7 +77,17 @@ void AWaveManager::SpawnWaveInternal(float waveStrength)
 				continue;
 			}
 
-			IssueOrders(unit);
+			bool ordersIssued = IssueOrders(unit);
+						
+			if (!ordersIssued)
+			{
+				unit->Destroy();				
+				if (errorCounter < maxErrors)
+				{
+					i--;
+				}
+				errorCounter++;
+			}
 		}
 	}
 
@@ -162,7 +175,7 @@ AUnitBase* AWaveManager::SpawnUnit(TSubclassOf<AUnitBase> unitClass)
 	return spawnedUnit;
 }
 
-void AWaveManager::IssueOrders(AUnitBase* unit)
+bool AWaveManager::IssueOrders(AUnitBase* unit)
 {
 	AZombieSiegePlayerController* localPlayerContoller = Cast<AZombieSiegePlayerController>(GetWorld()->GetFirstPlayerController());
 	AUnitAiController* controller = unit->GetController<AUnitAiController>();
@@ -196,12 +209,16 @@ void AWaveManager::IssueOrders(AUnitBase* unit)
 		else
 		{
 			UE_LOG(LogTemp, Error, TEXT("[WaveManager] Local player has no attackable units!"));
+			return false;
 		}
 	}
 	else if (!controller)
 	{
 		UE_LOG(LogTemp, Error, TEXT("[WaveManager] Unit %s has no AIController attached!"), *unit->GetName());
+		checkNoEntry();
 	}
+
+	return true;
 }
 
 void AWaveManager::SpawnWave(float difficulty)

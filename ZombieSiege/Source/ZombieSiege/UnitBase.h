@@ -79,6 +79,15 @@ private:
 	UPROPERTY(EditAnywhere)
 	float health = 100.0f;	
 
+	UPROPERTY(EditDefaultsOnly)
+	float healthRegenerationPerSecond = 0.0f;
+
+	UPROPERTY(EditDefaultsOnly)
+	float healthRegenerationInterval = 0.25f;
+
+	UPROPERTY()
+	FTimerHandle healthRegenerationTimerHandle;
+
 	UPROPERTY(EditAnywhere)
 	float speed = 0.0f;
 
@@ -110,7 +119,7 @@ private:
 	TArray<AUnitBase*> passengers;	
 
 	UPROPERTY()
-	FTimerHandle decayTimerHandle;
+	FTimerHandle decayTimerHandle;	
 
 protected:
 
@@ -172,6 +181,8 @@ protected:
 
 	virtual void PostAddPassenger(AUnitBase* passenger);
 	virtual void PostRemovePassenger(AUnitBase* passenger);
+
+	virtual void OnHealthRegenerationTimerElapsed();
 
 	UFUNCTION(BlueprintCallable)
 	/// <summary>
@@ -387,6 +398,12 @@ public:
 	/// </summary>
 	/// <returns>Unit's max health</returns>
 	float GetMaxHealth() const;
+
+	UFUNCTION(BlueprintCallable)
+	float GetHealthRegenerationPerSecond() const;
+
+	UFUNCTION(BlueprintCallable)
+	void SetHealthRegenerationPerSecond(float value);
 
 	UFUNCTION(BlueprintCallable)
 	virtual bool CanAttackPointWithWeapon(const FVector& targetPoint, UWeaponInfo* weapon, FAttackTestParameters testParams);
