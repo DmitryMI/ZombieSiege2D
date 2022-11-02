@@ -47,9 +47,6 @@ void ATree::SetTreeTypeAndSize(ETreeType inType, ETreeSize inSize)
 void ATree::BeginPlay()
 {
 	Super::BeginPlay();
-	graphicsComponent = Cast<UTreeGraphicsComponent>(GetComponentByClass(UTreeGraphicsComponent::StaticClass()));
-
-	check(graphicsComponent);
 }
 
 void ATree::FinishDying(const FDamageInstance& killingDamageInstance)

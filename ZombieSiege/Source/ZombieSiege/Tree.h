@@ -27,8 +27,6 @@ private:
 	ETreeSize treeSize;		
 
 protected:
-	UPROPERTY(Transient)
-	UTreeGraphicsComponent* graphicsComponent;
 
 	virtual void BeginPlay() override;
 
