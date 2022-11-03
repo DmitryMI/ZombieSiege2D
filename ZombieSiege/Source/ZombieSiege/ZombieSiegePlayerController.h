@@ -141,6 +141,9 @@ protected:
 
 public:
 
+	float GetCameraTargetZoomFactor();
+	float GetCameraCurrentZoomFactor();
+
 	virtual void Tick(float deltaSeconds) override;
 
 	virtual void SetGenericTeamId(const FGenericTeamId& TeamID) override;

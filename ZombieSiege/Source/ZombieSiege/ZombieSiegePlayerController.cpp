@@ -40,10 +40,6 @@ void AZombieSiegePlayerController::OnCameraVertical(float value)
 
 	cameraTargetLocation += FVector::ForwardVector * speed * value * UGameplayStatics::GetWorldDeltaSeconds(GetWorld());
 
-	if (!FMath::IsNearlyZero(value))
-	{
-		UE_LOG(LogTemp, Display, TEXT("CameraTargetLocation: %s"), *cameraTargetLocation.ToString());
-	}
 }
 
 void AZombieSiegePlayerController::OnCameraHorizontal(float value)
@@ -67,10 +63,6 @@ void AZombieSiegePlayerController::OnCameraHorizontal(float value)
 
 	cameraTargetLocation += FVector::RightVector * speed * value * UGameplayStatics::GetWorldDeltaSeconds(GetWorld());
 
-	if (!FMath::IsNearlyZero(value))
-	{
-		UE_LOG(LogTemp, Display, TEXT("CameraTargetLocation: %s"), *cameraTargetLocation.ToString());
-	}
 }
 
 void AZombieSiegePlayerController::OnCameraZoom(float value)
@@ -717,6 +709,28 @@ FGenericTeamId AZombieSiegePlayerController::GetGenericTeamId() const
 	check(playerState);
 
 	return playerState->GetGenericTeamId();
+}
+
+float AZombieSiegePlayerController::GetCameraTargetZoomFactor()
+{
+	float zoomFactor = (cameraTargetZoom - cameraDefaultMinSize) / (cameraDefaultMaxSize - cameraDefaultMinSize);
+	return zoomFactor;
+}
+
+float AZombieSiegePlayerController::GetCameraCurrentZoomFactor()
+{
+	APawn* posessedPawn = GetPawn();
+	USpringArmComponent* springArm = Cast<USpringArmComponent>(posessedPawn->GetComponentByClass(USpringArmComponent::StaticClass()));
+	if (springArm == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Strategic Camera actor does not have a SpringArm component!"));
+		return 0.0f;
+	}
+
+	float currentZoom = springArm->TargetArmLength;
+
+	float zoomFactor = (currentZoom - cameraDefaultMinSize) / (cameraDefaultMaxSize - cameraDefaultMinSize);
+	return zoomFactor;
 }
 
 void AZombieSiegePlayerController::Tick(float deltaSeconds)

@@ -751,8 +751,17 @@ void AUnitBase::BeginPlay()
 
 	UCapsuleComponent* capsule = GetCapsuleComponent();
 	check(capsule);
-	capsule->SetCapsuleRadius(collisionRadius);
-	capsule->SetCapsuleHalfHeight(collisionHeight / 2);
+
+	if (useCapsuleCollisionParameters)
+	{
+		collisionRadius = capsule->GetScaledCapsuleRadius();
+		collisionHeight = capsule->GetScaledCapsuleHalfHeight() * 2.0f;
+	}
+	else 
+	{
+		capsule->SetCapsuleRadius(collisionRadius);
+		capsule->SetCapsuleHalfHeight(collisionHeight / 2);
+	}
 
 	movementComponent = Cast<UCharacterMovementComponent>(GetMovementComponent());
 	check(movementComponent);

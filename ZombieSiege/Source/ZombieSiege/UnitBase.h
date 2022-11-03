@@ -68,6 +68,9 @@ private:
 	float enterPassengerCarrierRadius = 150.0f;
 
 	UPROPERTY(EditDefaultsOnly)
+	bool useCapsuleCollisionParameters = true;
+
+	UPROPERTY(EditDefaultsOnly)
 	float collisionRadius = 50.0f;
 
 	UPROPERTY(EditDefaultsOnly)
