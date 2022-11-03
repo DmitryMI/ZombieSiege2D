@@ -25,9 +25,6 @@ void AHumanoid::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	graphicsComponent = Cast<UUnitGraphicsComponent>(GetComponentByClass(UUnitGraphicsComponent::StaticClass()));
-	check(graphicsComponent);
-
 	weaponManager = AWeaponManager::GetInstance(GetWorld());
 	check(weaponManager);	
 

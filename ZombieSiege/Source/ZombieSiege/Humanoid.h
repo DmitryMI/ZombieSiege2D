@@ -33,9 +33,6 @@ public:
 
 protected:
 
-	UPROPERTY(Transient)
-	UUnitGraphicsComponent* graphicsComponent;		
-
 	UFUNCTION(BlueprintCallable)
 	AWeaponManager* GetWeaponManager();
 	

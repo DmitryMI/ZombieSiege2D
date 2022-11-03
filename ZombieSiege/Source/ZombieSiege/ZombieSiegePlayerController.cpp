@@ -15,28 +15,61 @@
 #include "ZombieSiegePlayerState.h"
 #include "SelectionIndicatorComponent.h"
 #include "EnumUtils.h"
+#include "GameFramework/SpringArmComponent.h"
 
 DEFINE_LOG_CATEGORY(LogZombieSiegePlayerController);
 
 void AZombieSiegePlayerController::OnCameraVertical(float value)
 {
 	APawn* posessedPawn = GetPawn();
-	if (posessedPawn != nullptr)
+
+	USpringArmComponent* springArm = Cast<USpringArmComponent>(posessedPawn->GetComponentByClass(USpringArmComponent::StaticClass()));
+	if (springArm == nullptr)
 	{
-		FVector location = posessedPawn->GetActorLocation();
-		location += FVector::LeftVector * cameraDefaultSpeed * value * UGameplayStatics::GetWorldDeltaSeconds(GetWorld());
-		posessedPawn->SetActorLocation(location);
+		UE_LOG(LogTemp, Error, TEXT("Strategic Camera actor does not have a SpringArm component!"));
+		return;
+	}
+
+	float currentZoom = springArm->TargetArmLength;
+
+	float zoomFactor = (currentZoom - cameraDefaultMinSize) / (cameraDefaultMaxSize - cameraDefaultMinSize);
+
+	check(cameraMovementSpeedCurve);
+
+	float speed = cameraMovementSpeedCurve->GetFloatValue(zoomFactor);	
+
+	cameraTargetLocation += FVector::ForwardVector * speed * value * UGameplayStatics::GetWorldDeltaSeconds(GetWorld());
+
+	if (!FMath::IsNearlyZero(value))
+	{
+		UE_LOG(LogTemp, Display, TEXT("CameraTargetLocation: %s"), *cameraTargetLocation.ToString());
 	}
 }
 
 void AZombieSiegePlayerController::OnCameraHorizontal(float value)
 {
 	APawn* posessedPawn = GetPawn();
-	if (posessedPawn != nullptr)
+
+	USpringArmComponent* springArm = Cast<USpringArmComponent>(posessedPawn->GetComponentByClass(USpringArmComponent::StaticClass()));
+	if (springArm == nullptr)
 	{
-		FVector location = posessedPawn->GetActorLocation();
-		location += FVector::ForwardVector * cameraDefaultSpeed * value * UGameplayStatics::GetWorldDeltaSeconds(GetWorld());
-		posessedPawn->SetActorLocation(location);
+		UE_LOG(LogTemp, Error, TEXT("Strategic Camera actor does not have a SpringArm component!"));
+		return;
+	}
+
+	float currentZoom = springArm->TargetArmLength;
+
+	float zoomFactor = (currentZoom - cameraDefaultMinSize) / (cameraDefaultMaxSize - cameraDefaultMinSize);
+
+	check(cameraMovementSpeedCurve);
+
+	float speed = cameraMovementSpeedCurve->GetFloatValue(zoomFactor);
+
+	cameraTargetLocation += FVector::RightVector * speed * value * UGameplayStatics::GetWorldDeltaSeconds(GetWorld());
+
+	if (!FMath::IsNearlyZero(value))
+	{
+		UE_LOG(LogTemp, Display, TEXT("CameraTargetLocation: %s"), *cameraTargetLocation.ToString());
 	}
 }
 
@@ -45,7 +78,7 @@ void AZombieSiegePlayerController::OnCameraZoom(float value)
 	APawn* posessedPawn = GetPawn();
 	if (posessedPawn == nullptr)
 	{
-		return;		
+		return;
 	}
 
 	if (FMath::IsNearlyZero(value))
@@ -53,29 +86,15 @@ void AZombieSiegePlayerController::OnCameraZoom(float value)
 		return;
 	}
 
-	TArray<AActor*> cameraActors;
-	UGameplayStatics::GetAllActorsWithTag(GetWorld(), "StrategicCamera", cameraActors);
-
-	if (cameraActors.Num() == 0)
+	USpringArmComponent* springArm = Cast<USpringArmComponent>(posessedPawn->GetComponentByClass(USpringArmComponent::StaticClass()));
+	if (springArm == nullptr)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Strategic Camera not found!"));
+		UE_LOG(LogTemp, Error, TEXT("Strategic Camera actor does not have a SpringArm component!"));
 		return;
 	}
 
-	AActor* cameraActor = cameraActors[0];
-	UCameraComponent* cameraComponent = Cast< UCameraComponent>(cameraActor->GetComponentByClass(UCameraComponent::StaticClass()));
-	if (cameraComponent == nullptr)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Strategic Camera actor does not have a camera component!"));
-		return;
-	}
-
-	float currentSize = cameraComponent->OrthoWidth;
-
-	currentSize -= value * cameraDefaultZoomSpeed * UGameplayStatics::GetWorldDeltaSeconds(GetWorld());
-	currentSize = FMath::Clamp(currentSize, cameraDefaultMinSize, cameraDefaultMaxSize);
-
-	cameraComponent->SetOrthoWidth(currentSize);
+	float nextZoom = cameraTargetZoom + value * cameraDefaultZoomSpeed * UGameplayStatics::GetWorldDeltaSeconds(GetWorld());
+	cameraTargetZoom = FMath::Clamp(nextZoom, cameraDefaultMinSize, cameraDefaultMaxSize);
 }
 
 void AZombieSiegePlayerController::OnSelectActionPressed()
@@ -236,6 +255,49 @@ void AZombieSiegePlayerController::OnAddToSelectionActionReleased()
 	bAddToSelectionActionPressed = false;
 }
 
+void AZombieSiegePlayerController::UpdateCamera(float deltaSeconds)
+{
+	APawn* camera = GetPawn();
+	if (!camera)
+	{
+		return;
+	}
+
+	// TODO Optimaze component search
+	USpringArmComponent* springArm = Cast<USpringArmComponent>(camera->GetComponentByClass(USpringArmComponent::StaticClass()));
+	
+	float alpha = cameraInterpolationFactorPerSecond * deltaSeconds;
+	if (alpha > 1.0f)
+	{
+		alpha = 1.0f;
+	}
+
+	float currentZoom = springArm->TargetArmLength;
+	if (!FMath::IsNearlyEqual(currentZoom, cameraTargetZoom))
+	{
+		check(cameraAngleCurve);
+
+		float zoom = FMath::Lerp(currentZoom, cameraTargetZoom, alpha);
+		springArm->TargetArmLength = zoom;
+
+		float zoomFactor = (zoom - cameraDefaultMinSize) / (cameraDefaultMaxSize - cameraDefaultMinSize);
+		check(0 <= zoomFactor && zoomFactor <= 1.0f);
+
+		float angle = cameraAngleCurve->GetFloatValue(zoomFactor);
+		FRotator rotation = springArm->GetRelativeRotation();
+		rotation.Pitch = angle;
+		springArm->SetRelativeRotation(rotation);
+	}
+
+	FVector currentLocation = camera->GetActorLocation();
+	if (!(currentLocation - cameraTargetLocation).IsNearlyZero())
+	{
+		FVector location = FMath::Lerp(currentLocation, cameraTargetLocation, alpha);
+		camera->SetActorLocation(location);
+	}
+	
+}
+
 void AZombieSiegePlayerController::BeginPlay()
 {
 	Super::BeginPlay();
@@ -382,6 +444,14 @@ void AZombieSiegePlayerController::SelectUnitsInsideSelectionBox()
 	{
 		AddUnitToSelection(unit);
 	}
+}
+
+void AZombieSiegePlayerController::OnPossess(APawn* pawn)
+{
+	Super::OnPossess(pawn);
+	cameraTargetLocation = pawn->GetActorLocation();
+
+	cameraTargetZoom = cameraDefaultHeight;
 }
 
 const TArray<TSubclassOf<AUnitBase>>& AZombieSiegePlayerController::GetBuildableUnits()
@@ -661,4 +731,6 @@ void AZombieSiegePlayerController::Tick(float deltaSeconds)
 	OnMouseMove(delta);
 
 	mouseLastTickPosition = mousePosition;
+
+	UpdateCamera(deltaSeconds);
 }

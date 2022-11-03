@@ -74,7 +74,6 @@ TSubclassOf<ABuilding> ABuildingPlacementMarker::GetBuildingClass()
 
 void ABuildingPlacementMarker::SetBuildingClass(TSubclassOf<ABuilding> clazz)
 {
-	// Is it a correct check?
 	check(clazz);
 
 	buildingClass = clazz;

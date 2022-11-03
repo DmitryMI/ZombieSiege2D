@@ -7,6 +7,7 @@
 #include "UnitDiedEventArgs.h"
 #include "ZombieSiegeHUD.h"
 #include "GenericTeamAgentInterface.h"
+#include "Curves/CurveFloat.h"
 #include "ZombieSiegePlayerController.generated.h"
 
 class ABuilding;
@@ -39,19 +40,25 @@ class ZOMBIESIEGE_API AZombieSiegePlayerController : public APlayerController, p
 private:
 	
 	UPROPERTY(EditDefaultsOnly, Category = "DefaultPreferences|Camera")
-	float cameraDefaultHeight = 1000;
+	float cameraInterpolationFactorPerSecond = 0.5f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "DefaultPreferences|Camera")
-	float cameraDefaultSpeed = 1000;
+	float cameraDefaultHeight = 1500;
 
 	UPROPERTY(EditDefaultsOnly, Category = "DefaultPreferences|Camera")
-	float cameraDefaultMaxSize = 4096;
+	float cameraDefaultMaxSize = 10000;
 
 	UPROPERTY(EditDefaultsOnly, Category = "DefaultPreferences|Camera")
-	float cameraDefaultMinSize = 2048;
+	float cameraDefaultMinSize = 80;
 
 	UPROPERTY(EditDefaultsOnly, Category = "DefaultPreferences|Camera")
-	float cameraDefaultZoomSpeed = 15000.0f;
+	UCurveFloat* cameraAngleCurve;
+
+	UPROPERTY(EditDefaultsOnly, Category = "DefaultPreferences|Camera")
+	UCurveFloat* cameraMovementSpeedCurve;
+
+	UPROPERTY(EditDefaultsOnly, Category = "DefaultPreferences|Camera")
+	float cameraDefaultZoomSpeed = 30000.0f;
 
 	UPROPERTY(EditDefaultsOnly)
 	float selectionMouseDeltaThreshold = 5.0f;	
@@ -107,6 +114,11 @@ private:
 	bool bQueueOrderActionPressed = false;
 	bool bAddToSelectionActionPressed = false;
 
+	FVector cameraTargetLocation;
+	float cameraTargetZoom;
+
+	void UpdateCamera(float deltaSeconds);
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -124,6 +136,8 @@ protected:
 	void OnControlledUnitDiedHandler(AZombieSiegePlayerState* sender, const FUnitDiedEventArgs& args);
 
 	void SelectUnitsInsideSelectionBox();
+
+	virtual void OnPossess(APawn* pawn) override;
 
 public:
 
