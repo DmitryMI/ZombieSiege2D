@@ -81,37 +81,11 @@ void UProjectileWeaponInfo::AttackTarget(AUnitBase* attacker, AActor* target, co
 
 	if (ok)
 	{
-		FVector suggestedArcVelocity;
-		bool arcSuggestOk = UGameplayStatics::SuggestProjectileVelocity(
-			this,
-			suggestedArcVelocity,
-			launchLocation,
-			interceptionLocation,
-			projectileMaxSpeed,
-			false,
-			projectileCollisionRadius,
-			0.0f,
-			ESuggestProjVelocityTraceOption::DoNotTrace
-		);
-		paramsClone.projectileInitialLocalSpaceVelocity = suggestedArcVelocity;
-
+	
 		AttackPoint(attacker, interceptionLocation, paramsClone);
 	}
 	else
 	{
-		FVector suggestedArcVelocity;
-		bool arcSuggestOk = UGameplayStatics::SuggestProjectileVelocity(
-			this,
-			suggestedArcVelocity,
-			launchLocation,
-			targetLocation,
-			projectileMaxSpeed,
-			false,
-			projectileCollisionRadius,
-			0.0f,
-			ESuggestProjVelocityTraceOption::DoNotTrace
-		);
-		paramsClone.projectileInitialLocalSpaceVelocity = suggestedArcVelocity;
 
 		AttackPoint(attacker, targetActor->GetActorLocation(), paramsClone);
 	}
@@ -131,16 +105,41 @@ void UProjectileWeaponInfo::AttackPoint(AUnitBase* attacker, const FVector& targ
 		return;
 	}
 
-	FVector vectorToTarget = (targetPoint - projectile->GetActorLocation());
+	FVector launchLocation = projectile->GetActorLocation();
 
-	float scatter = FMath::RandRange(-scatterAngleDeg, scatterAngleDeg);
-	vectorToTarget = vectorToTarget.RotateAngleAxis(scatter, FVector::UpVector);
-	vectorToTarget *= 1 + shootBehindTargetFactor;
+	float projectileMaxSpeed;
+	if (bOverrideProjectileMaxSpeed)
+	{
+		projectileMaxSpeed = overrideProjectileMaxSpeed;
+	}
+	else
+	{
+		projectileMaxSpeed = projectileClass.GetDefaultObject()->GetMaxSpeed();
+	}
 
-	FVector targetPointMod = projectile->GetActorLocation() + vectorToTarget;
+	float projectileCollisionRadius = projectileClass.GetDefaultObject()->GetSimpleCollisionRadius();
+
+	FVector suggestedArcVelocity;
+	bool arcSuggestOk = UGameplayStatics::SuggestProjectileVelocity(
+		this,
+		suggestedArcVelocity,
+		launchLocation,
+		targetPoint,
+		projectileMaxSpeed,
+		false,
+		projectileCollisionRadius,
+		0.0f,
+		ESuggestProjVelocityTraceOption::DoNotTrace
+	);
+
+	float scatterX = FMath::RandRange(-scatterAngleDeg, scatterAngleDeg);
+	float scatterY = FMath::RandRange(-scatterAngleDeg, scatterAngleDeg);
+	
+	FVector velocityScatterY = suggestedArcVelocity.RotateAngleAxis(scatterY, projectile->GetActorRightVector());
+	FVector velocityScatter = velocityScatterY.RotateAngleAxis(scatterX, projectile->GetActorForwardVector());
 
 	// TODO Is it really local space velocity?
-	projectile->MoveTowards(targetPointMod, params.projectileInitialLocalSpaceVelocity);
+	projectile->SetVelocity(velocityScatter);
 }
 
 bool UProjectileWeaponInfo::CanAttackTarget(AUnitBase* attacker, AActor* target)

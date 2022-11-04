@@ -39,14 +39,6 @@ void AProjectileBase::BeginPlay()
 	}
 }
 
-bool AProjectileBase::IsTargetLocationReached()
-{
-	FVector deltaVec = targetPoint - GetActorLocation();
-	float deltaSqr = deltaVec.Size2D();
-
-	return deltaSqr <= FMath::Square(reachibilityTestRadius);
-}
-
 bool AProjectileBase::IsRangeExceeded()
 {
 	float distanceSqr = (GetActorLocation() - launchLocation).SizeSquared2D();
@@ -90,8 +82,6 @@ void AProjectileBase::KillProjectile()
 	{
 		SetActorHiddenInGame(true);
 	}
-
-	//UNiagaraComponent
 
 	BeginProjectileDeath();
 	BeginProjectileDeathBlueprint();
@@ -161,34 +151,16 @@ void AProjectileBase::Tick(float DeltaTime)
 
 	if (bIsProjectileAlive)
 	{
-		if (bDiesOnTargetPointReached && IsTargetLocationReached())
-		{
-			KillProjectile();
-		}
-		else if (IsRangeExceeded())
+		if (IsRangeExceeded())
 		{
 			KillProjectile();
 		}
 	}
 }
 
-void AProjectileBase::MoveTowards(const FVector& targetPointArg, const FVector& velocity)
+void AProjectileBase::SetVelocity(const FVector& velocity)
 {
-	targetPoint = targetPointArg;
-
-	if (velocity.IsNearlyZero())
-	{
-
-		FVector direction = targetPoint - GetActorLocation();
-		direction.Z = 0;
-		ensure(direction.Normalize());
-
-		movementComponent->Velocity = direction * maxSpeed;
-	}
-	else
-	{
-		movementComponent->Velocity = velocity;
-	}
+	movementComponent->Velocity = velocity;
 }
 
 UWeaponInfo* AProjectileBase::GetWeaponInfo()

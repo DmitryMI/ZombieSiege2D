@@ -26,9 +26,6 @@ protected:
 	bool bDiesOnCollision = true;
 
 	UPROPERTY(EditDefaultsOnly)
-	bool bDiesOnTargetPointReached = false;
-
-	UPROPERTY(EditDefaultsOnly)
 	float maxRange = 10000.0f;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -59,9 +56,6 @@ protected:
 	FVector launchLocation;
 
 	UPROPERTY()
-	FVector targetPoint;
-
-	UPROPERTY()
 	FTimerHandle decayTimerHandle;
 
 public:	
@@ -77,8 +71,6 @@ protected:
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	virtual bool IsTargetLocationReached();
 
 	bool IsRangeExceeded();
 
@@ -102,11 +94,10 @@ protected:
 	);
 
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable)
-	void MoveTowards(const FVector& targetPointArg, const FVector& velocity);
+	void SetVelocity(const FVector& velocity);
 
 	UFUNCTION(BlueprintCallable)
 	UWeaponInfo* GetWeaponInfo();
