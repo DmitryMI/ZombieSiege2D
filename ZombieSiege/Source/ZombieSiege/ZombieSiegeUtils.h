@@ -270,6 +270,9 @@ public:
 		float tolerance,
 		FVector& OutLocation);
 
+	UFUNCTION(BlueprintCallable)
+	static FVector ProjectLocationToNavMesh(UWorld* world, const FVector& location, const FVector& extent = FVector(0, 0, 5000));
+
 	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
 	static bool AreEnemies(AActor* unitA, AActor* unitB);
 

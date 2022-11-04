@@ -590,6 +590,11 @@ bool AUnitBase::CanAttackTargetWithWeapon(AActor* targetUnit, UWeaponInfo* weapo
 
 	if (testParams.GetReachabilityFlag())
 	{
+		if (targetUnit->IsHidden())
+		{
+			return false;
+		}
+
 		float attackRange = weapon->GetRange();
 		FVector unused;
 		bool reachable = UZombieSiegeUtils::GetBestLocationNearUnitToArrive(this, this, targetUnit, attackRange, unused);

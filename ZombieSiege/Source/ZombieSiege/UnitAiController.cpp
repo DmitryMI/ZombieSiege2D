@@ -200,7 +200,7 @@ void AUnitAiController::OnPossess(APawn* pawn)
         RegisterEventHandlers(unit);
     }
 
-    if (unit && unit->IsAlive())
+    if (unit && unit->IsAlive() && IsValid(unit))
     {
         IssueHoldPositionOrder();
     }
@@ -548,8 +548,10 @@ void AUnitAiController::IssueAttackOnMoveOrder(const FVector& location, bool bQu
         return;
     }
 
+    FVector projectedLocation = UZombieSiegeUtils::ProjectLocationToNavMesh(GetWorld(), location);
+
     UAreaScanningAttackOrder* order = CreateOrder<UAreaScanningAttackOrder>(attackOnMoveOrderClass);
-    order->SetTargetLocation(location);
+    order->SetTargetLocation(projectedLocation);
     IssueOrder(order, bQueue);
 }
 
@@ -597,8 +599,13 @@ void AUnitAiController::UnitDiedEventHandler(const FUnitDiedEventArgs& args)
 
 void AUnitAiController::IssueHoldPositionOrder()
 {
+    APawn* pawn = GetPawn();
+    check(pawn);
+    
     UAreaScanningAttackOrder* order = CreateOrder<UAreaScanningAttackOrder>(holdPositionOrderClass);
-    order->SetTargetLocation(GetPawn()->GetActorLocation());
+    FVector location = pawn->GetActorLocation();
+    order->SetTargetLocation(location);
+
     IssueOrder(order, false);
 }
 

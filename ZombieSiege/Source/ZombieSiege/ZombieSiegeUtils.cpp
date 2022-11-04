@@ -383,15 +383,19 @@ bool UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(
 
 	float useReachabilityRadius = tolerance + movingAgentRadius + goalAgentRadius;
 
-	FVector movingActorLocation = movingAgent->GetActorLocation();
-	FVector targetActorLocation = goalAgent->GetActorLocation();
-
 	UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(world);
 	ARecastNavMesh* NavigationData = Cast<ARecastNavMesh>(NavSys->MainNavData.Get());
 	check(NavigationData);
 
+	FVector movingActorLocation = movingAgent->GetActorLocation();
+	FVector targetActorLocation = goalAgent->GetActorLocation();
+
+	FVector movingActorLocationProjected = NavSys->ProjectPointToNavigation(world, movingActorLocation, NavigationData, nullptr, FVector(0, 0, 2000));
+	FVector targetActorLocationProjected = NavSys->ProjectPointToNavigation(world, targetActorLocation, NavigationData, nullptr, FVector(0, 0, 2000));
+
+
 #if USE_UNAVPATH
-	UNavigationPath* path = NavSys->FindPathToActorSynchronously(world, movingActorLocation, goalAgent, 50.0f, movingAgent);
+	UNavigationPath* path = NavSys->FindPathToActorSynchronously(world, movingActorLocationProjected, goalAgent, 50.0f, movingAgent);
 	FNavigationPath* navPath = path->GetPath().Get();
 #else
 	INavAgentInterface* NavAgent = Cast<INavAgentInterface>(movingAgent);
@@ -399,8 +403,8 @@ bool UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(
 	const FPathFindingQuery Query(
 		movingAgent,
 		*NavigationData,
-		movingActorLocation,
-		targetActorLocation,
+		movingActorLocationProjected,
+		targetActorLocationProjected,
 		UNavigationQueryFilter::GetQueryFilter(*NavigationData, movingAgent, 0));
 	const FPathFindingResult Result = NavSys->FindPathSync(Query, EPathFindingMode::Regular);
 
@@ -444,7 +448,7 @@ bool UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(
 	{
 		uint64 lastAccessiblePolyId = corridor[corridor.Num() - 2];
 		closestAccessiblePoint;
-		bool hasPoint = NavigationData->GetClosestPointOnPoly(lastAccessiblePolyId, targetActorLocation, closestAccessiblePoint);
+		bool hasPoint = NavigationData->GetClosestPointOnPoly(lastAccessiblePolyId, targetActorLocationProjected, closestAccessiblePoint);
 		if (!hasPoint)
 		{
 			return false;
@@ -457,7 +461,7 @@ bool UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(
 	
 	OutLocation = closestAccessiblePoint;
 
-	float distanceSqr = (targetActorLocation - closestAccessiblePoint).SizeSquared2D();
+	float distanceSqr = (targetActorLocationProjected - closestAccessiblePoint).SizeSquared2D();
 	bool closeEnough = FMath::Square(useReachabilityRadius) > distanceSqr;
 
 #if WITH_EDITOR && DRAW_DEBUG_PATH
@@ -527,6 +531,17 @@ bool UZombieSiegeUtils::IsFree(const TMap<EResourceType, float> requiredResource
 	}
 
 	return FMath::IsNearlyZero(summ);
+}
+
+FVector UZombieSiegeUtils::ProjectLocationToNavMesh(UWorld* world, const FVector& location, const FVector& extent)
+{
+	UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(world);
+	check(NavSys);
+	ARecastNavMesh* NavigationData = Cast<ARecastNavMesh>(NavSys->MainNavData.Get());
+	check(NavigationData);
+
+	FVector projected = NavSys->ProjectPointToNavigation(world, location, NavigationData, nullptr, extent);
+	return projected;
 }
 
 FVector UZombieSiegeUtils::GetTerrainIntersection(const FVector& location, const FVector& direction, float terrainHeight)

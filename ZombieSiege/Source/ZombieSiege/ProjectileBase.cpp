@@ -86,6 +86,22 @@ void AProjectileBase::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 			float damage = FMath::RandRange(impactDamageMinMax.X, impactDamageMinMax.Y);
 			FDamageInstance damageInstance(instigator, damage, weaponInfo);
 			unit->ReceiveDamage(damageInstance);
+			bIgnoreCollision = false;
+		}
+		else
+		{
+			bIgnoreCollision = true;
+		}
+	}
+
+	AProjectileBase* otherProjectile = Cast<AProjectileBase>(OtherActor);
+	if (otherProjectile && otherProjectile->bIsProjectileAlive)
+	{
+		AUnitBase* instigator = GetInstigator<AUnitBase>();
+		AUnitBase* otherInstigator = otherProjectile->GetInstigator<AUnitBase>();
+		if (instigator != otherInstigator && UZombieSiegeUtils::AreEnemies(instigator, otherInstigator))
+		{
+			bIgnoreCollision = false;
 		}
 		else
 		{

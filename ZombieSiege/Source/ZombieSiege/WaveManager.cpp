@@ -154,19 +154,21 @@ float AWaveManager::GetNormalizedDifficulty()
 AUnitBase* AWaveManager::SpawnUnit(TSubclassOf<AUnitBase> unitClass)
 {
 	AActor* spawnMarker = spawnPositionMarkers[FMath::RandRange(0, spawnPositionMarkers.Num() - 1)];
-	FVector randomPoint = spawnMarker->GetActorLocation();
+	FVector spawnMarkerLocation = spawnMarker->GetActorLocation();
 
 	FVector spawnPoint;
-	bool foundPoint = UZombieSiegeUtils::GetRandomReachableLocation(GetWorld(), randomPoint, spawnPointSearchRadius, spawnPoint);
+	bool foundPoint = UZombieSiegeUtils::GetRandomReachableLocation(GetWorld(), spawnMarkerLocation, spawnPointSearchRadius, spawnPoint);
 
 	if (!foundPoint)
 	{
 		return nullptr;
 	}
 
-	randomPoint.Z = 200;
+	spawnPoint.Z = spawnMarkerLocation.Z;
 
-	AUnitBase* spawnedUnit = GetWorld()->SpawnActor<AUnitBase>(unitClass, spawnPoint, FRotator::ZeroRotator);
+	FActorSpawnParameters spawnParams;
+
+	AUnitBase* spawnedUnit = GetWorld()->SpawnActor<AUnitBase>(unitClass, spawnPoint, FRotator::ZeroRotator, spawnParams);
 	if (!spawnedUnit)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to spawn wave unit at %s"), *spawnPoint.ToString());
@@ -180,7 +182,13 @@ bool AWaveManager::IssueOrders(AUnitBase* unit)
 	AZombieSiegePlayerController* localPlayerContoller = Cast<AZombieSiegePlayerController>(GetWorld()->GetFirstPlayerController());
 	AUnitAiController* controller = unit->GetController<AUnitAiController>();
 
-	int playerUnitIterator = 0;
+	if (!controller)
+	{
+		unit->SpawnDefaultController();
+	}
+
+	controller = unit->GetController<AUnitAiController>();
+
 	FAttackTestParameters attackTestParams(EAttackTestFlags::Affiliation | EAttackTestFlags::Reachability);
 
 	if (controller)
@@ -188,18 +196,13 @@ bool AWaveManager::IssueOrders(AUnitBase* unit)
 		TArray<AUnitBase*> localPlayerUnits = localPlayerContoller->GetControlledUnits();
 		AUnitBase* attackTarget = nullptr;
 
-		for (; playerUnitIterator < localPlayerUnits.Num(); playerUnitIterator++)
+		for (int playerUnitIterator = 0; playerUnitIterator < localPlayerUnits.Num(); playerUnitIterator++)
 		{
 			if (unit->CanAttackTarget(localPlayerUnits[playerUnitIterator], attackTestParams))
 			{
 				attackTarget = localPlayerUnits[playerUnitIterator];
 				break;
 			}
-		}
-
-		if (playerUnitIterator >= localPlayerUnits.Num())
-		{
-			playerUnitIterator = 0;
 		}
 
 		if (attackTarget)
