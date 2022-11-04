@@ -145,8 +145,9 @@ bool ATurret::BeginAttackTarget(AActor* targetActor)
 	}
 
 	FAttackParameters attackParams;
-	attackParams.projectileSpawnRelativeLocation = GetActorLocation() - GetOwningUnit()->GetActorLocation();
-	attackParams.projectileSpawnRelativeLocation.Z = 0;
+	FVector ownerLocation = GetOwningUnit()->GetActorLocation();
+	FVector turretLocation = GetActorLocation();
+	attackParams.projectileSpawnRelativeLocation = turretLocation - ownerLocation;
 
 	return attackDispatcher->BeginAttackTarget(GetOwningUnit(), weaponInfo, targetActor, attackParams);
 }

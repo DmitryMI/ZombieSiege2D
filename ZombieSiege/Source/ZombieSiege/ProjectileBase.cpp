@@ -56,6 +56,12 @@ bool AProjectileBase::IsRangeExceeded()
 
 void AProjectileBase::BeginProjectileDeath()
 {
+	
+}
+
+void AProjectileBase::BeginProjectileDeathBlueprint_Implementation()
+{
+
 }
 
 void AProjectileBase::FinishProjectileDeath()
@@ -63,16 +69,50 @@ void AProjectileBase::FinishProjectileDeath()
 	Destroy();
 }
 
+void AProjectileBase::OnDecayTimerElapsedHandler()
+{
+	FinishProjectileDeath();
+}
+
 void AProjectileBase::KillProjectile()
 {
-	BeginProjectileDeath();
 	bIsProjectileAlive = false;
 	movementComponent->MaxSpeed = 0;
-	FinishProjectileDeath();
+	movementComponent->Velocity = FVector::Zero();
+	movementComponent->ProjectileGravityScale = 0.0f;
+
+	UStaticMeshComponent* mesh = Cast<UStaticMeshComponent>(GetComponentByClass(UStaticMeshComponent::StaticClass()));
+	if (mesh)
+	{
+		mesh->SetHiddenInGame(true);
+	}
+	else
+	{
+		SetActorHiddenInGame(true);
+	}
+
+	//UNiagaraComponent
+
+	BeginProjectileDeath();
+	BeginProjectileDeathBlueprint();
+
+	if (FMath::IsNearlyZero(decayTime))
+	{
+		FinishProjectileDeath();
+	}
+	else
+	{
+		GetWorld()->GetTimerManager().SetTimer(decayTimerHandle, this, &AProjectileBase::OnDecayTimerElapsedHandler, decayTime, false, decayTime);
+	}
 }
 
 void AProjectileBase::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (!bIsProjectileAlive)
+	{
+		return;
+	}
+
 	bool bIgnoreCollision = false;
 
 	AUnitBase* unit = Cast<AUnitBase>(OtherActor);

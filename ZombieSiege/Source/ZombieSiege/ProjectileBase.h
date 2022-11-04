@@ -46,6 +46,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	float reachibilityTestRadius = 5.0f;
 
+	UPROPERTY(EditDefaultsOnly)
+	float decayTime = 5.0f;
+
 	UPROPERTY()
 	UWeaponInfo* weaponInfo;
 
@@ -57,6 +60,9 @@ protected:
 
 	UPROPERTY()
 	FVector targetPoint;
+
+	UPROPERTY()
+	FTimerHandle decayTimerHandle;
 
 public:	
 	// Sets default values for this actor's properties
@@ -78,9 +84,12 @@ protected:
 
 	virtual void BeginProjectileDeath();
 
+	UFUNCTION(BlueprintNativeEvent)
+	void BeginProjectileDeathBlueprint();
+
 	virtual void FinishProjectileDeath();
 
-	void KillProjectile();
+	virtual void OnDecayTimerElapsedHandler();
 
 	UFUNCTION()
 	virtual void OnOverlapBegin(
@@ -114,4 +123,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void SetMaxSpeed(float speed);
 
+	UFUNCTION(BlueprintCallable)
+	void KillProjectile();
 };

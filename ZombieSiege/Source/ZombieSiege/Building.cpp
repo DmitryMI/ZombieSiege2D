@@ -25,21 +25,20 @@ void ABuilding::BeginPlay()
 
 	weaponDefault = AWeaponManager::GetInstance(GetWorld())->GetWeaponInfo(weaponDefaultName);
 
-	if (turretClass)
+	if (turretClass && bAutoSpawnTurrets)
 	{
 		for (int i = 0; i < GetTotalPassengerSeats(); i++)
 		{
 			float angleStep = i * 360 / GetTotalPassengerSeats();
 			FVector turretLocationVector = FVector::RightVector * turretSpawnRadius;
 			FVector turretLocation = turretLocationVector.RotateAngleAxis(angleStep, FVector::UpVector);
-			turretLocation.Z = GetActorLocation().Z;
+			turretLocation.Z = turretsSpawnRelativeZ;
 
 			ATurret* turret = GetWorld()->SpawnActor<ATurret>(turretClass, turretLocation, FRotator::ZeroRotator);
 			check(turret);
 			turret->SetOwningUnit(this);
 			turret->SetTurretIndex(i);
 
-			turretLocation.Z = 0;
 			turret->SetActorRelativeLocation(turretLocation);
 
 			bool hasEnoughPassengers = GetPassengers().Num() > i;

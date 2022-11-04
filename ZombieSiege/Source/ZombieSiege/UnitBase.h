@@ -76,6 +76,7 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	float collisionHeight = 400.0f;
 
+
 	UPROPERTY(EditAnywhere)
 	float maxHealth = 100.0f;
 

@@ -24,7 +24,13 @@ private:
 	TSubclassOf<ATurret> turretClass;
 
 	UPROPERTY(EditDefaultsOnly)
+	bool bAutoSpawnTurrets = true;
+
+	UPROPERTY(EditDefaultsOnly)
 	float turretSpawnRadius = 50.0f;
+
+	UPROPERTY(EditDefaultsOnly)
+	float turretsSpawnRelativeZ = 0.0f;
 
 	UPROPERTY(EditDefaultsOnly)
 	FName weaponDefaultName;
@@ -43,6 +49,7 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	TArray<ATurret*> turrets;
+
 
 protected:
 	virtual void BeginPlay() override;
