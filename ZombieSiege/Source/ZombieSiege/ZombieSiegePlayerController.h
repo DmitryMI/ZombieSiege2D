@@ -43,13 +43,10 @@ private:
 	float cameraInterpolationFactorPerSecond = 0.5f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "DefaultPreferences|Camera")
-	float cameraDefaultHeight = 1500;
+	float cameraMaxZoom = 10000;
 
 	UPROPERTY(EditDefaultsOnly, Category = "DefaultPreferences|Camera")
-	float cameraDefaultMaxSize = 10000;
-
-	UPROPERTY(EditDefaultsOnly, Category = "DefaultPreferences|Camera")
-	float cameraDefaultMinSize = 80;
+	float cameraMinZoom = 80;
 
 	UPROPERTY(EditDefaultsOnly, Category = "DefaultPreferences|Camera")
 	UCurveFloat* cameraAngleCurve;
@@ -115,7 +112,9 @@ private:
 	bool bAddToSelectionActionPressed = false;
 
 	FVector cameraTargetLocation;
-	float cameraTargetZoom;
+
+	UPROPERTY(EditAnywhere)
+	float cameraTargetZoom = 2500.0f;
 
 	void UpdateCamera(float deltaSeconds);
 

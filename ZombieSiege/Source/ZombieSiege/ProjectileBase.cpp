@@ -11,20 +11,6 @@ AProjectileBase::AProjectileBase()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-	collisionComponent = CreateDefaultSubobject<USphereComponent>("SphereCollision");
-	collisionComponent->SetCollisionProfileName("Projectile");
-	collisionComponent->SetSphereRadius(collisionRadius);
-
-	collisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AProjectileBase::OnOverlapBegin);
-
-	RootComponent = collisionComponent;
-
-	flipbookRenderer = CreateDefaultSubobject<UPaperFlipbookComponent>("FlipbookRenderer");
-	flipbookRenderer->SetWorldRotation(FRotator(-90, 0, 0));
-	flipbookRenderer->SetFlipbook(movingFlipbook);
-	FAttachmentTransformRules attachmentRules(EAttachmentRule::KeepWorld, false);
-	flipbookRenderer->SetupAttachment(RootComponent);
 }
 
 void AProjectileBase::BeginPlay()
@@ -33,14 +19,24 @@ void AProjectileBase::BeginPlay()
 
 	launchLocation = GetActorLocation();
 	
+	collisionComponent = Cast<UShapeComponent>(GetComponentByClass(UShapeComponent::StaticClass()));
+	check(collisionComponent);
+
 	movementComponent = Cast<UProjectileMovementComponent>(GetComponentByClass(UProjectileMovementComponent::StaticClass()));
 	check(movementComponent);
 
-	movementComponent->MaxSpeed = maxSpeed;
-	movementComponent->bConstrainToPlane = true;
-	movementComponent->bSnapToPlaneAtStart = true;
-	movementComponent->SetPlaneConstraintOrigin(FVector(0, 0, 300));
-	movementComponent->SetPlaneConstraintNormal(FVector(0, 0, 1));
+	collisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AProjectileBase::OnOverlapBegin);
+
+	if (bOverrideMovement)
+	{
+		movementComponent->MaxSpeed = maxSpeed;
+		movementComponent->InitialSpeed = maxSpeed;		
+	}
+
+	if (bOverrideCollision)
+	{
+		collisionComponent->SetCollisionProfileName("Projectile");
+	}
 }
 
 bool AProjectileBase::IsTargetLocationReached()
@@ -77,35 +73,27 @@ void AProjectileBase::KillProjectile()
 
 void AProjectileBase::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	bool bIgnoreCollision = false;
+
 	AUnitBase* unit = Cast<AUnitBase>(OtherActor);
-	if (!unit)
+
+	if (unit && unit->IsAlive() && unit->GetActorEnableCollision())
 	{
-		return;
+		AUnitBase* instigator = GetInstigator<AUnitBase>();
+
+		if (instigator && UZombieSiegeUtils::AreEnemies(instigator, unit))
+		{
+			float damage = FMath::RandRange(impactDamageMinMax.X, impactDamageMinMax.Y);
+			FDamageInstance damageInstance(instigator, damage, weaponInfo);
+			unit->ReceiveDamage(damageInstance);
+		}
+		else
+		{
+			bIgnoreCollision = true;
+		}
 	}
 
-	if (!unit->GetActorEnableCollision())
-	{
-		return;
-	}
-
-	if (!unit->IsAlive())
-	{
-		return;
-	}
-
-	AUnitBase* instigator = GetInstigator<AUnitBase>();
-
-	if (instigator && !UZombieSiegeUtils::AreEnemies(instigator, unit))
-	{
-		return;
-	}
-
-	float damage = FMath::RandRange(impactDamageMinMax.X, impactDamageMinMax.Y);
-	
-	FDamageInstance damageInstance(instigator, damage, weaponInfo);
-	unit->ReceiveDamage(damageInstance);
-
-	if (bDiesOnCollision)
+	if (bDiesOnCollision && !bIgnoreCollision)
 	{
 		KillProjectile();
 	}
@@ -128,15 +116,23 @@ void AProjectileBase::Tick(float DeltaTime)
 	}
 }
 
-void AProjectileBase::MoveTowards(const FVector& targetPointArg)
+void AProjectileBase::MoveTowards(const FVector& targetPointArg, const FVector& velocity)
 {
 	targetPoint = targetPointArg;
 
-	FVector direction = targetPoint - GetActorLocation();
-	direction.Z = 0;
-	ensure(direction.Normalize());
+	if (velocity.IsNearlyZero())
+	{
 
-	movementComponent->Velocity = direction * maxSpeed;
+		FVector direction = targetPoint - GetActorLocation();
+		direction.Z = 0;
+		ensure(direction.Normalize());
+
+		movementComponent->Velocity = direction * maxSpeed;
+	}
+	else
+	{
+		movementComponent->Velocity = velocity;
+	}
 }
 
 UWeaponInfo* AProjectileBase::GetWeaponInfo()

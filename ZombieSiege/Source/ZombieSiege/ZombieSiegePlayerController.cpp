@@ -32,7 +32,7 @@ void AZombieSiegePlayerController::OnCameraVertical(float value)
 
 	float currentZoom = springArm->TargetArmLength;
 
-	float zoomFactor = (currentZoom - cameraDefaultMinSize) / (cameraDefaultMaxSize - cameraDefaultMinSize);
+	float zoomFactor = (currentZoom - cameraMinZoom) / (cameraMaxZoom - cameraMinZoom);
 
 	check(cameraMovementSpeedCurve);
 
@@ -55,7 +55,7 @@ void AZombieSiegePlayerController::OnCameraHorizontal(float value)
 
 	float currentZoom = springArm->TargetArmLength;
 
-	float zoomFactor = (currentZoom - cameraDefaultMinSize) / (cameraDefaultMaxSize - cameraDefaultMinSize);
+	float zoomFactor = (currentZoom - cameraMinZoom) / (cameraMaxZoom - cameraMinZoom);
 
 	check(cameraMovementSpeedCurve);
 
@@ -86,7 +86,7 @@ void AZombieSiegePlayerController::OnCameraZoom(float value)
 	}
 
 	float nextZoom = cameraTargetZoom + value * cameraDefaultZoomSpeed * UGameplayStatics::GetWorldDeltaSeconds(GetWorld());
-	cameraTargetZoom = FMath::Clamp(nextZoom, cameraDefaultMinSize, cameraDefaultMaxSize);
+	cameraTargetZoom = FMath::Clamp(nextZoom, cameraMinZoom, cameraMaxZoom);
 }
 
 void AZombieSiegePlayerController::OnSelectActionPressed()
@@ -272,7 +272,7 @@ void AZombieSiegePlayerController::UpdateCamera(float deltaSeconds)
 		float zoom = FMath::Lerp(currentZoom, cameraTargetZoom, alpha);
 		springArm->TargetArmLength = zoom;
 
-		float zoomFactor = (zoom - cameraDefaultMinSize) / (cameraDefaultMaxSize - cameraDefaultMinSize);
+		float zoomFactor = (zoom - cameraMinZoom) / (cameraMaxZoom - cameraMinZoom);
 		check(0 <= zoomFactor && zoomFactor <= 1.0f);
 
 		float angle = cameraAngleCurve->GetFloatValue(zoomFactor);
@@ -374,7 +374,7 @@ AActor* AZombieSiegePlayerController::GetActorUnderScreenPoint(float x, float y)
 	bool deprojectOk = DeprojectScreenPositionToWorld(x, y, worldLocation, worldDirection);
 	check(deprojectOk);
 
-	FVector traceEnd = worldLocation + worldDirection * cameraDefaultHeight * 2;
+	FVector traceEnd = worldLocation + worldDirection * cameraMaxZoom * 5;
 
 	FHitResult hitResult;
 	FCollisionObjectQueryParams queryParams;
@@ -442,8 +442,6 @@ void AZombieSiegePlayerController::OnPossess(APawn* pawn)
 {
 	Super::OnPossess(pawn);
 	cameraTargetLocation = pawn->GetActorLocation();
-
-	cameraTargetZoom = cameraDefaultHeight;
 }
 
 const TArray<TSubclassOf<AUnitBase>>& AZombieSiegePlayerController::GetBuildableUnits()
@@ -713,7 +711,7 @@ FGenericTeamId AZombieSiegePlayerController::GetGenericTeamId() const
 
 float AZombieSiegePlayerController::GetCameraTargetZoomFactor()
 {
-	float zoomFactor = (cameraTargetZoom - cameraDefaultMinSize) / (cameraDefaultMaxSize - cameraDefaultMinSize);
+	float zoomFactor = (cameraTargetZoom - cameraMinZoom) / (cameraMaxZoom - cameraMinZoom);
 	return zoomFactor;
 }
 
@@ -729,7 +727,7 @@ float AZombieSiegePlayerController::GetCameraCurrentZoomFactor()
 
 	float currentZoom = springArm->TargetArmLength;
 
-	float zoomFactor = (currentZoom - cameraDefaultMinSize) / (cameraDefaultMaxSize - cameraDefaultMinSize);
+	float zoomFactor = (currentZoom - cameraMinZoom) / (cameraMaxZoom - cameraMinZoom);
 	return zoomFactor;
 }
 

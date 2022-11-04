@@ -14,7 +14,8 @@ FGenericTeamId AUnitBase::GetGenericTeamId() const
 
 bool AUnitBase::CanFinishAttackTargetWithWeapon(AActor* targetActor, UWeaponInfo* weapon)
 {
-	return CanAttackTargetWithWeapon(targetActor, weapon, FAttackTestParameters(false, true, false));
+	FAttackTestParameters testParams(EAttackTestFlags::Range);
+	return CanAttackTargetWithWeapon(targetActor, weapon, testParams);
 }
 
 bool AUnitBase::CanFinishAttackPointWithWeapon(const FVector targetPoint, UWeaponInfo* weapon)

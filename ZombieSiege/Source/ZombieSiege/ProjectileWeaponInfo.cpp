@@ -16,6 +16,11 @@ AProjectileBase* UProjectileWeaponInfo::SpawnProjectile(AUnitBase* instigator, c
 
 	AProjectileBase* projectile = world->SpawnActor<AProjectileBase>(projectileClass, location, FRotator::ZeroRotator, spawnParameters);
 
+	if (!projectile)
+	{
+		return nullptr;
+	}
+
 	projectile->SetImpactDamageRange(damageMinMax);
 	projectile->SetWeaponInfo(this);
 
@@ -34,7 +39,7 @@ UProjectileWeaponInfo::UProjectileWeaponInfo()
 
 void UProjectileWeaponInfo::AttackTarget(AUnitBase* attacker, AActor* target, const FAttackParameters& params)
 {
-	float projectileMaxSpeed;
+	float projectileMaxSpeed;	
 	if (bOverrideProjectileMaxSpeed)
 	{
 		projectileMaxSpeed = overrideProjectileMaxSpeed;		
@@ -43,6 +48,8 @@ void UProjectileWeaponInfo::AttackTarget(AUnitBase* attacker, AActor* target, co
 	{
 		projectileMaxSpeed = projectileClass.GetDefaultObject()->GetMaxSpeed();
 	}
+
+	float projectileCollisionRadius = projectileClass.GetDefaultObject()->GetSimpleCollisionRadius();	
 
 	AActor* targetActor = Cast<AActor>(target);
 	if (!targetActor)
@@ -67,13 +74,46 @@ void UProjectileWeaponInfo::AttackTarget(AUnitBase* attacker, AActor* target, co
 		interceptionLocation,
 		projectileVelocity);
 
+	FAttackParameters paramsClone = params;
+
+	// TODO Make proper 3D prediction!
+	interceptionLocation.Z = targetLocation.Z;
+
 	if (ok)
 	{
-		AttackPoint(attacker, interceptionLocation, params);
+		FVector suggestedArcVelocity;
+		bool arcSuggestOk = UGameplayStatics::SuggestProjectileVelocity(
+			this,
+			suggestedArcVelocity,
+			launchLocation,
+			interceptionLocation,
+			projectileMaxSpeed,
+			false,
+			projectileCollisionRadius,
+			0.0f,
+			ESuggestProjVelocityTraceOption::DoNotTrace
+		);
+		paramsClone.projectileInitialLocalSpaceVelocity = suggestedArcVelocity;
+
+		AttackPoint(attacker, interceptionLocation, paramsClone);
 	}
 	else
 	{
-		AttackPoint(attacker, targetActor->GetActorLocation(), params);
+		FVector suggestedArcVelocity;
+		bool arcSuggestOk = UGameplayStatics::SuggestProjectileVelocity(
+			this,
+			suggestedArcVelocity,
+			launchLocation,
+			targetLocation,
+			projectileMaxSpeed,
+			false,
+			projectileCollisionRadius,
+			0.0f,
+			ESuggestProjVelocityTraceOption::DoNotTrace
+		);
+		paramsClone.projectileInitialLocalSpaceVelocity = suggestedArcVelocity;
+
+		AttackPoint(attacker, targetActor->GetActorLocation(), paramsClone);
 	}
 }
 
@@ -85,7 +125,11 @@ void UProjectileWeaponInfo::AttackPoint(AUnitBase* attacker, const FVector& targ
 	}
 
 	AProjectileBase* projectile = SpawnProjectile(attacker, params);
-	check(projectile);
+	ensure(projectile);
+	if (!projectile)
+	{
+		return;
+	}
 
 	FVector vectorToTarget = (targetPoint - projectile->GetActorLocation());
 
@@ -95,7 +139,8 @@ void UProjectileWeaponInfo::AttackPoint(AUnitBase* attacker, const FVector& targ
 
 	FVector targetPointMod = projectile->GetActorLocation() + vectorToTarget;
 
-	projectile->MoveTowards(targetPointMod);
+	// TODO Is it really local space velocity?
+	projectile->MoveTowards(targetPointMod, params.projectileInitialLocalSpaceVelocity);
 }
 
 bool UProjectileWeaponInfo::CanAttackTarget(AUnitBase* attacker, AActor* target)
@@ -131,14 +176,16 @@ bool UProjectileWeaponInfo::CanAttackPoint(AUnitBase* attacker, const FVector& t
 	return true;
 }
 
-bool UProjectileWeaponInfo::SuggestProjectileVelocity(
+bool UProjectileWeaponInfo::SuggestProjectileVelocity
+(
 	const FVector& targetLocation,
 	const FVector& targetVelocity,
 	const FVector& launchLocation,
 	float projectileSpeed,
 	float& outInterceptionTime,
 	FVector& outInterceptionLocation,
-	FVector& outLaunchVelocity)
+	FVector& outLaunchVelocity
+)
 {
 #define TX(vx) (dx / (vx - targetVelocity.X))
 #define VY(vx, t) (dy / t + targetVelocity.Y)

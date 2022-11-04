@@ -5,7 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "PaperFlipbook.h"
+#include "Components/ShapeComponent.h"
 #include "Components/SphereComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "PaperFlipbookComponent.h"
 #include "ProjectileBase.generated.h"
@@ -16,11 +18,6 @@ class ZOMBIESIEGE_API AProjectileBase : public APawn
 	GENERATED_BODY()
 
 protected:
-	UPROPERTY(EditDefaultsOnly)
-	UPaperFlipbook* movingFlipbook;
-
-	UPROPERTY(EditDefaultsOnly)
-	UPaperFlipbook* deathFlipbook;
 
 	UPROPERTY(EditDefaultsOnly)
 	FVector2D impactDamageMinMax;
@@ -29,16 +26,22 @@ protected:
 	bool bDiesOnCollision = true;
 
 	UPROPERTY(EditDefaultsOnly)
-	bool bDiesOnTargetPointReached = true;
+	bool bDiesOnTargetPointReached = false;
 
 	UPROPERTY(EditDefaultsOnly)
-	float maxRange = 5000.0f;
+	float maxRange = 10000.0f;
+
+	UPROPERTY(EditDefaultsOnly)
+	bool bOverrideMovement = false;
+
+	UPROPERTY(EditDefaultsOnly)
+	bool bOverrideCollision = false;
 
 	UPROPERTY(EditDefaultsOnly)
 	float maxSpeed = 1000.0f;
 
 	UPROPERTY(EditDefaultsOnly)
-	float collisionRadius = 10.0f;
+	float collisionRadius = 50.0f;
 
 	UPROPERTY(EditDefaultsOnly)
 	float reachibilityTestRadius = 5.0f;
@@ -64,10 +67,7 @@ protected:
 	UProjectileMovementComponent* movementComponent;
 
 	UPROPERTY(VisibleAnywhere)
-	USphereComponent* collisionComponent;
-
-	UPROPERTY(VisibleAnywhere)
-	UPaperFlipbookComponent* flipbookRenderer;
+	UShapeComponent* collisionComponent;
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -97,7 +97,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable)
-	void MoveTowards(const FVector& targetPointArg);
+	void MoveTowards(const FVector& targetPointArg, const FVector& velocity);
 
 	UFUNCTION(BlueprintCallable)
 	UWeaponInfo* GetWeaponInfo();
