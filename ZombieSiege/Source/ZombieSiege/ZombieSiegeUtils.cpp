@@ -390,9 +390,25 @@ bool UZombieSiegeUtils::GetBestLocationNearUnitToArriveWorld(
 	FVector movingActorLocation = movingAgent->GetActorLocation();
 	FVector targetActorLocation = goalAgent->GetActorLocation();
 
-	FVector movingActorLocationProjected = NavSys->ProjectPointToNavigation(world, movingActorLocation, NavigationData, nullptr, FVector(0, 0, 2000));
-	FVector targetActorLocationProjected = NavSys->ProjectPointToNavigation(world, targetActorLocation, NavigationData, nullptr, FVector(0, 0, 2000));
+	//FVector movingActorLocationProjected = NavSys->ProjectPointToNavigation(world, movingActorLocation, NavigationData, nullptr, FVector(0, 0, 2000));
+	//FVector targetActorLocationProjected = NavSys->ProjectPointToNavigation(world, targetActorLocation, NavigationData, nullptr, FVector(0, 0, 2000));
+	FNavLocation movingActorNavLocation;
+	bool bMovingActorProjected = NavSys->ProjectPointToNavigation(movingActorLocation, movingActorNavLocation, FVector(0, 0, 2000), NavigationData);
+	if (!bMovingActorProjected)
+	{
+		return false;
+	}
 
+	FVector movingActorLocationProjected = movingActorNavLocation.Location;
+
+	FNavLocation targetActorNavLocation;
+	bool bTargetActorProjected = NavSys->ProjectPointToNavigation(targetActorLocation, targetActorNavLocation, FVector(0, 0, 2000), NavigationData);
+	if (!bTargetActorProjected)
+	{
+		return false;
+	}
+
+	FVector targetActorLocationProjected = targetActorNavLocation.Location;
 
 #if USE_UNAVPATH
 	UNavigationPath* path = NavSys->FindPathToActorSynchronously(world, movingActorLocationProjected, goalAgent, 50.0f, movingAgent);
@@ -533,15 +549,17 @@ bool UZombieSiegeUtils::IsFree(const TMap<EResourceType, float> requiredResource
 	return FMath::IsNearlyZero(summ);
 }
 
-FVector UZombieSiegeUtils::ProjectLocationToNavMesh(UWorld* world, const FVector& location, const FVector& extent)
+bool UZombieSiegeUtils::ProjectLocationToNavMesh(UWorld* world, const FVector& inLocation, FVector& outNavLocation, const FVector& extent)
 {
 	UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(world);
 	check(NavSys);
 	ARecastNavMesh* NavigationData = Cast<ARecastNavMesh>(NavSys->MainNavData.Get());
 	check(NavigationData);
 
-	FVector projected = NavSys->ProjectPointToNavigation(world, location, NavigationData, nullptr, extent);
-	return projected;
+	FNavLocation navLocation;
+	bool bOk = NavSys->ProjectPointToNavigation(inLocation, navLocation, extent, NavigationData);
+	outNavLocation = navLocation.Location;
+	return bOk;
 }
 
 FVector UZombieSiegeUtils::GetTerrainIntersection(const FVector& location, const FVector& direction, float terrainHeight)

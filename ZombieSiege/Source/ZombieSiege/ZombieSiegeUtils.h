@@ -271,7 +271,7 @@ public:
 		FVector& OutLocation);
 
 	UFUNCTION(BlueprintCallable)
-	static FVector ProjectLocationToNavMesh(UWorld* world, const FVector& location, const FVector& extent = FVector(0, 0, 5000));
+	static bool ProjectLocationToNavMesh(UWorld* world, const FVector& inLocation, FVector& outLocation, const FVector& extent = FVector(0, 0, 5000));
 
 	UFUNCTION(BlueprintCallable, Category = "ZombieSiegeUtils")
 	static bool AreEnemies(AActor* unitA, AActor* unitB);

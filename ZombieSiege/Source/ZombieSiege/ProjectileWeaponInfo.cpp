@@ -132,11 +132,17 @@ void UProjectileWeaponInfo::AttackPoint(AUnitBase* attacker, const FVector& targ
 		ESuggestProjVelocityTraceOption::DoNotTrace
 	);
 
-	float scatterX = FMath::RandRange(-scatterAngleDeg, scatterAngleDeg);
+	float scatterZ = FMath::RandRange(-scatterAngleDeg, scatterAngleDeg);
 	float scatterY = FMath::RandRange(-scatterAngleDeg, scatterAngleDeg);
+
+	float velocityMagnitude = suggestedArcVelocity.Size();
+
+	FRotator velocityRotation = suggestedArcVelocity.Rotation();
+	velocityRotation.Pitch += scatterY;
+	velocityRotation.Yaw += scatterZ;
+	FVector directionScatter = velocityRotation.Vector();
 	
-	FVector velocityScatterY = suggestedArcVelocity.RotateAngleAxis(scatterY, projectile->GetActorRightVector());
-	FVector velocityScatter = velocityScatterY.RotateAngleAxis(scatterX, projectile->GetActorForwardVector());
+	FVector velocityScatter = directionScatter * velocityMagnitude;
 
 	// TODO Is it really local space velocity?
 	projectile->SetVelocity(velocityScatter);

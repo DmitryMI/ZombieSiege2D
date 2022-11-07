@@ -548,7 +548,12 @@ void AUnitAiController::IssueAttackOnMoveOrder(const FVector& location, bool bQu
         return;
     }
 
-    FVector projectedLocation = UZombieSiegeUtils::ProjectLocationToNavMesh(GetWorld(), location);
+    FVector projectedLocation;
+    bool bProjectionOk = UZombieSiegeUtils::ProjectLocationToNavMesh(GetWorld(), location, projectedLocation);
+    if (!bProjectionOk)
+    {
+        return;
+    }
 
     UAreaScanningAttackOrder* order = CreateOrder<UAreaScanningAttackOrder>(attackOnMoveOrderClass);
     order->SetTargetLocation(projectedLocation);

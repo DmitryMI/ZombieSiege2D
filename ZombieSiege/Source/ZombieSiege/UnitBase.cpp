@@ -222,15 +222,15 @@ void AUnitBase::PostRemovePassenger(AUnitBase* passenger)
 
 void AUnitBase::OnHealthRegenerationTimerElapsed()
 {
+	if (!IsAlive())
+	{
+		return;
+	}
+
 	float regenerationAmount = healthRegenerationPerSecond * healthRegenerationInterval;
-	
+
 	if (regenerationAmount < 0)
 	{
-		if (!IsAlive())
-		{
-			return;
-		}
-
 		float damage = -regenerationAmount;
 		FDamageInstance negativeRegenerationDamageInstance(this, damage, nullptr);
 		ReceiveDamage(negativeRegenerationDamageInstance);
